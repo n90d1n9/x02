@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ky_print/ky_print.dart';
 
 import '../models/document_editor_action_policy.dart';
 import '../models/document_editing_mode.dart';
@@ -8,6 +9,7 @@ import 'editor_app_bar/command_palette_button.dart';
 import 'editor_app_bar/collaborators_menu.dart';
 import 'editor_app_bar/document_action_cluster.dart';
 import 'editor_app_bar/document_title.dart';
+import 'editor_app_bar/file_menu.dart';
 import 'editor_app_bar/import_export_menus.dart';
 import 'editor_app_bar/overflow_menu.dart';
 import 'editor_app_bar/share_button.dart';
@@ -114,6 +116,63 @@ class DocumentEditorAppBar extends StatelessWidget
     required bool showModeSwitcher,
   }) {
     return [
+      // File Menu - MS Word/GDocs style
+      DocumentFileMenu(
+        onNew: () async {
+          await onSave(); // Save current first if needed
+          // Navigate to new document or create new
+        },
+        onSave: documentState.hasUnsavedChanges ? () => onSave() : null,
+        onSaveAs: () async {
+          // Save as functionality
+          await onSave();
+        },
+        onImport: onImport,
+        onExport: onExport,
+        onPrint: () async {
+          // Print functionality using ky_print
+          try {
+            final context = navigatorKey.currentContext;
+            if (context == null) return;
+            
+            // Build printable pages from document content
+            final pages = await _buildPrintablePages(documentState);
+            
+            final result = await kyPrint.printDocument(
+              context: context,
+              documentTitle: documentState.metadata.title,
+              pages: pages,
+            );
+            
+            if (result.isSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Printed ${result.pagesPrinted} pages successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } else if (result.isError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Print failed: ${result.errorMessage}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } catch (e) {
+            final context = navigatorKey.currentContext;
+            if (context != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Print error: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+        onShare: onOpenCollaboration,
+      ),
       if (documentState.hasUnsavedChanges) const DocumentUnsavedBadge(),
       IconButton(
         icon: Icon(
@@ -227,22 +286,9 @@ class DocumentEditorAppBar extends StatelessWidget
         ],
       ),
       DocumentActionCluster(
-        groupId: 'file',
-        semanticLabel: 'File and view actions',
+        groupId: 'view',
+        semanticLabel: 'View and layout actions',
         children: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            tooltip: 'Save',
-            onPressed: documentState.hasUnsavedChanges ? () => onSave() : null,
-          ),
-          DocumentImportMenu(
-            enabled: actionPolicy.canImportContent,
-            tooltip: actionPolicy.canImportContent
-                ? 'Import'
-                : actionPolicy.lockedMutationReason,
-            onSelected: onImport,
-          ),
-          DocumentExportMenu(onSelected: onExport),
           DocumentViewMenu(
             currentLayout: documentState.currentLayout,
             showOutline: showOutline,
@@ -311,6 +357,44 @@ class DocumentEditorAppBar extends StatelessWidget
         onExport: onExport,
         onSetPageLayout: onSetPageLayout,
         onMoreOptions: onMoreOptions,
+      ),
+    ];
+  }
+
+  /// Build printable pages from document content
+  Future<List<Widget>> _buildPrintablePages(DocumentState documentState) async {
+    // This is a placeholder implementation
+    // In production, this would convert the document model to printable widgets
+    // For now, return a simple page with document title
+    return [
+      Container(
+        width: 595, // A4 width at 72 DPI
+        height: 842, // A4 height at 72 DPI
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              documentState.metadata.title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Document content would be rendered here.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'This is a placeholder for the actual document rendering.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const Spacer(),
+            Text(
+              'Page 1',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
       ),
     ];
   }

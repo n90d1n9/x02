@@ -172,4 +172,122 @@ class DocumentExportService {
   String _filePath(Directory directory, String fileName) {
     return '${directory.path}${Platform.pathSeparator}$fileName';
   }
+
+  /// Export DOCX to a custom path with specified filename
+  Future<String?> exportDocxToPath({
+    required String text,
+    required DocumentMetadata metadata,
+    quill.Document? document,
+    required String customFileName,
+    String? location,
+  }) async {
+    final request = waraqBridge.createExportRequest(
+      text: text,
+      metadata: metadata,
+      document: document,
+    );
+    final bytes = await renderer.renderDocx(request);
+    
+    if (location != null && location.isNotEmpty) {
+      final dir = Directory(location);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      final file = File('$location${Platform.pathSeparator}${sanitizeBaseName(customFileName)}.docx');
+      await file.writeAsBytes(bytes);
+      return file.path;
+    } else {
+      return _writeBytesWithCustomName(
+        metadata: metadata,
+        customName: customFileName,
+        extension: 'docx',
+        bytes: bytes,
+      );
+    }
+  }
+
+  /// Export PDF to a custom path with specified filename
+  Future<String?> exportPdfToPath({
+    required String text,
+    required DocumentMetadata metadata,
+    quill.Document? document,
+    required String customFileName,
+    String? location,
+    ExportOptions options = const ExportOptions(),
+  }) async {
+    final request = waraqBridge.createExportRequest(
+      text: text,
+      metadata: metadata,
+      document: document,
+    );
+    final bytes = await renderer.renderPdf(request, options);
+    
+    if (location != null && location.isNotEmpty) {
+      final dir = Directory(location);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      final file = File('$location${Platform.pathSeparator}${sanitizeBaseName(customFileName)}.pdf');
+      await file.writeAsBytes(bytes);
+      return file.path;
+    } else {
+      return _writeBytesWithCustomName(
+        metadata: metadata,
+        customName: customFileName,
+        extension: 'pdf',
+        bytes: bytes,
+      );
+    }
+  }
+
+  /// Export TXT to a custom path with specified filename
+  Future<String?> exportTxtToPath({
+    required String text,
+    required DocumentMetadata metadata,
+    required String customFileName,
+    String? location,
+  }) async {
+    if (location != null && location.isNotEmpty) {
+      final dir = Directory(location);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      final file = File('$location${Platform.pathSeparator}${sanitizeBaseName(customFileName)}.txt');
+      await file.writeAsString(text);
+      return file.path;
+    } else {
+      return _writeTextWithCustomName(
+        metadata: metadata,
+        customName: customFileName,
+        extension: 'txt',
+        text: text,
+      );
+    }
+  }
+
+  Future<String> _writeBytesWithCustomName({
+    required DocumentMetadata metadata,
+    required String customName,
+    required String extension,
+    required Uint8List bytes,
+  }) async {
+    final directory = await directoryProvider();
+    final fileName = '${sanitizeBaseName(customName)}.$extension';
+    final file = File(_filePath(directory, fileName));
+    await file.writeAsBytes(bytes);
+    return file.path;
+  }
+
+  Future<String> _writeTextWithCustomName({
+    required DocumentMetadata metadata,
+    required String customName,
+    required String extension,
+    required String text,
+  }) async {
+    final directory = await directoryProvider();
+    final fileName = '${sanitizeBaseName(customName)}.$extension';
+    final file = File(_filePath(directory, fileName));
+    await file.writeAsString(text);
+    return file.path;
+  }
 }
