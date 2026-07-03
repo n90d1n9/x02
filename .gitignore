@@ -1,120 +1,41 @@
 ```
-# Rust-specific ignores
-target/
-Cargo.lock
+# Dependency directories
+node_modules/
+pubspec.lock
 
-# Dependencies
-**/node_modules/
-
-# Compiled/Binary files
-*.pyc
-*.class
-*.o
+# Build artifacts
+build/
+*.apk
+*.aab
+*.app
 *.exe
 *.dll
 *.so
-*.a
-*.obj
-*.out
+*.dylib
 
-# Dependency directories
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-.gradle/
-
-# Editor/IDE files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
-# System/Environment files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+
+# Environment
 .env
 .env.local
 *.env.*
 
-# Logs and coverage
-*.log
+# Coverage
 coverage/
 htmlcov/
-.coverage
 
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-```
+# Temporary files
+*.tmp
+*.temp
 
-
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
+# OS generated files
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-
-**/build/*
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+Thumbs.db
+```
