@@ -101,4 +101,64 @@ class DocumentExportOrchestrationService {
 
     return paths ?? [];
   }
+
+  /// Export document to a specific path with custom filename
+  Future<String> exportToPath({
+    required ExportStateReader readState,
+    required ExportStateEmitter emitState,
+    required String format,
+    required String customFileName,
+    String? location,
+  }) async {
+    try {
+      final current = readState();
+      
+      // Export based on format
+      String? exportedPath;
+      if (format == 'docx') {
+        exportedPath = await exportService.exportDocxToPath(
+          text: current.controller.document.toPlainText(),
+          metadata: current.metadata,
+          document: current.controller.document,
+          customFileName: customFileName,
+          location: location,
+        );
+      } else if (format == 'pdf') {
+        exportedPath = await exportService.exportPdfToPath(
+          text: current.controller.document.toPlainText(),
+          metadata: current.metadata,
+          document: current.controller.document,
+          customFileName: customFileName,
+          location: location,
+        );
+      } else if (format == 'txt') {
+        exportedPath = await exportService.exportTxtToPath(
+          text: current.controller.document.toPlainText(),
+          metadata: current.metadata,
+          customFileName: customFileName,
+          location: location,
+        );
+      }
+
+      if (exportedPath != null && exportedPath.isNotEmpty) {
+        emitState(
+          readState().copyWith(
+            isLoading: false,
+            hasUnsavedChanges: false,
+          ),
+        );
+        return exportedPath;
+      }
+      
+      return '';
+    } catch (e) {
+      emitState(
+        readState().copyWith(
+          isLoading: false,
+          errorMessage: 'Export failed: $e',
+        ),
+      );
+      return '';
+    }
+  }
 }

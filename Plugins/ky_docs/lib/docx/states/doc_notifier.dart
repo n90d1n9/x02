@@ -38,6 +38,7 @@ import '../services/document_structure_service.dart';
 import '../services/document_track_changes_service.dart';
 import '../services/docx_service.dart';
 import '../services/pdf_service.dart';
+import 'auto_save_service.dart';
 
 /// Owns mutable document editor state and delegates operations to focused services.
 class DocumentNotifier extends StateNotifier<DocumentState> {
@@ -54,6 +55,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
   final DocumentAiOrchestrationService _aiOrchestrationService;
   final DocumentCollaborationOrchestrationService _collaborationService;
   final DocumentSpellCheckOrchestrationService _spellCheckOrchestrationService;
+  final AutoSaveService _autoSaveService = AutoSaveService();
   final Uuid _uuid = const Uuid();
 
   DocumentNotifier(
@@ -103,6 +105,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
        ) {
     state.controller.addListener(_onDocumentChanged);
     _initializeStorage();
+    _initializeAutoSave();
   }
 
   Future<void> _initializeStorage() async {
@@ -110,6 +113,10 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
       readState: () => state,
       emitState: (nextState) => state = nextState,
     );
+  }
+
+  void _initializeAutoSave() {
+    _autoSaveService.initialize(this);
   }
 
   void _onDocumentChanged() {
@@ -125,6 +132,9 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
         totalPages: change.totalPages,
       ),
     );
+    
+    // Trigger auto-save debounce timer
+    _autoSaveService.onDocumentChanged();
   }
 
   Future<void> createNewDocument() async {
@@ -147,6 +157,39 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
       readState: () => state,
       emitState: (nextState) => state = nextState,
     );
+  }
+
+  Future<bool> saveDocumentAs({
+    required String newTitle,
+    required String format,
+    String? location,
+  }) async {
+    try {
+      // Export to the specified format
+      final exportedPath = await _exportOrchestrationService.exportToPath(
+        readState: () => state,
+        emitState: (nextState) => state = nextState,
+        format: format,
+        customFileName: newTitle,
+        location: location,
+      );
+
+      if (exportedPath.isNotEmpty) {
+        // Update document metadata with new title and path
+        state = state.copyWith(
+          metadata: _propertiesService.updateTitle(
+            metadata: state.metadata,
+            title: newTitle,
+          ),
+          hasUnsavedChanges: false,
+        );
+        return true;
+      }
+      return false;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Failed to save as: $e');
+      return false;
+    }
   }
 
   Future<void> loadDocument(String id) async {
@@ -764,6 +807,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
   void dispose() {
     _collaborationService.dispose();
     _spellCheckOrchestrationService.dispose();
+    _autoSaveService.dispose();
     state.controller.removeListener(_onDocumentChanged);
     state.controller.dispose();
     super.dispose();

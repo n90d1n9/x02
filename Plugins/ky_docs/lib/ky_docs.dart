@@ -3,6 +3,18 @@
 // Consumers import this file; internal code should import files directly.
 // Keep this list sorted alphabetically by path within each section.
 
+// ── Engine (Rust FFI integration) ────────────────────────────────────────────
+
+export 'engine/engine.dart'
+    show DocumentEngine, Document, DocumentBlock, TextSpan, TextStyle, DocxParserService, DocxMetadata, DocxContent, NativeDocumentHandle;
+
+// ── Native Engine Widgets (MS Word/GDocs-like editor) ───────────────────────
+
+export 'docx/widgets/native_document_canvas.dart'
+    show NativeDocumentCanvas, NativeDocumentState, NativeDocumentNotifier,
+         documentEngineProvider, docxParserProvider, nativeDocumentProvider,
+         DocxImportDialog;
+
 // ── Screens ─────────────────────────────────────────────────────────────────
 
 export 'docx/screens/document_editor_page.dart' show DocumentEditorPage;
