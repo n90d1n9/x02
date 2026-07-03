@@ -1,0 +1,10 @@
+[package]
+name = "rich_doc_core"
+version = "0.1.0"
+edition = "2021"
+description = "Pure, platform-independent rich document engine: schema, tree, transactions. No FFI, no Flutter, no I/O beyond JSON in/out. Compiles to native and wasm32 unchanged."
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"

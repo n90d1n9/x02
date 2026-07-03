@@ -1,0 +1,8 @@
+# Config for `flutter_rust_bridge_codegen generate`.
+# Run from the ffi/ crate directory once the Flutter SDK is available:
+#   cargo install flutter_rust_bridge_codegen
+#   flutter_rust_bridge_codegen generate
+rust_input: crate::api
+rust_root: .
+dart_output: ../flutter_rich_doc/lib/src/rust
+dart_entrypoint_class_name: RustLib
