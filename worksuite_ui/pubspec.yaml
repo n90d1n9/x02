@@ -10,15 +10,15 @@ dependencies:
   flutter:
     sdk: flutter
   ky_docs:
-    path: ../Plugins/ky_docs
+    path: ../Modules/ky_docs
   ky_sheet:
-    path: ../Plugins/ky_sheet
+    path: ../Modules/ky_sheet
   ky_slide:
-    path: ../Plugins/ky_slide
+    path: ../Modules/ky_slide
   ky_office_core:
-    path: ../Plugins/ky_office_core
+    path: ../Modules/ky_office_core
   ky_office:
-    path: ../Plugins/ky_office
+    path: ../Modules/ky_office
     
   flutter_riverpod: ^3.3.2
 

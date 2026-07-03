@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:ky_office/ky_office.dart';
 
 import 'worksuite_workspace.dart';
@@ -18,6 +20,13 @@ class WorksuiteApp extends StatelessWidget {
       theme: KyOfficeTheme.light(),
       themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        quill.FlutterQuillLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en')],
       home: const WorksuiteWorkspace(),
     );
   }
