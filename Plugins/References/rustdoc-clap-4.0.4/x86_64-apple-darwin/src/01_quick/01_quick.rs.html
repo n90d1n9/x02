@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `examples/tutorial_builder/01_quick.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>01_quick.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="/normalize-20220928-1.66.0-nightly-ce7f0f1aa.css"><link rel="stylesheet" href="/rustdoc-20220928-1.66.0-nightly-ce7f0f1aa.css" id="mainThemeStyle"><link rel="stylesheet" href="/ayu-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/dark-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/light-20220928-1.66.0-nightly-ce7f0f1aa.css" id="themeStyle"><script id="default-settings" ></script><script src="/storage-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/source-script-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="../../source-files-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/main-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><noscript><link rel="stylesheet" href="/noscript-20220928-1.66.0-nightly-ce7f0f1aa.css"></noscript><link rel="alternate icon" type="image/png" href="/favicon-16x16-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="alternate icon" type="image/png" href="/favicon-32x32-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="icon" type="image/svg+xml" href="/favicon-20220928-1.66.0-nightly-ce7f0f1aa.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../01_quick/index.html"><div class="logo-container"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../01_quick/index.html"><div class="logo-container"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../01_quick/index.html"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="/wheel-20220928-1.66.0-nightly-ce7f0f1aa.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::path::PathBuf;
+
+<span class="kw">use </span>clap::{arg, command, value_parser, ArgAction, Command};
+
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>matches = <span class="macro">command!</span>() <span class="comment">// requires `cargo` feature
+        </span>.arg(<span class="macro">arg!</span>([name] <span class="string">&quot;Optional name to operate on&quot;</span>))
+        .arg(
+            <span class="macro">arg!</span>(
+                -c --config &lt;FILE&gt; <span class="string">&quot;Sets a custom config file&quot;
+            </span>)
+            <span class="comment">// We don&#39;t have syntax yet for optional options, so manually calling `required`
+            </span>.required(<span class="bool-val">false</span>)
+            .value_parser(<span class="macro">value_parser!</span>(PathBuf)),
+        )
+        .arg(<span class="macro">arg!</span>(
+            -d --debug ... <span class="string">&quot;Turn debugging information on&quot;
+        </span>))
+        .subcommand(
+            Command::new(<span class="string">&quot;test&quot;</span>)
+                .about(<span class="string">&quot;does testing things&quot;</span>)
+                .arg(<span class="macro">arg!</span>(-l --list <span class="string">&quot;lists test values&quot;</span>).action(ArgAction::SetTrue)),
+        )
+        .get_matches();
+
+    <span class="comment">// You can check the value provided by positional arguments, or option arguments
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(name) = matches.get_one::&lt;String&gt;(<span class="string">&quot;name&quot;</span>) {
+        <span class="macro">println!</span>(<span class="string">&quot;Value for name: {}&quot;</span>, name);
+    }
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(config_path) = matches.get_one::&lt;PathBuf&gt;(<span class="string">&quot;config&quot;</span>) {
+        <span class="macro">println!</span>(<span class="string">&quot;Value for config: {}&quot;</span>, config_path.display());
+    }
+
+    <span class="comment">// You can see how many times a particular flag or argument occurred
+    // Note, only flags can have multiple occurrences
+    </span><span class="kw">match </span>matches
+        .get_one::&lt;u8&gt;(<span class="string">&quot;debug&quot;</span>)
+        .expect(<span class="string">&quot;Count&#39;s are defaulted&quot;</span>)
+    {
+        <span class="number">0 </span>=&gt; <span class="macro">println!</span>(<span class="string">&quot;Debug mode is off&quot;</span>),
+        <span class="number">1 </span>=&gt; <span class="macro">println!</span>(<span class="string">&quot;Debug mode is kind of on&quot;</span>),
+        <span class="number">2 </span>=&gt; <span class="macro">println!</span>(<span class="string">&quot;Debug mode is on&quot;</span>),
+        <span class="kw">_ </span>=&gt; <span class="macro">println!</span>(<span class="string">&quot;Don&#39;t be crazy&quot;</span>),
+    }
+
+    <span class="comment">// You can check for the existence of subcommands, and if found use their
+    // matches just as you would the top level cmd
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(matches) = matches.subcommand_matches(<span class="string">&quot;test&quot;</span>) {
+        <span class="comment">// &quot;$ myapp test&quot; was run
+        </span><span class="kw">if </span><span class="kw-2">*</span>matches.get_one::&lt;bool&gt;(<span class="string">&quot;list&quot;</span>).expect(<span class="string">&quot;defaulted by clap&quot;</span>) {
+            <span class="comment">// &quot;$ myapp test -l&quot; was run
+            </span><span class="macro">println!</span>(<span class="string">&quot;Printing testing lists...&quot;</span>);
+        } <span class="kw">else </span>{
+            <span class="macro">println!</span>(<span class="string">&quot;Not printing testing lists...&quot;</span>);
+        }
+    }
+
+    <span class="comment">// Continued program logic goes here...
+</span>}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="01_quick" data-themes="ayu,dark,light" data-resource-suffix="-20220928-1.66.0-nightly-ce7f0f1aa" data-rustdoc-version="1.66.0-nightly (ce7f0f1aa 2022-09-28)" ></div></body></html>

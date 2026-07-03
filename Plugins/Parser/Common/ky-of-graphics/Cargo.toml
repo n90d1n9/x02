@@ -1,0 +1,7 @@
+[package]
+name = "wq_graphics"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Add any shared dependencies if required

@@ -1,0 +1,473 @@
+// pubspec.yaml dependencies:
+// flutter_riverpod: ^2.4.0
+// flutter_quill: ^9.3.0
+// google_fonts: ^6.1.0
+// file_picker: ^6.1.1
+// shared_preferences: ^2.2.2
+// uuid: ^4.2.1
+// intl: ^0.19.0
+// web_socket_channel: ^2.4.0
+// image_picker: ^1.0.5
+// path_provider: ^2.1.1
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'package:intl/intl.dart';
+
+void main() {
+  runApp(const ProviderScope(child: DocumentEditorApp()));
+}
+
+// ============================================================================
+// STATE MANAGEMENT - Riverpod Providers
+// ============================================================================
+
+final documentControllerProvider = StateNotifierProvider<DocumentNotifier, DocumentState>((ref) {
+  return DocumentNotifier();
+});
+
+
+
+
+
+
+
+
+// ============================================================================
+// STATE CLASSES
+// ============================================================================
+
+
+
+
+
+
+
+
+// ============================================================================
+// MAIN APP
+// ============================================================================
+
+class DocumentEditorApp extends ConsumerWidget {
+  const DocumentEditorApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeProvider);
+
+    return MaterialApp(
+      title: 'Advanced Document Editor',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        textTheme: GoogleFonts.interTextTheme(),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        useMaterial3: true,
+      ),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      home: const DocumentEditorScreen(),
+    );
+  }
+}
+
+// ============================================================================
+// MAIN EDITOR SCREEN
+// ============================================================================
+
+class DocumentEditorScreen extends ConsumerStatefulWidget {
+  const DocumentEditorScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<DocumentEditorScreen> createState() => _DocumentEditorScreenState();
+}
+
+class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
+  final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
+  final _titleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _scrollController.dispose();
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if ((event.logicalKey == LogicalKeyboardKey.keyK) &&
+          (HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed)) {
+        ref.read(commandPaletteProvider.notifier).state = true;
+      }
+      
+      if ((event.logicalKey == LogicalKeyboardKey.keyS) &&
+          (HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed)) {
+        ref.read(documentControllerProvider.notifier).saveDocument();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final docState = ref.watch(documentControllerProvider);
+    final collabState = ref.watch(collaborationProvider);
+    final toolbarVisible = ref.watch(toolbarVisibilityProvider);
+    final focusMode = ref.watch(focusModeProvider);
+    final stats = ref.watch(wordCountProvider);
+    final showCommandPalette = ref.watch(commandPaletteProvider);
+
+
+    return KeyboardListener(
+      focusNode: FocusNode(),
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: focusMode ? null : AppBar(
+          elevation: 0,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Row(
+            children: [
+              Icon(Icons.description_outlined, 
+                color: Theme.of(context).colorScheme.primary, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _titleController,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Untitled Document',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    ref.read(documentControllerProvider.notifier).updateTitle(value);
+                  },
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            
+          ],
+        ),
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                if (toolbarVisible && !focusMode) 
+                  CustomToolbar(controller: docState.controller),
+                Expanded(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                    child: Center(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: focusMode ? 900 : 800,
+                        ),
+                        margin: EdgeInsets.all(focusMode ? 48 : 24),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(focusMode ? 0 : 8),
+                          boxShadow: focusMode ? null : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(focusMode ? 0 : 8),
+                          child: SlashCommandEditor(
+                            controller: docState.controller,
+                            focusNode: _focusNode,
+                            scrollController: _scrollController,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (!focusMode) StatusBar(stats: stats, lastModified: docState.lastModified),
+              ],
+            ),
+            if (showCommandPalette)
+              CommandPalette(
+                onDismiss: () => ref.read(commandPaletteProvider.notifier).state = false,
+              ),
+          ],
+        ),
+        floatingActionButton: focusMode ? FloatingActionButton.small(
+          onPressed: () => ref.read(focusModeProvider.notifier).state = false,
+          tooltip: 'Exit Focus Mode',
+          child: const Icon(Icons.fullscreen_exit, size: 20),
+        ) : null,
+      ),
+    );
+  }
+
+}
+
+// ============================================================================
+// SLASH COMMAND EDITOR
+// ============================================================================
+
+// ============================================================================
+// SLASH MENU CONTENT
+// ============================================================================
+
+
+// ============================================================================
+// COMMAND PALETTE
+// ============================================================================
+
+// ============================================================================
+// SHARING PANEL
+// ============================================================================
+
+
+// ============================================================================
+// VERSION HISTORY PANEL
+// ============================================================================
+
+// ============================================================================
+// ATTACHMENTS PANEL
+// ============================================================================
+
+// ============================================================================
+// TEMPLATE GALLERY
+// ============================================================================
+
+// ============================================================================
+// COMMENTS PANEL
+// ============================================================================
+
+
+// ============================================================================
+// CUSTOM TOOLBAR
+// ============================================================================
+
+class CustomToolbar extends StatelessWidget {
+  final quill.QuillController controller;
+
+  const CustomToolbar({Key? key, required this.controller}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            quill.QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: true,
+              options: const quill.QuillToolbarHistoryButtonOptions(),
+            ),
+            quill.QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: false,
+              options: const quill.QuillToolbarHistoryButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.bold,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.italic,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.underline,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.strikeThrough,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarColorButton(
+              controller: controller,
+              isBackground: false,
+              options: const quill.QuillToolbarColorButtonOptions(),
+            ),
+            quill.QuillToolbarColorButton(
+              controller: controller,
+              isBackground: true,
+              options: const quill.QuillToolbarColorButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarSelectHeaderStyleDropdownButton(
+              controller: controller,
+              options: const quill.QuillToolbarSelectHeaderStyleDropdownButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.ol,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.ul,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarIndentButton(
+              controller: controller,
+              isIncrease: true,
+              options: const quill.QuillToolbarIndentButtonOptions(),
+            ),
+            quill.QuillToolbarIndentButton(
+              controller: controller,
+              isIncrease: false,
+              options: const quill.QuillToolbarIndentButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.blockQuote,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.codeBlock,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarLinkStyleButton(
+              controller: controller,
+              options: const quill.QuillToolbarLinkStyleButtonOptions(),
+            ),
+            quill.QuillToolbarClearFormatButton(
+              controller: controller,
+              options: const quill.QuillToolbarClearFormatButtonOptions(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// STATUS BAR
+// ============================================================================
+
+class StatusBar extends StatelessWidget {
+  final DocumentStats stats;
+  final DateTime lastModified;
+
+  const StatusBar({
+    Key? key,
+    required this.stats,
+    required this.lastModified,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        border: Border(
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          _StatusItem(
+            icon: Icons.article_outlined,
+            label: '${stats.words} words',
+          ),
+          const SizedBox(width: 16),
+          _StatusItem(
+            icon: Icons.text_fields,
+            label: '${stats.characters} chars',
+          ),
+          const SizedBox(width: 16),
+          _StatusItem(
+            icon: Icons.schedule,
+            label: '${stats.readingTime} min read',
+          ),
+          const Spacer(),
+          _StatusItem(
+            icon: Icons.update,
+            label: 'Modified ${_formatTime(lastModified)}',
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${time.day}/${time.month}/${time.year}';
+  }
+}
+
+class _StatusItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatusItem({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+        ),
+      ],
+    );
+  }
+}

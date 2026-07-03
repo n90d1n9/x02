@@ -1,0 +1,16 @@
+[package]
+name = "ky-of-common"
+version = "0.1.0"
+edition = "2021"
+description = "Shared utilities and common types for Office parsers and engine"
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+thiserror = "1.0"
+quick-xml = "0.30"
+
+[features]
+serde-support = ["serde"]
+
+[lib]
+path = "src/lib.rs"

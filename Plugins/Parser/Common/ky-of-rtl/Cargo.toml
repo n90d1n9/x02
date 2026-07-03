@@ -1,0 +1,14 @@
+[package]
+name = "ky-of-rtl"
+version = "0.1.0"
+edition = "2021"
+description = "Reusable rtl module for Office Parser and Engine"
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+serde-support = ["serde"]
+
+[lib]
+path = "src/lib.rs"

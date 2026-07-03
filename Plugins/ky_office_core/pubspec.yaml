@@ -1,0 +1,11 @@
+name: ky_office_core
+description: "Shared Office-family models for Kaysir productivity products."
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.31.0

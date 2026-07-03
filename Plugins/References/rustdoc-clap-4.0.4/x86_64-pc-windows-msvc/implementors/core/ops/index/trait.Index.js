@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"clap":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/index/trait.Index.html\" title=\"trait core::ops::index::Index\">Index</a>&lt;&amp;<a class=\"struct\" href=\"clap/struct.Id.html\" title=\"struct clap::Id\">Id</a>&gt; for <a class=\"struct\" href=\"clap/builder/struct.Command.html\" title=\"struct clap::builder::Command\">Command</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

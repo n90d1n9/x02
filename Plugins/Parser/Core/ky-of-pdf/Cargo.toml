@@ -1,0 +1,28 @@
+[package]
+name = "rustpdf"
+version = "0.2.0"
+edition = "2021"
+description = "A complete PDF reader, extractor, exporter, and editor library for Rust"
+license = "MIT"
+
+[lib]
+name = "rustpdf"
+crate-type = ["lib"]
+
+[[example]]
+name = "rustpdf_cli"
+path = "examples/cli.rs"
+
+[dependencies]
+lopdf       = "0.31"
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"
+thiserror   = "1"
+base64      = "0.21"
+flate2      = "1"
+hex         = "0.4"
+regex       = "1"
+log         = "0.4"
+
+[dev-dependencies]
+tempfile = "3"

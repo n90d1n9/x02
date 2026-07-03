@@ -1,0 +1,1885 @@
+class LiveCursor extends StatelessWidget {
+  final CollaborativeUser user;
+
+  const LiveCursor({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    if (user.cursorPosition == null) return const SizedBox.shrink();
+
+    return Positioned(
+      left: user.cursorPosition!.dx,
+      top: user.cursorPosition!.dy,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CustomPaint(
+            size: const Size(20, 20),
+            painter: CursorPainter(color: user.cursorColor),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: user.cursorColor,
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: user.cursorColor.withOpacity(0.5),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Text(
+              user.name.split(' ').first,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CursorPainter extends CustomPainter {
+  final Color color;
+
+  CursorPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(0, size.height)
+      ..lineTo(size.width * 0.4, size.height * 0.7)
+      ..lineTo(size.width * 0.6, size.width * 0.6)
+      ..close();
+
+    canvas.drawPath(path, paint);
+
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    canvas.drawPath(path, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(CursorPainter oldDelegate) => oldDelegate.color != color;
+}
+
+// ==================== COMMENT MARKER ====================
+
+class CommentMarker extends ConsumerWidget {
+  final Comment comment;
+
+  const CommentMarker({super.key, required this.comment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (comment.position == null) return const SizedBox.shrink();
+
+    return Positioned(
+      left: comment.position!.dx,
+      top: comment.position!.dy,
+      child: GestureDetector(
+        onTap: () {
+          ref.read(selectedCommentProvider.notifier).state = comment.id;
+          ref.read(showCommentsPanel.notifier).state = true;
+        },
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF59E0B),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFF59E0B).withOpacity(0.5),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              '${comment.replies.length + 1}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== COMMENTS PANEL ====================
+
+class CommentsPanel extends ConsumerWidget {
+  const CommentsPanel({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+    final selectedCommentId = ref.watch(selectedCommentProvider);
+    final comments = presentation.allComments.where((c) => !c.isResolved).toList();
+
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Container(
+        width: 380,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(-4, 0),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.white12)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.comment, color: Colors.white70),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Comments',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Badge(
+                    label: Text('${comments.length}'),
+                    backgroundColor: const Color(0xFFF59E0B),
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    onPressed: () {
+                      ref.read(showCommentsPanel.notifier).state = false;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: comments.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.chat_bubble_outline, size: 48, color: Colors.white30),
+                          SizedBox(height: 16),
+                          Text(
+                            'No comments yet',
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return CommentCard(
+                          comment: comment,
+                          isSelected: comment.id == selectedCommentId,
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CommentCard extends ConsumerWidget {
+  final Comment comment;
+  final bool isSelected;
+
+  const CommentCard({
+    super.key,
+    required this.comment,
+    this.isSelected = false,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFF334155) : const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: isSelected
+            ? Border.all(color: const Color(0xFF3B82F6), width: 2)
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: const Color(0xFF3B82F6),
+                child: Text(
+                  comment.userName[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.userName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      _timeAgo(comment.timestamp),
+                      style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuButton(
+                icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    child: const Row(
+                      children: [
+                        Icon(Icons.check, size: 18),
+                        SizedBox(width: 8),
+                        Text('Resolve'),
+                      ],
+                    ),
+                    onTap: () {
+                      ref.read(presentationProvider.notifier).resolveComment(comment.id);
+                    },
+                  ),
+                  const PopupMenuItem(
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 18, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            comment.content,
+            style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
+          ),
+          if (comment.replies.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Colors.white12),
+            ...comment.replies.map((reply) => Padding(
+              padding: const EdgeInsets.only(top: 12, left: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: const Color(0xFF8B5CF6),
+                    child: Text(
+                      reply.userName[0].toUpperCase(),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              reply.userName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _timeAgo(reply.timestamp),
+                              style: const TextStyle(color: Colors.white54, fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reply.content,
+                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+          const SizedBox(height: 12),
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Reply...',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: const Color(0xFF334155),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.send, size: 18, color: Color(0xFF3B82F6)),
+                onPressed: () {
+                  // Add reply logic
+                },
+              ),
+            ),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            maxLines: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _timeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+}
+
+// ==================== VERSION HISTORY PANEL ====================
+
+class VersionHistoryPanel extends ConsumerWidget {
+  const VersionHistoryPanel({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final versions = ref.watch(versionHistoryProvider);
+
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Container(
+        width: 380,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(-4, 0),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.white12)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.history, color: Colors.white70),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Version History',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    onPressed: () {
+                      ref.read(showVersionHistory.notifier).state = false;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: versions.length,
+                itemBuilder: (context, index) {
+                  final version = versions[index];
+                  final isLatest = index == versions.length - 1;
+                  return VersionCard(version: version, isLatest: isLatest);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class VersionCard extends StatelessWidget {
+  final PresentationVersion version;
+  final bool isLatest;
+
+  const VersionCard({
+    super.key,
+    required this.version,
+    this.isLatest = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: isLatest
+            ? Border.all(color: const Color(0xFF10B981), width: 2)
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isLatest
+                      ? const Color(0xFF10B981).withOpacity(0.2)
+                      : Colors.white12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  isLatest ? 'CURRENT' : 'v${version.id}',
+                  style: TextStyle(
+                    color: isLatest ? const Color(0xFF10B981) : Colors.white54,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _formatDate(version.timestamp),
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            version.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            version.description,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 12,
+                backgroundColor: const Color(0xFF3B82F6),
+                child: Text(
+                  version.userName[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                version.userName,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const Spacer(),
+              Text(
+                '${version.slideCount} slides',
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
+              ),
+            ],
+          ),
+          if (!isLatest) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.preview, size: 16),
+                    label: const Text('Preview'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.restore, size: 16),
+                    label: const Text('Restore'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+// ==================== ACTIVITY FEED PANEL ====================
+
+class ActivityFeedPanel extends ConsumerWidget {
+  const ActivityFeedPanel({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Container(
+        width: 380,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(-4, 0),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.white12)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.activity_zone, color: Colors.white70),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Activity Feed',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    onPressed: () {
+                      ref.read(showActivityFeed.notifier).state = false;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: presentation.recentActivity.length,
+                itemBuilder: (context, index) {
+                  final activity = presentation.recentActivity[index];
+                  return ActivityItem(activity: activity);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ActivityItem extends StatelessWidget {
+  final ActivityLog activity;
+
+  const ActivityItem({super.key, required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _getActivityColor(activity.type).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _getActivityIcon(activity.type),
+              size: 16,
+              color: _getActivityColor(activity.type),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    children: [
+                      TextSpan(
+                        text: activity.userName,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const TextSpan(text: ' '),
+                      TextSpan(text: activity.description),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _timeAgo(activity.timestamp),
+                  style: const TextStyle(color: Colors.white54, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getActivityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.edit:
+        return Icons.edit;
+      case ActivityType.comment:
+        return Icons.comment;
+      case ActivityType.add:
+        return Icons.add_circle;
+      case ActivityType.delete:
+        return Icons.delete;
+      case ActivityType.move:
+        return Icons.open_with;
+      case ActivityType.resize:
+        return Icons.aspect_ratio;
+      case ActivityType.styleChange:
+        return Icons.palette;
+    }
+  }
+
+  Color _getActivityColor(ActivityType type) {
+    switch (type) {
+      case ActivityType.edit:
+        return const Color(0xFF3B82F6);
+      case ActivityType.comment:
+        return const Color(0xFFF59E0B);
+      case ActivityType.add:
+        return const Color(0xFF10B981);
+      case ActivityType.delete:
+        return const Color(0xFFEF4444);
+      case ActivityType.move:
+        return const Color(0xFF8B5CF6);
+      case ActivityType.resize:
+        return const Color(0xFF06B6D4);
+      case ActivityType.styleChange:
+        return const Color(0xFFEC4899);
+    }
+  }
+
+  String _timeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+}
+
+// ==================== DIALOGS ====================
+
+class AddCommentDialog extends ConsumerStatefulWidget {
+  const AddCommentDialog({super.key});
+
+  @override
+  ConsumerState<AddCommentDialog> createState() => _AddCommentDialogState();
+}
+
+class _AddCommentDialogState extends ConsumerState<AddCommentDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF1E293B),
+      title: const Text('Add Comment', style: TextStyle(color: Colors.white)),
+      content: TextField(
+        controller: _controller,
+        maxLines: 4,
+        decoration: const InputDecoration(
+          hintText: 'Enter your comment...',
+          hintStyle: TextStyle(color: Colors.white38),
+          filled: true,
+          fillColor: Color(0xFF0F172A),
+          border: OutlineInputBorder(),
+        ),
+        style: const TextStyle(color: Colors.white),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_controller.text.isNotEmpty) {
+              final comment = Comment(
+                id: const Uuid().v4(),
+                userId: '1',
+                userName: 'Current User',
+                content: _controller.text,
+                timestamp: DateTime.now(),
+                position: const Offset(500, 400),
+              );
+              ref.read(presentationProvider.notifier).addComment(comment);
+              Navigator.pop(context);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          child: const Text('Add Comment'),
+        ),
+      ],
+    );
+  }
+}
+
+class ShareDialog extends StatelessWidget {
+  const ShareDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF1E293B),
+      title: const Text('Share Presentation', style: TextStyle(color: Colors.white)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const TextField(
+            decoration: InputDecoration(
+              hintText: 'Enter email addresses...',
+              hintStyle: TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: Color(0xFF0F172A),
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.email, color: Colors.white54),
+            ),
+            style: TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<UserRole>(
+            value: UserRole.editor,
+            decoration: const InputDecoration(
+              labelText: 'Access Level',
+              labelStyle: TextStyle(color: Colors.white70),
+              filled: true,
+              fillColor: Color(0xFF0F172A),
+              border: OutlineInputBorder(),
+            ),
+            dropdownColor: const Color(0xFF1E293B),
+            style: const TextStyle(color: Colors.white),
+            items: UserRole.values.map((role) {
+              return DropdownMenuItem(
+                value: role,
+                child: Text(role.name.toUpperCase()),
+              );
+            }).toList(),
+            onChanged: (value) {},
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton.icon(
+          onPressed: () {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Invitation sent!'),
+                backgroundColor: Color(0xFF10B981),
+              ),
+            );
+          },
+          icon: const Icon(Icons.send),
+          label: const Text('Send Invitation'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+        ),
+      ],
+    );
+  }
+}// pubspec.yaml dependencies:
+// flutter_riverpod: ^2.4.9
+// uuid: ^4.2.2
+// google_fonts: ^6.1.0
+// timeago: ^3.6.0
+// intl: ^0.19.0
+
+import 'dart:async';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:uuid/uuid.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// ==================== COLLABORATION MODELS ====================
+
+enum UserRole { owner, editor, commenter, viewer }
+enum ActivityType { edit, comment, add, delete, move, resize, styleChange }
+enum ConflictResolution { lastWriteWins, manual, merge }
+
+class CollaborativeUser {
+  final String id;
+  final String name;
+  final String email;
+  final Color cursorColor;
+  final String? avatarUrl;
+  final UserRole role;
+  final DateTime lastActive;
+  final bool isOnline;
+  final String? currentSlideId;
+  final Offset? cursorPosition;
+
+  CollaborativeUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.cursorColor,
+    this.avatarUrl,
+    this.role = UserRole.editor,
+    required this.lastActive,
+    this.isOnline = true,
+    this.currentSlideId,
+    this.cursorPosition,
+  });
+
+  CollaborativeUser copyWith({
+    DateTime? lastActive,
+    bool? isOnline,
+    String? currentSlideId,
+    Offset? cursorPosition,
+    UserRole? role,
+  }) {
+    return CollaborativeUser(
+      id: id,
+      name: name,
+      email: email,
+      cursorColor: cursorColor,
+      avatarUrl: avatarUrl,
+      role: role ?? this.role,
+      lastActive: lastActive ?? this.lastActive,
+      isOnline: isOnline ?? this.isOnline,
+      currentSlideId: currentSlideId ?? this.currentSlideId,
+      cursorPosition: cursorPosition ?? this.cursorPosition,
+    );
+  }
+
+  String get initials {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, math.min(2, name.length)).toUpperCase();
+  }
+}
+
+class Comment {
+  final String id;
+  final String userId;
+  final String userName;
+  final String content;
+  final DateTime timestamp;
+  final String? slideId;
+  final String? componentId;
+  final Offset? position;
+  final bool isResolved;
+  final List<CommentReply> replies;
+  final String? parentCommentId;
+
+  Comment({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.content,
+    required this.timestamp,
+    this.slideId,
+    this.componentId,
+    this.position,
+    this.isResolved = false,
+    this.replies = const [],
+    this.parentCommentId,
+  });
+
+  Comment copyWith({
+    bool? isResolved,
+    List<CommentReply>? replies,
+  }) {
+    return Comment(
+      id: id,
+      userId: userId,
+      userName: userName,
+      content: content,
+      timestamp: timestamp,
+      slideId: slideId,
+      componentId: componentId,
+      position: position,
+      isResolved: isResolved ?? this.isResolved,
+      replies: replies ?? this.replies,
+      parentCommentId: parentCommentId,
+    );
+  }
+}
+
+class CommentReply {
+  final String id;
+  final String userId;
+  final String userName;
+  final String content;
+  final DateTime timestamp;
+
+  CommentReply({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.content,
+    required this.timestamp,
+  });
+}
+
+class ActivityLog {
+  final String id;
+  final String userId;
+  final String userName;
+  final ActivityType type;
+  final String description;
+  final DateTime timestamp;
+  final String? slideId;
+  final String? componentId;
+  final Map<String, dynamic>? metadata;
+
+  ActivityLog({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.type,
+    required this.description,
+    required this.timestamp,
+    this.slideId,
+    this.componentId,
+    this.metadata,
+  });
+}
+
+class PresentationVersion {
+  final String id;
+  final String title;
+  final DateTime timestamp;
+  final String userId;
+  final String userName;
+  final String description;
+  final int slideCount;
+  final Presentation snapshot;
+
+  PresentationVersion({
+    required this.id,
+    required this.title,
+    required this.timestamp,
+    required this.userId,
+    required this.userName,
+    required this.description,
+    required this.slideCount,
+    required this.snapshot,
+  });
+}
+
+class ChangeConflict {
+  final String id;
+  final String componentId;
+  final String user1Id;
+  final String user2Id;
+  final dynamic user1Change;
+  final dynamic user2Change;
+  final DateTime timestamp;
+  final bool isResolved;
+
+  ChangeConflict({
+    required this.id,
+    required this.componentId,
+    required this.user1Id,
+    required this.user2Id,
+    required this.user1Change,
+    required this.user2Change,
+    required this.timestamp,
+    this.isResolved = false,
+  });
+}
+
+// ==================== BASIC MODELS ====================
+
+class PresentationTheme {
+  final String id;
+  final String name;
+  final Color primaryColor;
+  final Color backgroundColor;
+  final TextStyle titleStyle;
+
+  PresentationTheme({
+    required this.id,
+    required this.name,
+    required this.primaryColor,
+    required this.backgroundColor,
+    required this.titleStyle,
+  });
+
+  static PresentationTheme get collaborative => PresentationTheme(
+    id: 'collaborative',
+    name: 'Collaborative',
+    primaryColor: const Color(0xFF3B82F6),
+    backgroundColor: const Color(0xFF0F172A),
+    titleStyle: GoogleFonts.inter(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+  );
+}
+
+class Slide {
+  final String id;
+  final String? title;
+  final Color? backgroundColor;
+  final List<Comment> comments;
+
+  Slide({
+    required this.id,
+    this.title,
+    this.backgroundColor,
+    this.comments = const [],
+  });
+
+  Slide copyWith({
+    String? title,
+    List<Comment>? comments,
+  }) {
+    return Slide(
+      id: id,
+      title: title ?? this.title,
+      backgroundColor: backgroundColor,
+      comments: comments ?? this.comments,
+    );
+  }
+}
+
+class Presentation {
+  final String id;
+  final String title;
+  final List<Slide> slides;
+  final int currentSlideIndex;
+  final PresentationTheme theme;
+  final List<CollaborativeUser> collaborators;
+  final List<Comment> allComments;
+  final List<ActivityLog> activityLogs;
+  final DateTime lastModified;
+  final String lastModifiedBy;
+
+  Presentation({
+    required this.id,
+    required this.title,
+    required this.slides,
+    this.currentSlideIndex = 0,
+    PresentationTheme? theme,
+    this.collaborators = const [],
+    this.allComments = const [],
+    this.activityLogs = const [],
+    required this.lastModified,
+    required this.lastModifiedBy,
+  }) : theme = theme ?? PresentationTheme.collaborative;
+
+  Presentation copyWith({
+    String? title,
+    List<Slide>? slides,
+    int? currentSlideIndex,
+    List<CollaborativeUser>? collaborators,
+    List<Comment>? allComments,
+    List<ActivityLog>? activityLogs,
+    DateTime? lastModified,
+    String? lastModifiedBy,
+  }) {
+    return Presentation(
+      id: id,
+      title: title ?? this.title,
+      slides: slides ?? this.slides,
+      currentSlideIndex: currentSlideIndex ?? this.currentSlideIndex,
+      theme: theme,
+      collaborators: collaborators ?? this.collaborators,
+      allComments: allComments ?? this.allComments,
+      activityLogs: activityLogs ?? this.activityLogs,
+      lastModified: lastModified ?? this.lastModified,
+      lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
+    );
+  }
+
+  int get unresolvedCommentCount => 
+      allComments.where((c) => !c.isResolved).length;
+
+  List<ActivityLog> get recentActivity => 
+      activityLogs.take(20).toList();
+}
+
+// ==================== STATE PROVIDERS ====================
+
+final presentationProvider = StateNotifierProvider<PresentationNotifier, Presentation>((ref) {
+  return PresentationNotifier();
+});
+
+class PresentationNotifier extends StateNotifier<Presentation> {
+  PresentationNotifier()
+      : super(Presentation(
+          id: const Uuid().v4(),
+          title: 'Collaborative Presentation',
+          slides: [
+            Slide(id: const Uuid().v4(), title: 'Welcome to Real-time Collaboration'),
+            Slide(id: const Uuid().v4(), title: 'Team Features'),
+            Slide(id: const Uuid().v4(), title: 'Version Control'),
+          ],
+          collaborators: _generateSampleUsers(),
+          activityLogs: _generateSampleActivity(),
+          lastModified: DateTime.now(),
+          lastModifiedBy: 'Current User',
+        ));
+
+  static List<CollaborativeUser> _generateSampleUsers() {
+    return [
+      CollaborativeUser(
+        id: '1',
+        name: 'Current User',
+        email: 'you@example.com',
+        cursorColor: const Color(0xFF3B82F6),
+        role: UserRole.owner,
+        lastActive: DateTime.now(),
+        isOnline: true,
+        currentSlideId: null,
+      ),
+      CollaborativeUser(
+        id: '2',
+        name: 'Sarah Chen',
+        email: 'sarah.chen@example.com',
+        cursorColor: const Color(0xFF10B981),
+        role: UserRole.editor,
+        lastActive: DateTime.now().subtract(const Duration(minutes: 2)),
+        isOnline: true,
+        currentSlideId: null,
+        cursorPosition: const Offset(450, 320),
+      ),
+      CollaborativeUser(
+        id: '3',
+        name: 'Michael Rodriguez',
+        email: 'michael.r@example.com',
+        cursorColor: const Color(0xFFEC4899),
+        role: UserRole.editor,
+        lastActive: DateTime.now().subtract(const Duration(minutes: 5)),
+        isOnline: true,
+        currentSlideId: null,
+        cursorPosition: const Offset(680, 450),
+      ),
+      CollaborativeUser(
+        id: '4',
+        name: 'Emma Watson',
+        email: 'emma.w@example.com',
+        cursorColor: const Color(0xFFF59E0B),
+        role: UserRole.commenter,
+        lastActive: DateTime.now().subtract(const Duration(hours: 1)),
+        isOnline: false,
+      ),
+    ];
+  }
+
+  static List<ActivityLog> _generateSampleActivity() {
+    return [
+      ActivityLog(
+        id: '1',
+        userId: '2',
+        userName: 'Sarah Chen',
+        type: ActivityType.edit,
+        description: 'Updated slide title',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+        slideId: 'slide1',
+      ),
+      ActivityLog(
+        id: '2',
+        userId: '3',
+        userName: 'Michael Rodriguez',
+        type: ActivityType.add,
+        description: 'Added new chart component',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+        slideId: 'slide2',
+      ),
+      ActivityLog(
+        id: '3',
+        userId: '2',
+        userName: 'Sarah Chen',
+        type: ActivityType.comment,
+        description: 'Left a comment on slide 3',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 8)),
+        slideId: 'slide3',
+      ),
+    ];
+  }
+
+  void setCurrentSlide(int index) {
+    if (index >= 0 && index < state.slides.length) {
+      state = state.copyWith(currentSlideIndex: index);
+      _logActivity(ActivityType.edit, 'Navigated to slide ${index + 1}');
+    }
+  }
+
+  void addComment(Comment comment) {
+    state = state.copyWith(
+      allComments: [...state.allComments, comment],
+      lastModified: DateTime.now(),
+    );
+    _logActivity(ActivityType.comment, 'Added a comment');
+  }
+
+  void resolveComment(String commentId) {
+    final updatedComments = state.allComments.map((c) =>
+      c.id == commentId ? c.copyWith(isResolved: true) : c
+    ).toList();
+    state = state.copyWith(allComments: updatedComments);
+    _logActivity(ActivityType.edit, 'Resolved a comment');
+  }
+
+  void addReplyToComment(String commentId, CommentReply reply) {
+    final updatedComments = state.allComments.map((c) {
+      if (c.id == commentId) {
+        return c.copyWith(replies: [...c.replies, reply]);
+      }
+      return c;
+    }).toList();
+    state = state.copyWith(allComments: updatedComments);
+  }
+
+  void updateCollaboratorCursor(String userId, Offset position, String? slideId) {
+    final updatedCollaborators = state.collaborators.map((user) {
+      if (user.id == userId) {
+        return user.copyWith(
+          cursorPosition: position,
+          currentSlideId: slideId,
+          lastActive: DateTime.now(),
+        );
+      }
+      return user;
+    }).toList();
+    state = state.copyWith(collaborators: updatedCollaborators);
+  }
+
+  void updateUserRole(String userId, UserRole newRole) {
+    final updatedCollaborators = state.collaborators.map((user) {
+      if (user.id == userId) {
+        return user.copyWith(role: newRole);
+      }
+      return user;
+    }).toList();
+    state = state.copyWith(collaborators: updatedCollaborators);
+  }
+
+  void _logActivity(ActivityType type, String description) {
+    final log = ActivityLog(
+      id: const Uuid().v4(),
+      userId: '1',
+      userName: 'Current User',
+      type: type,
+      description: description,
+      timestamp: DateTime.now(),
+    );
+    state = state.copyWith(
+      activityLogs: [log, ...state.activityLogs],
+      lastModified: DateTime.now(),
+      lastModifiedBy: 'Current User',
+    );
+  }
+}
+
+// Version History Provider
+final versionHistoryProvider = StateProvider<List<PresentationVersion>>((ref) {
+  final currentPresentation = ref.watch(presentationProvider);
+  return [
+    PresentationVersion(
+      id: '1',
+      title: 'Initial version',
+      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+      userId: '1',
+      userName: 'Current User',
+      description: 'Created presentation',
+      slideCount: 3,
+      snapshot: currentPresentation,
+    ),
+    PresentationVersion(
+      id: '2',
+      title: 'Added collaboration features',
+      timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+      userId: '2',
+      userName: 'Sarah Chen',
+      description: 'Added team collaboration slides',
+      slideCount: 3,
+      snapshot: currentPresentation,
+    ),
+    PresentationVersion(
+      id: '3',
+      title: 'Current version',
+      timestamp: DateTime.now(),
+      userId: '1',
+      userName: 'Current User',
+      description: 'Latest changes',
+      slideCount: 3,
+      snapshot: currentPresentation,
+    ),
+  ];
+});
+
+final showCollaboratorsPanel = StateProvider<bool>((ref) => true);
+final showCommentsPanel = StateProvider<bool>((ref) => false);
+final showVersionHistory = StateProvider<bool>((ref) => false);
+final showActivityFeed = StateProvider<bool>((ref) => false);
+final selectedCommentProvider = StateProvider<String?>((ref) => null);
+
+// ==================== MAIN APP ====================
+
+void main() {
+  runApp(const ProviderScope(child: CollaborationApp()));
+}
+
+class CollaborationApp extends StatelessWidget {
+  const CollaborationApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Collaborative Presentation Studio',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      home: const CollaborativeEditor(),
+    );
+  }
+}
+
+// ==================== COLLABORATIVE EDITOR ====================
+
+class CollaborativeEditor extends ConsumerStatefulWidget {
+  const CollaborativeEditor({super.key});
+
+  @override
+  ConsumerState<CollaborativeEditor> createState() => _CollaborativeEditorState();
+}
+
+class _CollaborativeEditorState extends ConsumerState<CollaborativeEditor> {
+  Timer? _cursorUpdateTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCursorSimulation();
+  }
+
+  @override
+  void dispose() {
+    _cursorUpdateTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startCursorSimulation() {
+    // Simulate other users' cursor movements
+    _cursorUpdateTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      final presentation = ref.read(presentationProvider);
+      for (var user in presentation.collaborators) {
+        if (user.id != '1' && user.isOnline) {
+          final newX = (user.cursorPosition?.dx ?? 400) + (math.Random().nextDouble() - 0.5) * 50;
+          final newY = (user.cursorPosition?.dy ?? 400) + (math.Random().nextDouble() - 0.5) * 50;
+          ref.read(presentationProvider.notifier).updateCollaboratorCursor(
+            user.id,
+            Offset(newX.clamp(100, 1500), newY.clamp(100, 900)),
+            presentation.slides[presentation.currentSlideIndex].id,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final presentation = ref.watch(presentationProvider);
+    final showComments = ref.watch(showCommentsPanel);
+    final showVersions = ref.watch(showVersionHistory);
+    final showActivity = ref.watch(showActivityFeed);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.people, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(presentation.title, style: const TextStyle(fontSize: 16)),
+                Text(
+                  'Last edited ${_timeAgo(presentation.lastModified)} by ${presentation.lastModifiedBy}',
+                  style: const TextStyle(fontSize: 11, color: Colors.white54),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Badge(
+              label: Text('${presentation.unresolvedCommentCount}'),
+              isLabelVisible: presentation.unresolvedCommentCount > 0,
+              child: const Icon(Icons.comment),
+            ),
+            tooltip: 'Comments',
+            onPressed: () {
+              ref.read(showCommentsPanel.notifier).state = !showComments;
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Version History',
+            onPressed: () {
+              ref.read(showVersionHistory.notifier).state = !showVersions;
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.activity_zone),
+            tooltip: 'Activity Feed',
+            onPressed: () {
+              ref.read(showActivityFeed.notifier).state = !showActivity;
+            },
+          ),
+          const SizedBox(width: 8),
+          const CollaboratorsAvatarStack(),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                const CollaborationToolbar(),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      const CollaborativeCanvas(),
+                      if (showComments) const CommentsPanel(),
+                      if (showVersions) const VersionHistoryPanel(),
+                      if (showActivity) const ActivityFeedPanel(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _timeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+}
+
+// ==================== COLLABORATORS AVATAR STACK ====================
+
+class CollaboratorsAvatarStack extends ConsumerWidget {
+  const CollaboratorsAvatarStack({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+    final onlineUsers = presentation.collaborators.where((u) => u.isOnline).toList();
+
+    return PopupMenuButton(
+      offset: const Offset(0, 50),
+      tooltip: 'Collaborators',
+      itemBuilder: (context) => [
+        ...presentation.collaborators.map((user) => PopupMenuItem(
+          enabled: false,
+          child: CollaboratorMenuItem(user: user),
+        )),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.person_add, size: 18),
+              SizedBox(width: 8),
+              Text('Invite people'),
+            ],
+          ),
+          onTap: () => _showShareDialog(context, ref),
+        ),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              ...onlineUsers.take(3).toList().asMap().entries.map((entry) {
+                return Padding(
+                  padding: EdgeInsets.only(left: entry.key * 24.0),
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: entry.value.cursorColor,
+                    child: Text(
+                      entry.value.initials,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              }),
+              if (onlineUsers.length > 3)
+                Padding(
+                  padding: const EdgeInsets.only(left: 72),
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white24,
+                    child: Text(
+                      '+${onlineUsers.length - 3}',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showShareDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => const ShareDialog(),
+    );
+  }
+}
+
+class CollaboratorMenuItem extends StatelessWidget {
+  final CollaborativeUser user;
+
+  const CollaboratorMenuItem({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: user.cursorColor,
+          child: Text(
+            user.initials,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(user.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: user.isOnline ? Colors.green : Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                user.role.name.toUpperCase(),
+                style: const TextStyle(fontSize: 10, color: Colors.white54),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ==================== COLLABORATION TOOLBAR ====================
+
+class CollaborationToolbar extends ConsumerWidget {
+  const CollaborationToolbar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      height: 60,
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 2))],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _ToolButton(
+            icon: Icons.add_comment,
+            label: 'Comment',
+            onPressed: () => _addComment(context, ref),
+          ),
+          _ToolButton(
+            icon: Icons.compare,
+            label: 'Compare',
+            onPressed: () {},
+          ),
+          _ToolButton(
+            icon: Icons.merge,
+            label: 'Merge',
+            onPressed: () {},
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF10B981)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.cloud_done, size: 16, color: Color(0xFF10B981)),
+                SizedBox(width: 8),
+                Text(
+                  'All changes saved',
+                  style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addComment(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => const AddCommentDialog(),
+    );
+  }
+}
+
+class _ToolButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _ToolButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 20, color: Colors.white70),
+                const SizedBox(height: 2),
+                Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== COLLABORATIVE CANVAS ====================
+
+class CollaborativeCanvas extends ConsumerWidget {
+  const CollaborativeCanvas({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+    final currentSlide = presentation.slides[presentation.currentSlideIndex];
+
+    return Container(
+      color: const Color(0xFF0F172A),
+      child: Center(
+        child: Stack(
+          children: [
+            Container(
+              width: 1280,
+              height: 720,
+              decoration: BoxDecoration(
+                color: currentSlide.backgroundColor ?? Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(48),
+                  child: Text(
+                    currentSlide.title ?? 'Slide ${presentation.currentSlideIndex + 1}',
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+            // Live cursors
+            ...presentation.collaborators
+                .where((u) => u.isOnline && u.id != '1' && u.cursorPosition != null)
+                .map((user) => LiveCursor(user: user)),
+            // Comment markers
+            ...currentSlide.comments
+                .where((c) => !c.isResolved && c.position != null)
+                .map((comment) => CommentMarker(comment: comment)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== LIVE CURSOR ====================
+
+class LiveCursor extends StatelessWidget {

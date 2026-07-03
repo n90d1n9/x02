@@ -1,0 +1,103 @@
+{
+    "cells": {
+        "6,6": {
+            "value": "#ERROR 56\n",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "bgColor": 4291356361,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            }
+        },
+        "6,8": {
+            "value": "146.00",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "bgColor": 4294965700,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            },
+            "formula": "=SUM(G7:H56)"
+        },
+        "7,6": {
+            "value": "34",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "bgColor": 4291356361,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            }
+        },
+        "7,8": {
+            "value": "146.00",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "bgColor": 4294965700,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            },
+            "formula": "=SUM(G7:H56)"
+        },
+        "8,6": {
+            "value": "#ERROR",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            },
+            "formula": "=SUM()"
+        },
+        "6,7": {
+            "value": "56\n",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "textColor": 3707764736,
+                "align": 1,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            }
+        },
+        "0,0": {
+            "value": "12",
+            "style": {
+                "bold": false,
+                "italic": false,
+                "underline": false,
+                "textColor": 3707764736,
+                "align": 0,
+                "fontSize": 14.0,
+                "fontFamily": "Roboto",
+                "wrapText": false
+            }
+        }
+    },
+    "version": "2.0"
+}

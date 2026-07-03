@@ -1,0 +1,14 @@
+pub mod color;
+pub mod geometry;
+pub mod metadata;
+pub mod presentation;
+pub mod slide;
+pub mod shape;
+pub mod text;
+pub mod image;
+pub mod chart;
+pub mod table;
+pub mod animation;
+pub mod transition;
+pub mod media;
+pub mod hyperlink;

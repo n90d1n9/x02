@@ -1,0 +1,344 @@
+const SizedBox(width: 8),
+              Text(
+                'Slides (${presentation.slides.length})',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: presentation.slides.length,
+            itemBuilder: (context, index) {
+              final slide = presentation.slides[index];
+              final isActive = index == presentation.currentSlideIndex;
+              return GestureDetector(
+                onTap: () {
+                  ref.read(presentationProvider.notifier).setCurrentSlide(index);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0xFF334155) : const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(8),
+                    border: isActive
+                        ? Border.all(color: const Color(0xFF3B82F6), width: 2)
+                        : null,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: slide.getThemeBackground(),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Center(
+                          child: Text(
+                            slide.title ?? 'Slide ${index + 1}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: slide.getThemeTextColor(),
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            'Slide ${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const Spacer(),
+                          _ThemeIndicator(theme: slide.theme),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(8),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              ref.read(presentationProvider.notifier).addSlide();
+            },
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Add Slide'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+              minimumSize: const Size.fromHeight(40),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemeIndicator extends StatelessWidget {
+  final SlideTheme theme;
+
+  const _ThemeIndicator({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    switch (theme) {
+      case SlideTheme.minimal:
+        color = Colors.white;
+        break;
+      case SlideTheme.modern:
+        color = const Color(0xFF3B82F6);
+        break;
+      case SlideTheme.bold:
+        color = const Color(0xFF1E293B);
+        break;
+      case SlideTheme.dark:
+        color = const Color(0xFF0F172A);
+        break;
+      case SlideTheme.colorful:
+        color = const Color(0xFFF59E0B);
+        break;
+    }
+    
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.white24),
+      ),
+    );
+  }
+}
+
+// ==================== TOOLBAR ====================
+
+class Toolbar extends ConsumerWidget {
+  const Toolbar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+
+    return Container(
+      height: 60,
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        border: Border(bottom: BorderSide(color: Colors.white12)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.text_fields, color: Colors.white70),
+            tooltip: 'Add Text',
+            onPressed: () {
+              final component = SlideComponent(
+                id: const Uuid().v4(),
+                type: ComponentType.text,
+                position: const Offset(400, 300),
+                size: const Size(200, 60),
+                content: 'New Text',
+                fontSize: 24,
+              );
+              ref.read(presentationProvider.notifier).addComponentToSlide(
+                    presentation.currentSlideIndex,
+                    component,
+                  );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.square, color: Colors.white70),
+            tooltip: 'Add Shape',
+            onPressed: () {
+              final component = SlideComponent(
+                id: const Uuid().v4(),
+                type: ComponentType.shape,
+                position: const Offset(500, 300),
+                size: const Size(150, 150),
+                color: const Color(0xFF3B82F6),
+              );
+              ref.read(presentationProvider.notifier).addComponentToSlide(
+                    presentation.currentSlideIndex,
+                    component,
+                  );
+            },
+          ),
+          // NEW: Theme Gallery Button
+          IconButton(
+            icon: const Icon(Icons.palette, color: Colors.white70),
+            tooltip: 'Theme Gallery',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const ThemeGalleryDialog(),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_comment, color: Colors.white70),
+            tooltip: 'Add Comment',
+            onPressed: () => _showAddCommentDialog(context, ref),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.play_arrow, color: Colors.white70),
+            tooltip: 'Start Presentation (F5)',
+            onPressed: () {
+              ref.read(presentationProvider.notifier).startPresentation('1');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CollaborativePresentationMode(),
+                ),
+              ).then((_) {
+                ref.read(presentationProvider.notifier).endPresentation();
+              });
+            },
+          ),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF10B981)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.cloud_done, size: 16, color: Color(0xFF10B981)),
+                SizedBox(width: 8),
+                Text(
+                  'All changes saved',
+                  style: TextStyle(
+                    color: Color(0xFF10B981),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddCommentDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AddCommentDialog(),
+    );
+  }
+}
+
+// ==================== CANVAS ====================
+
+class CollaborativeCanvas extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presentation = ref.watch(presentationProvider);
+    final currentSlide = presentation.slides[presentation.currentSlideIndex];
+    final selectedComponent = ref.watch(selectedComponentProvider);
+
+    return Container(
+      color: const Color(0xFF0F172A),
+      child: Center(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 1200,
+              height: 675,
+              decoration: BoxDecoration(
+                color: currentSlide.getThemeBackground(),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Title
+                  if (currentSlide.title != null)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(48),
+                        child: Text(
+                          currentSlide.title!,
+                          style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: currentSlide.getThemeTextColor(),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  // Components
+                  ...currentSlide.components.map((component) {
+                    return DraggableComponent(
+                      key: ValueKey(component.id),
+                      component: component,
+                      isSelected: selectedComponent == component.id,
+                      onTap: () {
+                        ref.read(selectedComponentProvider.notifier).state =
+                            component.id;
+                      },
+                      onPositionChanged: (newPosition) {
+                        ref
+                            .read(presentationProvider.notifier)
+                            .updateComponent(
+                              presentation.currentSlideIndex,
+                              component.id,
+                              component.copyWith(position: newPosition),
+                            );
+                      },
+                      onDelete: () {
+                        ref
+                            .read(presentationProvider.notifier)
+                            .deleteComponent(
+                              presentation.currentSlideIndex,
+                              component.id,
+                            );
+                        ref.read(selectedComponentProvider.notifier).state =
+                            null;
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+            // Live cursors
+            ...presentation.collaborators
+                .where((u) =>
+                    u.isOnline && u.id != '1' && u.cursorPosition != null)
+                .map((user) => LiveCursor(user: user)),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,487 @@
+// Additional features to add to the main document editor
+// Add these imports to the main file:
+// import 'package:flutter/rendering.dart';
+// import 'package:printing/printing.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+
+// ============================================================================
+// NEW PROVIDERS FOR ENHANCED FEATURES
+// ============================================================================
+
+final layoutModeProvider = StateProvider<LayoutMode>((ref) => LayoutMode.web);
+final rulerVisibilityProvider = StateProvider<bool>((ref) => true);
+final widgetGalleryProvider = StateProvider<bool>((ref) => false);
+
+enum LayoutMode { web, print, focus }
+
+// ============================================================================
+// ENHANCED APP BAR WITH LAYOUT MODES
+// ============================================================================
+
+class EnhancedAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  final TextEditingController titleController;
+  
+  const EnhancedAppBar({
+    Key? key,
+    required this.titleController,
+  }) : super(key: key);
+
+  @override
+  Size get preferredSize => const Size.fromHeight(56);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final docState = ref.watch(documentControllerProvider);
+    final collabState = ref.watch(collaborationProvider);
+    final layoutMode = ref.watch(layoutModeProvider);
+
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      title: Row(
+        children: [
+          Icon(Icons.description_outlined, 
+            color: Theme.of(context).colorScheme.primary, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: titleController,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Untitled Document',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                ),
+                isDense: true,
+              ),
+              onChanged: (value) {
+                ref.read(documentControllerProvider.notifier).updateTitle(value);
+              },
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        // Layout mode selector
+        SegmentedButton<LayoutMode>(
+          segments: const [
+            ButtonSegment(
+              value: LayoutMode.web,
+              icon: Icon(Icons.web, size: 16),
+              tooltip: 'Web Layout',
+            ),
+            ButtonSegment(
+              value: LayoutMode.print,
+              icon: Icon(Icons.description, size: 16),
+              tooltip: 'Print Layout',
+            ),
+          ],
+          selected: {layoutMode},
+          onSelectionChanged: (Set<LayoutMode> newSelection) {
+            ref.read(layoutModeProvider.notifier).state = newSelection.first;
+          },
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Collaboration avatars
+        if (collabState.isConnected && collabState.activeUsers.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: collabState.activeUsers.take(3).map((user) => 
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Tooltip(
+                    message: user.name,
+                    child: CircleAvatar(
+                      radius: 14,
+                      backgroundColor: user.color,
+                      child: Text(
+                        user.name[0],
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ).toList(),
+            ),
+          ),
+        // Save indicator
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Center(
+            child: Row(
+              children: [
+                Icon(
+                  docState.isSaved ? Icons.cloud_done : Icons.sync,
+                  size: 18,
+                  color: docState.isSaved ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  docState.isSaved ? 'Saved' : 'Saving...',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Print button
+        IconButton(
+          icon: const Icon(Icons.print, size: 20),
+          tooltip: 'Print',
+          onPressed: () => _handlePrint(context, ref),
+        ),
+        // Export menu
+        PopupMenuButton(
+          icon: const Icon(Icons.download, size: 20),
+          tooltip: 'Export',
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'syirkah',
+              child: Row(
+                children: [
+                  Icon(Icons.file_present, size: 18),
+                  SizedBox(width: 12),
+                  Text('Export as .syirkah'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'docx',
+              child: Row(
+                children: [
+                  Icon(Icons.description, size: 18),
+                  SizedBox(width: 12),
+                  Text('Export as .docx'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'pdf',
+              child: Row(
+                children: [
+                  Icon(Icons.picture_as_pdf, size: 18),
+                  SizedBox(width: 12),
+                  Text('Export as PDF'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'markdown',
+              child: Row(
+                children: [
+                  Icon(Icons.text_fields, size: 18),
+                  SizedBox(width: 12),
+                  Text('Export as Markdown'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'html',
+              child: Row(
+                children: [
+                  Icon(Icons.code, size: 18),
+                  SizedBox(width: 12),
+                  Text('Export as HTML'),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) => _handleExport(context, ref, value as String),
+        ),
+        // Import menu
+        PopupMenuButton(
+          icon: const Icon(Icons.upload, size: 20),
+          tooltip: 'Import',
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'syirkah',
+              child: Row(
+                children: [
+                  Icon(Icons.file_present, size: 18),
+                  SizedBox(width: 12),
+                  Text('Import .syirkah'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'docx',
+              child: Row(
+                children: [
+                  Icon(Icons.description, size: 18),
+                  SizedBox(width: 12),
+                  Text('Import .docx'),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) => _handleImport(context, ref, value as String),
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  void _handlePrint(BuildContext context, WidgetRef ref) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Preparing document for printing...')),
+    );
+    // Implementation would use printing package
+    // await Printing.layoutPdf(onLayout: (format) => _generatePdf(ref));
+  }
+
+  void _handleExport(BuildContext context, WidgetRef ref, String format) {
+    final docState = ref.read(documentControllerProvider);
+    
+    if (format == 'syirkah') {
+      // Custom format with metadata
+      final syirkahData = {
+        'version': '1.0',
+        'documentId': docState.documentId,
+        'title': docState.title,
+        'created': DateTime.now().toIso8601String(),
+        'content': ref.read(documentControllerProvider.notifier).exportToJson(),
+        'metadata': {
+          'words': docState.stats.words,
+          'characters': docState.stats.characters,
+        },
+      };
+      final jsonStr = jsonEncode(syirkahData);
+      Clipboard.setData(ClipboardData(text: jsonStr));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Exported as .syirkah to clipboard')),
+      );
+    } else if (format == 'docx') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Exporting as .docx...')),
+      );
+    } else if (format == 'pdf') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Exporting as PDF...')),
+      );
+    } else if (format == 'markdown') {
+      final md = docState.controller.document.toPlainText();
+      Clipboard.setData(ClipboardData(text: md));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Exported as Markdown to clipboard')),
+      );
+    } else if (format == 'html') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Exporting as HTML...')),
+      );
+    }
+  }
+
+  void _handleImport(BuildContext context, WidgetRef ref, String format) {
+    if (format == 'syirkah') {
+      // Simulate file picker and import
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Import .syirkah File'),
+          content: const Text('Select a .syirkah file to import'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('File imported successfully')),
+                );
+              },
+              child: const Text('Import'),
+            ),
+          ],
+        ),
+      );
+    } else if (format == 'docx') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select .docx file to import')),
+      );
+    }
+  }
+}
+
+// ============================================================================
+// RULER WIDGET
+// ============================================================================
+
+
+// ============================================================================
+// FLOATING INSERT WIDGET BUTTON
+// ============================================================================
+
+
+// ============================================================================
+// WIDGET GALLERY PANEL
+// ============================================================================
+
+// ============================================================================
+// ENHANCED EDITOR LAYOUT WITH RULER AND PRINT LAYOUT
+// ============================================================================
+
+class EnhancedEditorLayout extends ConsumerWidget {
+  final quill.QuillController controller;
+  final FocusNode focusNode;
+  final ScrollController scrollController;
+
+  const EnhancedEditorLayout({
+    Key? key,
+    required this.controller,
+    required this.focusNode,
+    required this.scrollController,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+  }
+
+}
+
+// ============================================================================
+// ENHANCED MAIN SCREEN - INTEGRATION EXAMPLE
+// ============================================================================
+
+class EnhancedDocumentEditorScreen extends ConsumerStatefulWidget {
+  const EnhancedDocumentEditorScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<EnhancedDocumentEditorScreen> createState() => 
+      _EnhancedDocumentEditorScreenState();
+}
+
+class _EnhancedDocumentEditorScreenState 
+    extends ConsumerState<EnhancedDocumentEditorScreen> {
+
+  void _handleKeyEvent(KeyEvent event) {
+    
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    final docState = ref.watch(documentControllerProvider);
+    final toolbarVisible = ref.watch(toolbarVisibilityProvider);
+    final layoutMode = ref.watch(layoutModeProvider);
+    final stats = ref.watch(wordCountProvider);
+    final showCommandPalette = ref.watch(commandPaletteProvider);
+
+    _titleController.value = TextEditingValue(
+      text: docState.title,
+      selection: _titleController.selection,
+    );
+
+    return KeyboardListener(
+      focusNode: FocusNode(),
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: layoutMode != LayoutMode.focus 
+            ? EnhancedAppBar(titleController: _titleController)
+            : null,
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                // Toolbar
+                if (toolbarVisible && layoutMode != LayoutMode.focus)
+                  CustomToolbar(controller: docState.controller),
+                // Editor with ruler
+                Expanded(
+                  child: EnhancedEditorLayout(
+                    controller: docState.controller,
+                    focusNode: _focusNode,
+                    scrollController: _scrollController,
+                  ),
+                ),
+                // Status bar
+                if (layoutMode != LayoutMode.focus)
+                  StatusBar(stats: stats, lastModified: docState.lastModified),
+              ],
+            ),
+            // Floating insert button
+            if (layoutMode != LayoutMode.focus)
+              const FloatingInsertButton(),
+            // Command palette overlay
+            if (showCommandPalette)
+              CommandPalette(
+                onDismiss: () => 
+                    ref.read(commandPaletteProvider.notifier).state = false,
+              ),
+          ],
+        ),
+        floatingActionButton: layoutMode == LayoutMode.focus
+            ? FloatingActionButton.small(
+                onPressed: () => 
+                    ref.read(layoutModeProvider.notifier).state = LayoutMode.web,
+                tooltip: 'Exit Focus Mode',
+                child: const Icon(Icons.fullscreen_exit, size: 20),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// CUSTOM WIDGETS EXAMPLES
+// ============================================================================
+
+
+// ============================================================================
+// ADDITIONAL UTILITIES
+// ============================================================================
+
+
+// ============================================================================
+// HOW TO USE - INTEGRATION GUIDE
+// ============================================================================
+
+/*
+To integrate these enhancements into your main app:
+
+1. Replace the main DocumentEditorScreen with EnhancedDocumentEditorScreen
+2. Add the new providers to your app
+3. The + button will appear automatically as a FloatingActionButton
+4. Users can now:
+   - Switch between Web/Print layouts
+   - See rulers in print layout
+   - Click + button to insert widgets
+   - Export/Import .syirkah files
+   - Export to PDF, DOCX, etc.
+   - Embed YouTube, Charts, Maps, etc.
+
+Example usage in main():
+
+void main() {
+  runApp(const ProviderScope(
+    child: DocumentEditorApp(
+      home: EnhancedDocumentEditorScreen(),
+    ),
+  ));
+}
+
+The .syirkah format is a JSON-based format that includes:
+- Document metadata
+- Full content with formatting
+- Comments and collaboration data
+- Statistics and version info
+*/
+
+
+            

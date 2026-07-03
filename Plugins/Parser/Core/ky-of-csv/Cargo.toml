@@ -1,0 +1,9 @@
+[package]
+name = "ky-of-csv"
+version = "0.1.0"
+edition = "2021"
+description = "CSV export for ky-of-xlsx"
+
+[dependencies]
+ky-of-xlsx = { path = "../../Core/ky-of-xlsx" }
+csv = "1.1"

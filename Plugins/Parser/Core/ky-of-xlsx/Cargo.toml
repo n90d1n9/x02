@@ -1,0 +1,29 @@
+[package]
+name = "ky-of-xlsx"
+version = "0.1.0"
+edition = "2021"
+description = "Reusable XLSX reader and writer primitives for Office products"
+
+[features]
+default = []
+serde-support = ["dep:serde"]
+# optional export crates
+pdf = ["dep:printpdf"]
+csv = []
+ods = []
+chart = []
+
+[dependencies]
+printpdf = { version = "0.3", optional = true }
+base64 = "0.22"
+calamine = { version = "=0.21.2", features = ["dates"] }
+chrono = { version = "0.4", features = ["serde"] }
+indexmap = { version = "2", features = ["serde"] }
+log = "0.4"
+meval = "0.2"
+quick-xml = "0.30"
+serde_json = { version = "1", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+thiserror = "1"
+zip = "0.6"
+ky-of-common = { path = "../../Common/ky-of-common", optional = true }

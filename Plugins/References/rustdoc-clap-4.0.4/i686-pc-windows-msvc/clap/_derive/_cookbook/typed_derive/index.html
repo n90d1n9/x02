@@ -1,0 +1,110 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Example: Custom Types (Derive API)"><meta name="keywords" content="rust, rustlang, rust-lang, typed_derive"><title>clap::_derive::_cookbook::typed_derive - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="/normalize-20220928-1.66.0-nightly-ce7f0f1aa.css"><link rel="stylesheet" href="/rustdoc-20220928-1.66.0-nightly-ce7f0f1aa.css" id="mainThemeStyle"><link rel="stylesheet" href="/ayu-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/dark-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/light-20220928-1.66.0-nightly-ce7f0f1aa.css" id="themeStyle"><script id="default-settings" ></script><script src="/storage-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/main-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="../../../../scrape-examples-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><noscript><link rel="stylesheet" href="/noscript-20220928-1.66.0-nightly-ce7f0f1aa.css"></noscript><link rel="alternate icon" type="image/png" href="/favicon-16x16-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="alternate icon" type="image/png" href="/favicon-32x32-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="icon" type="image/svg+xml" href="/favicon-20220928-1.66.0-nightly-ce7f0f1aa.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../clap/index.html"><div class="logo-container"><img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../clap/index.html"><div class="logo-container">
+                    <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div></a><h2 class="location"><a href="#">Module typed_derive</a></h2><div class="sidebar-elems"></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../clap/index.html">
+                        <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="/wheel-20220928-1.66.0-nightly-ce7f0f1aa.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Module <a href="../../../index.html">clap</a>::<wbr><a href="../../index.html">_derive</a>::<wbr><a href="../index.html">_cookbook</a>::<wbr><a class="mod" href="#">typed_derive</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="/clipboard-20220928-1.66.0-nightly-ce7f0f1aa.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../../src/clap/_cookbook/typed_derive.rs.html#1-7">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>unstable-doc</code></strong> only.</div></span><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="example-custom-types-derive-api"><a href="#example-custom-types-derive-api">Example: Custom Types (Derive API)</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>std::error::Error;
+
+<span class="attribute">#[derive(Parser, Debug)] </span><span class="comment">// requires `derive` feature
+</span><span class="kw">struct </span>Args {
+    <span class="doccomment">/// Implicitly using `std::str::FromStr`
+    </span><span class="attribute">#[arg(short = <span class="string">&#39;O&#39;</span>)]
+    </span>optimization: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+
+    <span class="doccomment">/// Allow invalid UTF-8 paths
+    </span><span class="attribute">#[arg(short = <span class="string">&#39;I&#39;</span>, value_name = <span class="string">&quot;DIR&quot;</span>, value_hint = clap::ValueHint::DirPath)]
+    </span>include: <span class="prelude-ty">Option</span>&lt;std::path::PathBuf&gt;,
+
+    <span class="doccomment">/// Handle IP addresses
+    </span><span class="attribute">#[arg(long)]
+    </span>bind: <span class="prelude-ty">Option</span>&lt;std::net::IpAddr&gt;,
+
+    <span class="doccomment">/// Allow human-readable durations
+    </span><span class="attribute">#[arg(long)]
+    </span>sleep: <span class="prelude-ty">Option</span>&lt;humantime::Duration&gt;,
+
+    <span class="doccomment">/// Hand-written parser for tuples
+    </span><span class="attribute">#[arg(short = <span class="string">&#39;D&#39;</span>, value_parser = parse_key_val::&lt;String, i32&gt;)]
+    </span>defines: Vec&lt;(String, i32)&gt;,
+}
+
+<span class="doccomment">/// Parse a single key-value pair
+</span><span class="kw">fn </span>parse_key_val&lt;T, U&gt;(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(T, U), Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt;
+<span class="kw">where
+    </span>T: std::str::FromStr,
+    T::Err: Error + Send + Sync + <span class="lifetime">&#39;static</span>,
+    U: std::str::FromStr,
+    U::Err: Error + Send + Sync + <span class="lifetime">&#39;static</span>,
+{
+    <span class="kw">let </span>pos = s
+        .find(<span class="string">&#39;=&#39;</span>)
+        .ok_or_else(|| <span class="macro">format!</span>(<span class="string">&quot;invalid KEY=value: no `=` found in `{}`&quot;</span>, s))<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>((s[..pos].parse()<span class="question-mark">?</span>, s[pos + <span class="number">1</span>..].parse()<span class="question-mark">?</span>))
+}
+
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>args = Args::parse();
+    <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, args);
+}</code></pre></div>
+<p><strong>This requires enabling the <a href="../../../_features/index.html" title="crate::_features"><code>derive</code> feature flag</a>.</strong></p>
+<p>Help:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive --help
+Usage: typed-derive[EXE] [OPTIONS]
+
+Options:
+  -O &lt;OPTIMIZATION&gt;      Implicitly using `std::str::FromStr`
+  -I &lt;DIR&gt;               Allow invalid UTF-8 paths
+      --bind &lt;BIND&gt;      Handle IP addresses
+      --sleep &lt;SLEEP&gt;    Allow human-readable durations
+  -D &lt;DEFINES&gt;           Hand-written parser for tuples
+  -h, --help             Print help information
+</code></pre></div>
+<p>Optimization-level (number)</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive -O 1
+Args { optimization: Some(1), include: None, bind: None, sleep: None, defines: [] }
+
+$ typed-derive -O plaid
+? failed
+error: Invalid value &quot;plaid&quot; for &#39;-O &lt;OPTIMIZATION&gt;&#39;: invalid digit found in string
+
+For more information try &#39;--help&#39;
+</code></pre></div>
+<p>Include (path)</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive -I../hello
+Args { optimization: None, include: Some(&quot;../hello&quot;), bind: None, sleep: None, defines: [] }
+</code></pre></div>
+<p>IP Address</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive --bind 192.0.0.1
+Args { optimization: None, include: None, bind: Some(192.0.0.1), sleep: None, defines: [] }
+
+$ typed-derive --bind localhost
+? failed
+error: Invalid value &quot;localhost&quot; for &#39;--bind &lt;BIND&gt;&#39;: invalid IP address syntax
+
+For more information try &#39;--help&#39;
+</code></pre></div>
+<p>Time</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive --sleep 10s
+Args { optimization: None, include: None, bind: None, sleep: Some(Duration(10s)), defines: [] }
+
+$ typed-derive --sleep forever
+? failed
+error: Invalid value &quot;forever&quot; for &#39;--sleep &lt;SLEEP&gt;&#39;: expected number at 0
+
+For more information try &#39;--help&#39;
+</code></pre></div>
+<p>Defines (key-value pairs)</p>
+<div class="example-wrap"><pre class="language-console"><code>$ typed-derive -D Foo=10 -D Alice=30
+Args { optimization: None, include: None, bind: None, sleep: None, defines: [(&quot;Foo&quot;, 10), (&quot;Alice&quot;, 30)] }
+
+$ typed-derive -D Foo
+? failed
+error: Invalid value &quot;Foo&quot; for &#39;-D &lt;DEFINES&gt;&#39;: invalid KEY=value: no `=` found in `Foo`
+
+For more information try &#39;--help&#39;
+
+$ typed-derive -D Foo=Bar
+? failed
+error: Invalid value &quot;Foo=Bar&quot; for &#39;-D &lt;DEFINES&gt;&#39;: invalid digit found in string
+
+For more information try &#39;--help&#39;
+</code></pre></div></div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="clap" data-themes="ayu,dark,light" data-resource-suffix="-20220928-1.66.0-nightly-ce7f0f1aa" data-rustdoc-version="1.66.0-nightly (ce7f0f1aa 2022-09-28)" ></div></body></html>

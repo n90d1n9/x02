@@ -1,0 +1,24 @@
+[package]
+name = "ky-of-table"
+version = "0.1.0"
+edition = "2021"
+description = "Reusable table module for Office Parser and Engine"
+license = "MIT"
+repository = "https://github.com/your-org/office-parser"
+keywords = ["office", "table", "ooxml", "spreadsheet", "document"]
+categories = ["parser-implementations", "data-structures"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+quick-xml = { version = "0.31", optional = true }
+ky-of-text = { path = "../ky-of-text", optional = true }
+ky-of-color = { path = "../ky-of-color", optional = true }
+
+[features]
+default = []
+serde-support = ["serde", "ky-of-text?/serde-support", "ky-of-color?/serde-support"]
+parser = ["quick-xml"]
+full = ["serde-support", "parser", "ky-of-text", "ky-of-color"]
+
+[lib]
+path = "src/lib.rs"

@@ -1,0 +1,13 @@
+[package]
+name = "sheet_engine"
+version = "0.1.0"
+edition = "2021"
+description = "Spreadsheet engine with a sparse matrix grid and formula evaluation DAG"
+
+[dependencies]
+rustc-hash = "1.1" # Fast hashmap for sparse matrix
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1.0"
+ky-of-common = { path = "../../Parser/Common/ky-of-common" }
+ky-of-xlsx = { path = "../../Parser/Core/ky-of-xlsx" }

@@ -1,0 +1,8 @@
+[package]
+name = "ky-of-ods"
+version = "0.1.0"
+edition = "2021"
+description = "ODS export for ky-of-xlsx"
+
+[dependencies]
+ky-of-xlsx = { path = "../../Core/ky-of-xlsx", features = ["ods"] }

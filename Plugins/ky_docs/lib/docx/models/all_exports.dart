@@ -1,0 +1,37 @@
+// Main export file - import this to get all extracted classes
+
+export 'collaboration_user.dart';
+export 'comment.dart';
+export 'document_change.dart';
+export 'collaboration_service.dart';
+export 'text_style.dart';
+export 'paragraph_style.dart';
+export 'document_theme.dart';
+export 'spell_check_service.dart';
+export 'spell_check_error.dart';
+export 'page_layout.dart';
+export 'page_size.dart';
+export 'page_settings.dart';
+export 'document_outline.dart';
+export 'footnote.dart';
+export 'drawing_point.dart';
+export 'drawing_board_state.dart';
+export 'drawing_board_controller.dart';
+export 'drawing_board_painter.dart';
+export 'cloud_sync_service.dart';
+export 'document_table.dart';
+export 'chart_type.dart';
+export 'chart_data.dart';
+export 'drawing_data.dart';
+export 'aiaction.dart';
+export 'aiassistant_service.dart';
+export 'template_library.dart';
+export 'document_template.dart';
+export 'document_metadata.dart';
+export 'document_import_structure.dart';
+export 'document_import_status.dart';
+export 'folder.dart';
+export 'document_state.dart';
+export 'document_version.dart';
+export 'export_options.dart';
+export 'document_storage_service.dart';

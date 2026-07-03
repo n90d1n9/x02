@@ -1,0 +1,23 @@
+name: ky_office
+description: "Shared Flutter primitives for the Kaysir Office family."
+version: 0.0.1
+publish_to: none
+homepage:
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ky_office_core:
+    path: ../ky_office_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,466 @@
+// Inline Insert and Chat Buttons that follow cursor position
+// Add these to your existing document editor
+
+// ============================================================================
+// PROVIDERS
+// ============================================================================
+
+
+// ============================================================================
+// ENHANCED EDITOR WITH INLINE BUTTONS
+// ============================================================================
+
+// ============================================================================
+// INLINE ACTION BUTTONS (+ and Chat)
+// ============================================================================
+
+// ============================================================================
+// CHAT PANEL (AI Assistant)
+// ============================================================================
+
+
+
+// ============================================================================
+// WIDGET GALLERY PANEL (Same as before but optimized)
+// ============================================================================
+
+class WidgetGalleryPanel extends ConsumerStatefulWidget {
+  const WidgetGalleryPanel({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<WidgetGalleryPanel> createState() => _WidgetGalleryPanelState();
+}
+
+class _WidgetGalleryPanelState extends ConsumerState<WidgetGalleryPanel> {
+  String _selectedCategory = 'all';
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.widgets,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Insert Block or Widget',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              // Search
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search widgets...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value.toLowerCase());
+                  },
+                ),
+              ),
+              // Categories
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _CategoryChip('all', 'All', Icons.apps),
+                      _CategoryChip('basic', 'Basic', Icons.text_fields),
+                      _CategoryChip('media', 'Media', Icons.image),
+                      _CategoryChip('embed', 'Embeds', Icons.language),
+                      _CategoryChip('chart', 'Charts', Icons.bar_chart),
+                      _CategoryChip('advanced', 'Advanced', Icons.auto_awesome),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Grid
+              Expanded(
+                child: GridView.count(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.9,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  children: _getFilteredWidgets().map((widget) {
+                    return _WidgetCard(
+                      widget: widget,
+                      onTap: () {
+                        ref
+                            .read(documentControllerProvider.notifier)
+                            .insertBlock(widget.id);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Inserted ${widget.name}')),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  List<InsertableWidget> _getFilteredWidgets() {
+    final all = [
+      InsertableWidget('heading1', 'Heading 1', Icons.title, 'basic', Colors.blue),
+      InsertableWidget('heading2', 'Heading 2', Icons.title, 'basic', Colors.blue),
+      InsertableWidget('bullet', 'Bullet List', Icons.format_list_bulleted, 'basic', Colors.grey),
+      InsertableWidget('numbered', 'Numbered List', Icons.format_list_numbered, 'basic', Colors.grey),
+      InsertableWidget('checkbox', 'Checklist', Icons.check_box, 'basic', Colors.green),
+      InsertableWidget('quote', 'Quote', Icons.format_quote, 'basic', Colors.purple),
+      InsertableWidget('code', 'Code', Icons.code, 'basic', Colors.orange),
+      InsertableWidget('table', 'Table', Icons.table_chart, 'basic', Colors.teal),
+      InsertableWidget('image', 'Image', Icons.image, 'media', Colors.pink),
+      InsertableWidget('video', 'Video', Icons.videocam, 'media', Colors.red),
+      InsertableWidget('youtube', 'YouTube', Icons.play_circle, 'embed', Colors.red),
+      InsertableWidget('maps', 'Maps', Icons.map, 'embed', Colors.green),
+      InsertableWidget('chart_bar', 'Bar Chart', Icons.bar_chart, 'chart', Colors.blue),
+      InsertableWidget('chart_line', 'Line Chart', Icons.show_chart, 'chart', Colors.green),
+    ];
+
+    var filtered = _selectedCategory == 'all'
+        ? all
+        : all.where((w) => w.category == _selectedCategory).toList();
+
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((w) => w.name.toLowerCase().contains(_searchQuery))
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  Widget _CategoryChip(String value, String label, IconData icon) {
+    final isSelected = _selectedCategory == value;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        avatar: Icon(icon, size: 18),
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (_) => setState(() => _selectedCategory = value),
+      ),
+    );
+  }
+}
+
+
+// ============================================================================
+// INTEGRATION INSTRUCTIONS
+// ============================================================================
+
+/*
+HOW TO USE THESE INLINE BUTTONS:
+
+1. Replace your editor widget with EditorWithInlineButtons:
+
+   EditorWithInlineButtons(
+     controller: docState.controller,
+     focusNode: _focusNode,
+     scrollController: _scrollController,
+   )
+
+2. The buttons will automatically appear when:
+   - User is at the start of a new line
+   - Cursor is at the beginning (no text before it)
+   - Editor has focus
+
+3. Two buttons appear side-by-side:
+   - [+] Insert button (blue) - Opens widget gallery
+   - [Chat] button (purple) - Opens AI assistant
+
+4. Features:
+   ✅ Buttons follow cursor position
+   ✅ Appear only on empty lines (like Notion)
+   ✅ Smooth fade-in animation
+   ✅ Hover effects
+   ✅ Tooltip hints
+   ✅ Auto-hide when typing
+   ✅ AI chat panel with conversation
+   ✅ Real-time chat interface
+   ✅ Smart AI responses
+
+5. Chat Panel Features:
+   - Slides in from right side
+   - Full conversation history
+   - Typing indicators
+   - Send button + Enter key
+   - Context-aware responses
+   - Close button to dismiss
+   - Purple theme for AI branding
+
+6. Customization:
+   - Adjust button position in _updateButtonPosition()
+   - Change colors in _InlineButton widget
+   - Modify chat responses in _generateAIResponse()
+   - Connect to real AI API by replacing mock response
+
+EXAMPLE MAIN SCREEN INTEGRATION:
+
+class EnhancedDocumentEditorScreen extends ConsumerStatefulWidget {
+  const EnhancedDocumentEditorScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<EnhancedDocumentEditorScreen> createState() => 
+      _EnhancedDocumentEditorScreenState();
+}
+
+class _EnhancedDocumentEditorScreenState 
+    extends ConsumerState<EnhancedDocumentEditorScreen> {
+  final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
+  final _titleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _scrollController.dispose();
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final docState = ref.watch(documentControllerProvider);
+    final toolbarVisible = ref.watch(toolbarVisibilityProvider);
+    final stats = ref.watch(wordCountProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _titleController,
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            hintText: 'Untitled Document',
+          ),
+          onChanged: (value) {
+            ref.read(documentControllerProvider.notifier).updateTitle(value);
+          },
+        ),
+        actions: [
+          // Your app bar actions
+        ],
+      ),
+      body: Column(
+        children: [
+          // Toolbar
+          if (toolbarVisible)
+            EnhancedToolbar(controller: docState.controller),
+          
+          // Editor with inline buttons
+          Expanded(
+            child: EditorWithInlineButtons(
+              controller: docState.controller,
+              focusNode: _focusNode,
+              scrollController: _scrollController,
+            ),
+          ),
+          
+          // Status bar
+          StatusBar(stats: stats, lastModified: docState.lastModified),
+        ],
+      ),
+    );
+  }
+}
+
+BUTTON BEHAVIOR:
+
+When cursor is on empty line:
+  ┌─────────────────────────────────┐
+  │                                 │
+  │  [+] [💬]  ← Buttons appear     │
+  │  |                              │
+  │  ← Cursor is here               │
+  │                                 │
+  └─────────────────────────────────┘
+
+When user starts typing:
+  ┌─────────────────────────────────┐
+  │                                 │
+  │  Hello world|  ← Buttons hidden │
+  │                                 │
+  └─────────────────────────────────┘
+
+When user presses Enter:
+  ┌─────────────────────────────────┐
+  │  Hello world                    │
+  │  [+] [💬]  ← Buttons reappear   │
+  │  |                              │
+  │                                 │
+  └─────────────────────────────────┘
+
+CHAT PANEL LAYOUT:
+
+Right side overlay:
+  ┌──────────────────────────┐
+  │ 🪄 AI Writing Assistant  │
+  │ Online               [×] │
+  ├──────────────────────────┤
+  │                          │
+  │  🤖 Hello! How can I     │
+  │     help you today?      │
+  │                          │
+  │            You: Can you  │
+  │            help me? 👤   │
+  │                          │
+  │  🤖 Of course! I can     │
+  │     assist with...       │
+  │                          │
+  ├──────────────────────────┤
+  │ [Ask me anything...]  [→]│
+  └──────────────────────────┘
+
+AI FEATURES TO IMPLEMENT:
+
+Replace _generateAIResponse() with real AI integration:
+
+1. OpenAI GPT:
+   - Use openai_dart package
+   - Send user message to GPT-4
+   - Stream responses for real-time typing
+
+2. Anthropic Claude:
+   - Use anthropic_sdk_dart package
+   - Context-aware assistance
+   - Long-form content generation
+
+3. Google Gemini:
+   - Use google_generative_ai package
+   - Multi-modal support
+   - Document understanding
+
+4. Local AI:
+   - Use ollama_dart for local models
+   - Privacy-focused
+   - Offline capability
+
+EXAMPLE AI INTEGRATION:
+
+import 'package:openai_dart/openai_dart.dart';
+
+Future<String> _generateAIResponse(String userMessage) async {
+  final client = OpenAIClient(
+    apiKey: 'your-api-key',
+  );
+
+  final response = await client.createChatCompletion(
+    request: CreateChatCompletionRequest(
+      model: 'gpt-4',
+      messages: [
+        ChatCompletionMessage.system(
+          content: 'You are a helpful writing assistant.',
+        ),
+        ChatCompletionMessage.user(
+          content: userMessage,
+        ),
+      ],
+    ),
+  );
+
+  return response.choices.first.message.content ?? 'No response';
+}
+
+ADVANCED FEATURES TO ADD:
+
+1. Insert AI-generated content directly into document
+2. Selection-based editing (highlight text, ask AI to improve)
+3. Multi-turn conversations with context
+4. Quick actions (Improve, Summarize, Expand, etc.)
+5. Custom prompts library
+6. Chat history persistence
+7. Multiple AI model selection
+8. Voice input for chat
+9. Markdown rendering in chat
+10. Code syntax highlighting in responses
+
+STYLING CUSTOMIZATION:
+
+Change button appearance:
+- Modify _InlineButton colors
+- Adjust size (currently 32x32)
+- Change border radius
+- Update hover effects
+
+Change chat panel:
+- Modify width (currently 400px)
+- Adjust position (right/left side)
+- Change theme colors
+- Update bubble styling
+
+KEYBOARD SHORTCUTS:
+
+Add these to your KeyboardListener:
+
+- Cmd/Ctrl + / : Toggle inline buttons
+- Cmd/Ctrl + Shift + C : Open chat panel
+- Escape : Close chat panel
+- Enter in chat : Send message
+
+PERFORMANCE TIPS:
+
+1. Debouncing: Button position updates are debounced (100ms)
+2. Conditional rendering: Buttons only render when visible
+3. Animation optimization: Uses TweenAnimationBuilder
+4. Lazy loading: Chat messages rendered efficiently
+5. Memory management: Proper disposal of controllers
+
+This implementation gives you a modern, Notion-like editing experience
+with AI assistance! 🚀
+*/

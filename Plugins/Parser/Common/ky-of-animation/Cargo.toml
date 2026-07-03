@@ -1,0 +1,14 @@
+[package]
+name = "ky-of-animation"
+version = "0.1.0"
+edition = "2021"
+description = "Animation types and utilities for Office documents"
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+serde-support = ["serde"]
+
+[lib]
+path = "src/lib.rs"

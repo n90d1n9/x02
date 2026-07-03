@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Example: git-like CLI (Derive API)"><meta name="keywords" content="rust, rustlang, rust-lang, git_derive"><title>clap::_cookbook::git_derive - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="/normalize-20220928-1.66.0-nightly-ce7f0f1aa.css"><link rel="stylesheet" href="/rustdoc-20220928-1.66.0-nightly-ce7f0f1aa.css" id="mainThemeStyle"><link rel="stylesheet" href="/ayu-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/dark-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/light-20220928-1.66.0-nightly-ce7f0f1aa.css" id="themeStyle"><script id="default-settings" ></script><script src="/storage-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/main-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="../../../scrape-examples-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><noscript><link rel="stylesheet" href="/noscript-20220928-1.66.0-nightly-ce7f0f1aa.css"></noscript><link rel="alternate icon" type="image/png" href="/favicon-16x16-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="alternate icon" type="image/png" href="/favicon-32x32-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="icon" type="image/svg+xml" href="/favicon-20220928-1.66.0-nightly-ce7f0f1aa.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../clap/index.html"><div class="logo-container"><img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../clap/index.html"><div class="logo-container">
+                    <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div></a><h2 class="location"><a href="#">Module git_derive</a></h2><div class="sidebar-elems"></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../clap/index.html">
+                        <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="/wheel-20220928-1.66.0-nightly-ce7f0f1aa.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Module <a href="../../index.html">clap</a>::<wbr><a href="../index.html">_cookbook</a>::<wbr><a class="mod" href="#">git_derive</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="/clipboard-20220928-1.66.0-nightly-ce7f0f1aa.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../src/clap/_cookbook/git_derive.rs.html#1-7">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>unstable-doc</code></strong> only.</div></span><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="example-git-like-cli-derive-api"><a href="#example-git-like-cli-derive-api">Example: git-like CLI (Derive API)</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::ffi::OsStr;
+<span class="kw">use </span>std::ffi::OsString;
+<span class="kw">use </span>std::path::PathBuf;
+
+<span class="kw">use </span>clap::{Args, Parser, Subcommand};
+
+<span class="doccomment">/// A fictional versioning CLI
+</span><span class="attribute">#[derive(Debug, Parser)] </span><span class="comment">// requires `derive` feature
+</span><span class="attribute">#[command(name = <span class="string">&quot;git&quot;</span>)]
+#[command(about = <span class="string">&quot;A fictional versioning CLI&quot;</span>, long_about = <span class="prelude-val">None</span>)]
+</span><span class="kw">struct </span>Cli {
+    <span class="attribute">#[command(subcommand)]
+    </span>command: Commands,
+}
+
+<span class="attribute">#[derive(Debug, Subcommand)]
+</span><span class="kw">enum </span>Commands {
+    <span class="doccomment">/// Clones repos
+    </span><span class="attribute">#[command(arg_required_else_help = <span class="bool-val">true</span>)]
+    </span>Clone {
+        <span class="doccomment">/// The remote to clone
+        </span>remote: String,
+    },
+    <span class="doccomment">/// Compare two commits
+    </span>Diff {
+        <span class="attribute">#[arg(value_name = <span class="string">&quot;COMMIT&quot;</span>)]
+        </span>base: <span class="prelude-ty">Option</span>&lt;OsString&gt;,
+        <span class="attribute">#[arg(value_name = <span class="string">&quot;COMMIT&quot;</span>)]
+        </span>head: <span class="prelude-ty">Option</span>&lt;OsString&gt;,
+        <span class="attribute">#[arg(last = <span class="bool-val">true</span>)]
+        </span>path: <span class="prelude-ty">Option</span>&lt;OsString&gt;,
+    },
+    <span class="doccomment">/// pushes things
+    </span><span class="attribute">#[command(arg_required_else_help = <span class="bool-val">true</span>)]
+    </span>Push {
+        <span class="doccomment">/// The remote to target
+        </span>remote: String,
+    },
+    <span class="doccomment">/// adds things
+    </span><span class="attribute">#[command(arg_required_else_help = <span class="bool-val">true</span>)]
+    </span>Add {
+        <span class="doccomment">/// Stuff to add
+        </span><span class="attribute">#[arg(required = <span class="bool-val">true</span>)]
+        </span>path: Vec&lt;PathBuf&gt;,
+    },
+    Stash(Stash),
+    <span class="attribute">#[command(external_subcommand)]
+    </span>External(Vec&lt;OsString&gt;),
+}
+
+<span class="attribute">#[derive(Debug, Args)]
+#[command(args_conflicts_with_subcommands = <span class="bool-val">true</span>)]
+</span><span class="kw">struct </span>Stash {
+    <span class="attribute">#[command(subcommand)]
+    </span>command: <span class="prelude-ty">Option</span>&lt;StashCommands&gt;,
+
+    <span class="attribute">#[command(flatten)]
+    </span>push: StashPush,
+}
+
+<span class="attribute">#[derive(Debug, Subcommand)]
+</span><span class="kw">enum </span>StashCommands {
+    Push(StashPush),
+    Pop { stash: <span class="prelude-ty">Option</span>&lt;String&gt; },
+    Apply { stash: <span class="prelude-ty">Option</span>&lt;String&gt; },
+}
+
+<span class="attribute">#[derive(Debug, Args)]
+</span><span class="kw">struct </span>StashPush {
+    <span class="attribute">#[arg(short, long)]
+    </span>message: <span class="prelude-ty">Option</span>&lt;String&gt;,
+}
+
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>args = Cli::parse();
+
+    <span class="kw">match </span>args.command {
+        Commands::Clone { remote } =&gt; {
+            <span class="macro">println!</span>(<span class="string">&quot;Cloning {}&quot;</span>, remote);
+        }
+        Commands::Diff {
+            <span class="kw-2">mut </span>base,
+            <span class="kw-2">mut </span>head,
+            <span class="kw-2">mut </span>path,
+        } =&gt; {
+            <span class="kw">if </span>path.is_none() {
+                path = head;
+                head = <span class="prelude-val">None</span>;
+                <span class="kw">if </span>path.is_none() {
+                    path = base;
+                    base = <span class="prelude-val">None</span>;
+                }
+            }
+            <span class="kw">let </span>base = base
+                .as_deref()
+                .map(|s| s.to_str().unwrap())
+                .unwrap_or(<span class="string">&quot;stage&quot;</span>);
+            <span class="kw">let </span>head = head
+                .as_deref()
+                .map(|s| s.to_str().unwrap())
+                .unwrap_or(<span class="string">&quot;worktree&quot;</span>);
+            <span class="kw">let </span>path = path.as_deref().unwrap_or_else(|| OsStr::new(<span class="string">&quot;&quot;</span>));
+            <span class="macro">println!</span>(<span class="string">&quot;Diffing {}..{} {}&quot;</span>, base, head, path.to_string_lossy());
+        }
+        Commands::Push { remote } =&gt; {
+            <span class="macro">println!</span>(<span class="string">&quot;Pushing to {}&quot;</span>, remote);
+        }
+        Commands::Add { path } =&gt; {
+            <span class="macro">println!</span>(<span class="string">&quot;Adding {:?}&quot;</span>, path);
+        }
+        Commands::Stash(stash) =&gt; {
+            <span class="kw">let </span>stash_cmd = stash.command.unwrap_or(StashCommands::Push(stash.push));
+            <span class="kw">match </span>stash_cmd {
+                StashCommands::Push(push) =&gt; {
+                    <span class="macro">println!</span>(<span class="string">&quot;Pushing {:?}&quot;</span>, push);
+                }
+                StashCommands::Pop { stash } =&gt; {
+                    <span class="macro">println!</span>(<span class="string">&quot;Popping {:?}&quot;</span>, stash);
+                }
+                StashCommands::Apply { stash } =&gt; {
+                    <span class="macro">println!</span>(<span class="string">&quot;Applying {:?}&quot;</span>, stash);
+                }
+            }
+        }
+        Commands::External(args) =&gt; {
+            <span class="macro">println!</span>(<span class="string">&quot;Calling out to {:?} with {:?}&quot;</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>], <span class="kw-2">&amp;</span>args[<span class="number">1</span>..]);
+        }
+    }
+
+    <span class="comment">// Continued program logic goes here...
+</span>}</code></pre></div>
+<p><strong>This requires enabling the <a href="../../_features/index.html" title="crate::_features"><code>derive</code> feature flag</a>.</strong></p>
+<p>Git is an example of several common subcommand patterns.</p>
+<p>Help:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ git-derive
+? failed
+A fictional versioning CLI
+
+Usage: git-derive[EXE] &lt;COMMAND&gt;
+
+Commands:
+  clone  Clones repos
+  diff   Compare two commits
+  push   pushes things
+  add    adds things
+  stash  
+  help   Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help information
+
+$ git-derive help
+A fictional versioning CLI
+
+Usage: git-derive[EXE] &lt;COMMAND&gt;
+
+Commands:
+  clone  Clones repos
+  diff   Compare two commits
+  push   pushes things
+  add    adds things
+  stash  
+  help   Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help information
+
+$ git-derive help add
+adds things
+
+Usage: git-derive[EXE] add &lt;PATH&gt;...
+
+Arguments:
+  &lt;PATH&gt;...  Stuff to add
+
+Options:
+  -h, --help  Print help information
+</code></pre></div>
+<p>A basic argument:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ git-derive add
+? failed
+adds things
+
+Usage: git-derive[EXE] add &lt;PATH&gt;...
+
+Arguments:
+  &lt;PATH&gt;...  Stuff to add
+
+Options:
+  -h, --help  Print help information
+
+$ git-derive add Cargo.toml Cargo.lock
+Adding [&quot;Cargo.toml&quot;, &quot;Cargo.lock&quot;]
+</code></pre></div>
+<p>Default subcommand:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ git-derive stash -h
+Usage: git-derive[EXE] stash [OPTIONS]
+       git-derive[EXE] stash &lt;COMMAND&gt;
+
+Commands:
+  push   
+  pop    
+  apply  
+  help   Print this message or the help of the given subcommand(s)
+
+Options:
+  -m, --message &lt;MESSAGE&gt;  
+  -h, --help               Print help information
+
+$ git-derive stash push -h
+Usage: git-derive[EXE] stash push [OPTIONS]
+
+Options:
+  -m, --message &lt;MESSAGE&gt;  
+  -h, --help               Print help information
+
+$ git-derive stash pop -h
+Usage: git-derive[EXE] stash pop [STASH]
+
+Arguments:
+  [STASH]  
+
+Options:
+  -h, --help  Print help information
+
+$ git-derive stash -m &quot;Prototype&quot;
+Pushing StashPush { message: Some(&quot;Prototype&quot;) }
+
+$ git-derive stash pop
+Popping None
+
+$ git-derive stash push -m &quot;Prototype&quot;
+Pushing StashPush { message: Some(&quot;Prototype&quot;) }
+
+$ git-derive stash pop
+Popping None
+</code></pre></div>
+<p>External subcommands:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ git-derive custom-tool arg1 --foo bar
+Calling out to &quot;custom-tool&quot; with [&quot;arg1&quot;, &quot;--foo&quot;, &quot;bar&quot;]
+</code></pre></div>
+<p>Last argument:</p>
+<div class="example-wrap"><pre class="language-console"><code>$ git-derive diff --help
+Compare two commits
+
+Usage: git-derive[EXE] diff [COMMIT] [COMMIT] [-- &lt;PATH&gt;]
+
+Arguments:
+  [COMMIT]  
+  [COMMIT]  
+  [PATH]    
+
+Options:
+  -h, --help  Print help information
+
+$ git-derive diff
+Diffing stage..worktree 
+
+$ git-derive diff ./src
+Diffing stage..worktree ./src
+
+$ git-derive diff HEAD ./src
+Diffing HEAD..worktree ./src
+
+$ git-derive diff HEAD~~ -- HEAD
+Diffing HEAD~~..worktree HEAD
+</code></pre></div></div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="clap" data-themes="ayu,dark,light" data-resource-suffix="-20220928-1.66.0-nightly-ce7f0f1aa" data-rustdoc-version="1.66.0-nightly (ce7f0f1aa 2022-09-28)" ></div></body></html>

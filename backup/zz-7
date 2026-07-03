@@ -1,0 +1,2708 @@
+// pubspec.yaml dependencies:
+// flutter_riverpod: ^2.4.0
+// flutter_quill: ^9.3.0
+// google_fonts: ^6.1.0
+// file_picker: ^6.1.1
+// shared_preferences: ^2.2.2
+// uuid: ^4.2.1
+// intl: ^0.19.0
+// web_socket_channel: ^2.4.0
+// image_picker: ^1.0.5
+// path_provider: ^2.1.1
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'package:intl/intl.dart';
+
+void main() {
+  runApp(const ProviderScope(child: DocumentEditorApp()));
+}
+
+// ============================================================================
+// STATE MANAGEMENT - Riverpod Providers
+// ============================================================================
+
+final documentControllerProvider = StateNotifierProvider<DocumentNotifier, DocumentState>((ref) {
+  return DocumentNotifier();
+});
+
+final collaborationProvider = StateNotifierProvider<CollaborationNotifier, CollaborationState>((ref) {
+  return CollaborationNotifier();
+});
+
+final versionHistoryProvider = StateNotifierProvider<VersionHistoryNotifier, List<DocumentVersion>>((ref) {
+  return VersionHistoryNotifier();
+});
+
+final templateProvider = StateNotifierProvider<TemplateNotifier, List<DocumentTemplate>>((ref) {
+  return TemplateNotifier();
+});
+
+final sharingProvider = StateNotifierProvider<SharingNotifier, SharingState>((ref) {
+  return SharingNotifier();
+});
+
+final themeProvider = StateProvider<bool>((ref) => false);
+final toolbarVisibilityProvider = StateProvider<bool>((ref) => true);
+final focusModeProvider = StateProvider<bool>((ref) => false);
+final commandPaletteProvider = StateProvider<bool>((ref) => false);
+final attachmentsProvider = StateNotifierProvider<AttachmentsNotifier, List<Attachment>>((ref) {
+  return AttachmentsNotifier();
+});
+
+final wordCountProvider = Provider<DocumentStats>((ref) {
+  final docState = ref.watch(documentControllerProvider);
+  return docState.stats;
+});
+
+// ============================================================================
+// STATE CLASSES
+// ============================================================================
+
+class DocumentState {
+  final quill.QuillController controller;
+  final String title;
+  final DateTime lastModified;
+  final bool isSaved;
+  final DocumentStats stats;
+  final List<Comment> comments;
+  final String documentId;
+  final String currentUserId;
+
+  DocumentState({
+    required this.controller,
+    required this.title,
+    required this.lastModified,
+    this.isSaved = true,
+    required this.stats,
+    this.comments = const [],
+    required this.documentId,
+    this.currentUserId = 'user_1',
+  });
+
+  DocumentState copyWith({
+    quill.QuillController? controller,
+    String? title,
+    DateTime? lastModified,
+    bool? isSaved,
+    DocumentStats? stats,
+    List<Comment>? comments,
+    String? documentId,
+    String? currentUserId,
+  }) {
+    return DocumentState(
+      controller: controller ?? this.controller,
+      title: title ?? this.title,
+      lastModified: lastModified ?? this.lastModified,
+      isSaved: isSaved ?? this.isSaved,
+      stats: stats ?? this.stats,
+      comments: comments ?? this.comments,
+      documentId: documentId ?? this.documentId,
+      currentUserId: currentUserId ?? this.currentUserId,
+    );
+  }
+}
+
+class CollaborationState {
+  final bool isConnected;
+  final List<ActiveUser> activeUsers;
+  final Map<String, UserCursor> cursors;
+
+  CollaborationState({
+    this.isConnected = false,
+    this.activeUsers = const [],
+    this.cursors = const {},
+  });
+
+  CollaborationState copyWith({
+    bool? isConnected,
+    List<ActiveUser>? activeUsers,
+    Map<String, UserCursor>? cursors,
+  }) {
+    return CollaborationState(
+      isConnected: isConnected ?? this.isConnected,
+      activeUsers: activeUsers ?? this.activeUsers,
+      cursors: cursors ?? this.cursors,
+    );
+  }
+}
+
+class ActiveUser {
+  final String id;
+  final String name;
+  final Color color;
+  final DateTime lastSeen;
+
+  ActiveUser({
+    required this.id,
+    required this.name,
+    required this.color,
+    required this.lastSeen,
+  });
+}
+
+class UserCursor {
+  final int position;
+  final String userId;
+  final Color color;
+
+  UserCursor({
+    required this.position,
+    required this.userId,
+    required this.color,
+  });
+}
+
+class DocumentVersion {
+  final String id;
+  final String title;
+  final DateTime timestamp;
+  final String author;
+  final String content;
+  final String description;
+
+  DocumentVersion({
+    required this.id,
+    required this.title,
+    required this.timestamp,
+    required this.author,
+    required this.content,
+    required this.description,
+  });
+}
+
+class DocumentTemplate {
+  final String id;
+  final String name;
+  final String description;
+  final IconData icon;
+  final String content;
+  final List<String> tags;
+
+  DocumentTemplate({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.content,
+    required this.tags,
+  });
+}
+
+class SharingState {
+  final List<SharedUser> sharedUsers;
+  final bool isPublic;
+  final String? publicLink;
+  final DocumentPermission defaultPermission;
+
+  SharingState({
+    this.sharedUsers = const [],
+    this.isPublic = false,
+    this.publicLink,
+    this.defaultPermission = DocumentPermission.view,
+  });
+
+  SharingState copyWith({
+    List<SharedUser>? sharedUsers,
+    bool? isPublic,
+    String? publicLink,
+    DocumentPermission? defaultPermission,
+  }) {
+    return SharingState(
+      sharedUsers: sharedUsers ?? this.sharedUsers,
+      isPublic: isPublic ?? this.isPublic,
+      publicLink: publicLink ?? this.publicLink,
+      defaultPermission: defaultPermission ?? this.defaultPermission,
+    );
+  }
+}
+
+class SharedUser {
+  final String id;
+  final String name;
+  final String email;
+  final DocumentPermission permission;
+  final DateTime sharedAt;
+
+  SharedUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.permission,
+    required this.sharedAt,
+  });
+}
+
+enum DocumentPermission { view, comment, edit, admin }
+
+class Attachment {
+  final String id;
+  final String name;
+  final String type;
+  final int size;
+  final DateTime uploadedAt;
+  final String? url;
+
+  Attachment({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.size,
+    required this.uploadedAt,
+    this.url,
+  });
+}
+
+class DocumentStats {
+  final int words;
+  final int characters;
+  final int charactersNoSpaces;
+  final int paragraphs;
+  final int readingTime;
+
+  DocumentStats({
+    required this.words,
+    required this.characters,
+    required this.charactersNoSpaces,
+    required this.paragraphs,
+    required this.readingTime,
+  });
+}
+
+class Comment {
+  final String id;
+  final String text;
+  final String author;
+  final DateTime timestamp;
+  final List<CommentReply> replies;
+
+  Comment({
+    required this.id,
+    required this.text,
+    required this.author,
+    required this.timestamp,
+    this.replies = const [],
+  });
+}
+
+class CommentReply {
+  final String id;
+  final String text;
+  final String author;
+  final DateTime timestamp;
+
+  CommentReply({
+    required this.id,
+    required this.text,
+    required this.author,
+    required this.timestamp,
+  });
+}
+
+// ============================================================================
+// NOTIFIERS
+// ============================================================================
+
+class DocumentNotifier extends StateNotifier<DocumentState> {
+  Timer? _autoSaveTimer;
+  
+  DocumentNotifier()
+      : super(DocumentState(
+          controller: quill.QuillController.basic(),
+          title: 'Untitled Document',
+          lastModified: DateTime.now(),
+          stats: DocumentStats(
+            words: 0,
+            characters: 0,
+            charactersNoSpaces: 0,
+            paragraphs: 0,
+            readingTime: 0,
+          ),
+          documentId: DateTime.now().millisecondsSinceEpoch.toString(),
+        )) {
+    state.controller.addListener(_onDocumentChanged);
+    _startAutoSave();
+  }
+
+  void _startAutoSave() {
+    _autoSaveTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!state.isSaved) {
+        saveDocument();
+      }
+    });
+  }
+
+  void _onDocumentChanged() {
+    final text = state.controller.document.toPlainText();
+    final stats = _calculateStats(text);
+    
+    state = state.copyWith(
+      lastModified: DateTime.now(),
+      isSaved: false,
+      stats: stats,
+    );
+  }
+
+  DocumentStats _calculateStats(String text) {
+    final trimmed = text.trim();
+    final words = trimmed.isEmpty ? 0 : trimmed.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final characters = text.length;
+    final charactersNoSpaces = text.replaceAll(RegExp(r'\s+'), '').length;
+    final paragraphs = text.split('\n').where((p) => p.trim().isNotEmpty).length;
+    final readingTime = (words / 200).ceil();
+    
+    return DocumentStats(
+      words: words,
+      characters: characters,
+      charactersNoSpaces: charactersNoSpaces,
+      paragraphs: paragraphs,
+      readingTime: readingTime,
+    );
+  }
+
+  void updateTitle(String newTitle) {
+    state = state.copyWith(
+      title: newTitle,
+      lastModified: DateTime.now(),
+      isSaved: false,
+    );
+  }
+
+  void saveDocument() {
+    state = state.copyWith(isSaved: true);
+    debugPrint('Document saved: ${state.documentId}');
+  }
+
+  void newDocument() {
+    final newController = quill.QuillController.basic();
+    newController.addListener(_onDocumentChanged);
+    
+    state = DocumentState(
+      controller: newController,
+      title: 'Untitled Document',
+      lastModified: DateTime.now(),
+      stats: DocumentStats(
+        words: 0,
+        characters: 0,
+        charactersNoSpaces: 0,
+        paragraphs: 0,
+        readingTime: 0,
+      ),
+      documentId: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
+  }
+
+  void insertBlock(String blockType) {
+    final index = state.controller.selection.baseOffset;
+    
+    switch (blockType) {
+      case 'heading1':
+        state.controller.formatSelection(quill.Attribute.h1);
+        break;
+      case 'heading2':
+        state.controller.formatSelection(quill.Attribute.h2);
+        break;
+      case 'heading3':
+        state.controller.formatSelection(quill.Attribute.h3);
+        break;
+      case 'bullet':
+        state.controller.formatSelection(quill.Attribute.ul);
+        break;
+      case 'numbered':
+        state.controller.formatSelection(quill.Attribute.ol);
+        break;
+      case 'quote':
+        state.controller.formatSelection(quill.Attribute.blockQuote);
+        break;
+      case 'code':
+        state.controller.formatSelection(quill.Attribute.codeBlock);
+        break;
+      case 'divider':
+        state.controller.document.insert(index, '\n───────────────────────\n');
+        break;
+      case 'table':
+        state.controller.document.insert(index, '\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n');
+        break;
+      case 'callout':
+        state.controller.document.insert(index, '\n💡 Callout: ');
+        break;
+      case 'checkbox':
+        state.controller.document.insert(index, '\n☐ ');
+        break;
+    }
+  }
+
+  void addComment(String text) {
+    final comment = Comment(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: text,
+      author: 'Current User',
+      timestamp: DateTime.now(),
+    );
+    
+    state = state.copyWith(
+      comments: [...state.comments, comment],
+    );
+  }
+
+  String exportToJson() {
+    return jsonEncode(state.controller.document.toDelta().toJson());
+  }
+
+  @override
+  void dispose() {
+    _autoSaveTimer?.cancel();
+    state.controller.removeListener(_onDocumentChanged);
+    state.controller.dispose();
+    super.dispose();
+  }
+}
+
+class CollaborationNotifier extends StateNotifier<CollaborationState> {
+  Timer? _heartbeatTimer;
+  
+  CollaborationNotifier() : super(CollaborationState()) {
+    _simulateCollaboration();
+  }
+
+  void _simulateCollaboration() {
+    // Simulate WebSocket connection
+    Future.delayed(const Duration(seconds: 2), () {
+      connect();
+      _addMockUsers();
+    });
+  }
+
+  void connect() {
+    state = state.copyWith(isConnected: true);
+    _startHeartbeat();
+  }
+
+  void disconnect() {
+    state = state.copyWith(isConnected: false, activeUsers: []);
+    _heartbeatTimer?.cancel();
+  }
+
+  void _startHeartbeat() {
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      // Send heartbeat to server
+      debugPrint('Heartbeat sent');
+    });
+  }
+
+  void _addMockUsers() {
+    final users = [
+      ActiveUser(
+        id: 'user_2',
+        name: 'Alice Johnson',
+        color: Colors.blue,
+        lastSeen: DateTime.now(),
+      ),
+      ActiveUser(
+        id: 'user_3',
+        name: 'Bob Smith',
+        color: Colors.green,
+        lastSeen: DateTime.now(),
+      ),
+    ];
+    
+    state = state.copyWith(activeUsers: users);
+  }
+
+  void updateCursor(String userId, int position, Color color) {
+    final newCursors = Map<String, UserCursor>.from(state.cursors);
+    newCursors[userId] = UserCursor(
+      position: position,
+      userId: userId,
+      color: color,
+    );
+    state = state.copyWith(cursors: newCursors);
+  }
+
+  @override
+  void dispose() {
+    _heartbeatTimer?.cancel();
+    super.dispose();
+  }
+}
+
+class VersionHistoryNotifier extends StateNotifier<List<DocumentVersion>> {
+  VersionHistoryNotifier() : super([]) {
+    _loadMockVersions();
+  }
+
+  void _loadMockVersions() {
+    final now = DateTime.now();
+    state = [
+      DocumentVersion(
+        id: 'v1',
+        title: 'Initial Draft',
+        timestamp: now.subtract(const Duration(days: 2)),
+        author: 'Current User',
+        content: '{}',
+        description: 'Created document',
+      ),
+      DocumentVersion(
+        id: 'v2',
+        title: 'Added Introduction',
+        timestamp: now.subtract(const Duration(days: 1)),
+        author: 'Current User',
+        content: '{}',
+        description: 'Added introduction section',
+      ),
+      DocumentVersion(
+        id: 'v3',
+        title: 'Major Revision',
+        timestamp: now.subtract(const Duration(hours: 3)),
+        author: 'Alice Johnson',
+        content: '{}',
+        description: 'Revised content structure',
+      ),
+    ];
+  }
+
+  void createVersion(String title, String author, String content, String description) {
+    final version = DocumentVersion(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      timestamp: DateTime.now(),
+      author: author,
+      content: content,
+      description: description,
+    );
+    state = [version, ...state];
+  }
+}
+
+class TemplateNotifier extends StateNotifier<List<DocumentTemplate>> {
+  TemplateNotifier() : super([]) {
+    _loadTemplates();
+  }
+
+  void _loadTemplates() {
+    state = [
+      DocumentTemplate(
+        id: 'blank',
+        name: 'Blank Document',
+        description: 'Start with an empty document',
+        icon: Icons.description_outlined,
+        content: '{}',
+        tags: ['basic'],
+      ),
+      DocumentTemplate(
+        id: 'meeting_notes',
+        name: 'Meeting Notes',
+        description: 'Template for meeting minutes',
+        icon: Icons.event_note,
+        content: jsonEncode([
+          {'insert': 'Meeting Notes\n', 'attributes': {'header': 1}},
+          {'insert': '\nDate: '},
+          {'insert': DateFormat('yyyy-MM-dd').format(DateTime.now())},
+          {'insert': '\nAttendees:\n• \n\nAgenda:\n1. \n\nNotes:\n\n\nAction Items:\n☐ \n'}
+        ]),
+        tags: ['productivity', 'business'],
+      ),
+      DocumentTemplate(
+        id: 'project_brief',
+        name: 'Project Brief',
+        description: 'Outline your project goals and requirements',
+        icon: Icons.work_outline,
+        content: jsonEncode([
+          {'insert': 'Project Brief\n', 'attributes': {'header': 1}},
+          {'insert': '\nProject Name: \n\n'},
+          {'insert': 'Overview\n', 'attributes': {'header': 2}},
+          {'insert': '\n\n'},
+          {'insert': 'Objectives\n', 'attributes': {'header': 2}},
+          {'insert': '\n1. \n\n'},
+          {'insert': 'Timeline\n', 'attributes': {'header': 2}},
+          {'insert': '\n\n'},
+          {'insert': 'Team\n', 'attributes': {'header': 2}},
+          {'insert': '\n• '}
+        ]),
+        tags: ['productivity', 'business', 'project'],
+      ),
+      DocumentTemplate(
+        id: 'blog_post',
+        name: 'Blog Post',
+        description: 'Structure for a blog article',
+        icon: Icons.article_outlined,
+        content: jsonEncode([
+          {'insert': 'Blog Post Title\n', 'attributes': {'header': 1}},
+          {'insert': '\n'},
+          {'insert': 'Introduction\n', 'attributes': {'header': 2}},
+          {'insert': '\n\n'},
+          {'insert': 'Main Content\n', 'attributes': {'header': 2}},
+          {'insert': '\n\n'},
+          {'insert': 'Conclusion\n', 'attributes': {'header': 2}},
+          {'insert': '\n'}
+        ]),
+        tags: ['writing', 'content'],
+      ),
+      DocumentTemplate(
+        id: 'todo_list',
+        name: 'To-Do List',
+        description: 'Simple task checklist',
+        icon: Icons.checklist,
+        content: jsonEncode([
+          {'insert': 'To-Do List\n', 'attributes': {'header': 1}},
+          {'insert': '\n☐ Task 1\n☐ Task 2\n☐ Task 3\n'}
+        ]),
+        tags: ['productivity', 'personal'],
+      ),
+      DocumentTemplate(
+        id: 'brainstorm',
+        name: 'Brainstorming',
+        description: 'Capture and organize ideas',
+        icon: Icons.lightbulb_outline,
+        content: jsonEncode([
+          {'insert': 'Brainstorming Session\n', 'attributes': {'header': 1}},
+          {'insert': '\n'},
+          {'insert': 'Topic: \n\n', 'attributes': {'bold': true}},
+          {'insert': 'Ideas:\n• \n'}
+        ]),
+        tags: ['creative', 'planning'],
+      ),
+    ];
+  }
+}
+
+class SharingNotifier extends StateNotifier<SharingState> {
+  SharingNotifier() : super(SharingState()) {
+    _loadMockSharing();
+  }
+
+  void _loadMockSharing() {
+    state = state.copyWith(
+      sharedUsers: [
+        SharedUser(
+          id: 'user_2',
+          name: 'Alice Johnson',
+          email: 'alice@example.com',
+          permission: DocumentPermission.edit,
+          sharedAt: DateTime.now().subtract(const Duration(days: 1)),
+        ),
+        SharedUser(
+          id: 'user_3',
+          name: 'Bob Smith',
+          email: 'bob@example.com',
+          permission: DocumentPermission.comment,
+          sharedAt: DateTime.now().subtract(const Duration(hours: 3)),
+        ),
+      ],
+    );
+  }
+
+  void shareWithUser(String name, String email, DocumentPermission permission) {
+    final user = SharedUser(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      email: email,
+      permission: permission,
+      sharedAt: DateTime.now(),
+    );
+    state = state.copyWith(
+      sharedUsers: [...state.sharedUsers, user],
+    );
+  }
+
+  void updatePermission(String userId, DocumentPermission newPermission) {
+    final updatedUsers = state.sharedUsers.map((user) {
+      if (user.id == userId) {
+        return SharedUser(
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          permission: newPermission,
+          sharedAt: user.sharedAt,
+        );
+      }
+      return user;
+    }).toList();
+    state = state.copyWith(sharedUsers: updatedUsers);
+  }
+
+  void removeUser(String userId) {
+    state = state.copyWith(
+      sharedUsers: state.sharedUsers.where((u) => u.id != userId).toList(),
+    );
+  }
+
+  void togglePublicAccess() {
+    if (state.isPublic) {
+      state = state.copyWith(isPublic: false, publicLink: null);
+    } else {
+      final link = 'https://docs.app/d/${DateTime.now().millisecondsSinceEpoch}';
+      state = state.copyWith(isPublic: true, publicLink: link);
+    }
+  }
+}
+
+class AttachmentsNotifier extends StateNotifier<List<Attachment>> {
+  AttachmentsNotifier() : super([]);
+
+  void addAttachment(String name, String type, int size) {
+    final attachment = Attachment(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      type: type,
+      size: size,
+      uploadedAt: DateTime.now(),
+      url: 'https://example.com/files/${DateTime.now().millisecondsSinceEpoch}',
+    );
+    state = [...state, attachment];
+  }
+
+  void removeAttachment(String id) {
+    state = state.where((a) => a.id != id).toList();
+  }
+}
+
+// ============================================================================
+// MAIN APP
+// ============================================================================
+
+class DocumentEditorApp extends ConsumerWidget {
+  const DocumentEditorApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeProvider);
+
+    return MaterialApp(
+      title: 'Advanced Document Editor',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        textTheme: GoogleFonts.interTextTheme(),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        useMaterial3: true,
+      ),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      home: const DocumentEditorScreen(),
+    );
+  }
+}
+
+// ============================================================================
+// MAIN EDITOR SCREEN
+// ============================================================================
+
+class DocumentEditorScreen extends ConsumerStatefulWidget {
+  const DocumentEditorScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<DocumentEditorScreen> createState() => _DocumentEditorScreenState();
+}
+
+class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
+  final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
+  final _titleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _scrollController.dispose();
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if ((event.logicalKey == LogicalKeyboardKey.keyK) &&
+          (HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed)) {
+        ref.read(commandPaletteProvider.notifier).state = true;
+      }
+      
+      if ((event.logicalKey == LogicalKeyboardKey.keyS) &&
+          (HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed)) {
+        ref.read(documentControllerProvider.notifier).saveDocument();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final docState = ref.watch(documentControllerProvider);
+    final collabState = ref.watch(collaborationProvider);
+    final toolbarVisible = ref.watch(toolbarVisibilityProvider);
+    final focusMode = ref.watch(focusModeProvider);
+    final stats = ref.watch(wordCountProvider);
+    final showCommandPalette = ref.watch(commandPaletteProvider);
+
+    _titleController.value = TextEditingValue(
+      text: docState.title,
+      selection: _titleController.selection,
+    );
+
+    return KeyboardListener(
+      focusNode: FocusNode(),
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: focusMode ? null : AppBar(
+          elevation: 0,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Row(
+            children: [
+              Icon(Icons.description_outlined, 
+                color: Theme.of(context).colorScheme.primary, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _titleController,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Untitled Document',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    ref.read(documentControllerProvider.notifier).updateTitle(value);
+                  },
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            // Collaboration status
+            if (collabState.isConnected && collabState.activeUsers.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    ...collabState.activeUsers.take(3).map((user) => 
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Tooltip(
+                          message: user.name,
+                          child: CircleAvatar(
+                            radius: 14,
+                            backgroundColor: user.color,
+                            child: Text(
+                              user.name[0],
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (collabState.activeUsers.length > 3)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.grey,
+                          child: Text(
+                            '+${collabState.activeUsers.length - 3}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            // Save indicator
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Center(
+                child: Row(
+                  children: [
+                    Icon(
+                      docState.isSaved ? Icons.cloud_done : Icons.sync,
+                      size: 18,
+                      color: docState.isSaved ? Colors.green : Colors.orange,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      docState.isSaved ? 'Saved' : 'Saving...',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Share button
+            IconButton(
+              icon: const Icon(Icons.people_outline, size: 20),
+              tooltip: 'Share',
+              onPressed: () => _showSharingPanel(context),
+            ),
+            // Version history
+            IconButton(
+              icon: const Icon(Icons.history, size: 20),
+              tooltip: 'Version History',
+              onPressed: () => _showVersionHistory(context),
+            ),
+            // Comments
+            IconButton(
+              icon: Badge(
+                label: Text('${docState.comments.length}'),
+                isLabelVisible: docState.comments.isNotEmpty,
+                child: const Icon(Icons.comment_outlined, size: 20),
+              ),
+              tooltip: 'Comments',
+              onPressed: () => _showCommentsPanel(context),
+            ),
+            // Attachments
+            Consumer(
+              builder: (context, ref, child) {
+                final attachments = ref.watch(attachmentsProvider);
+                return IconButton(
+                  icon: Badge(
+                    label: Text('${attachments.length}'),
+                    isLabelVisible: attachments.isNotEmpty,
+                    child: const Icon(Icons.attach_file, size: 20),
+                  ),
+                  tooltip: 'Attachments',
+                  onPressed: () => _showAttachmentsPanel(context),
+                );
+              },
+            ),
+            // More menu
+            PopupMenuButton(
+              icon: const Icon(Icons.more_vert, size: 20),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: const Row(
+                    children: [Icon(Icons.add, size: 18), SizedBox(width: 12), Text('New from Template')],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () => _showTemplateGallery(context));
+                  },
+                ),
+                PopupMenuItem(
+                  child: const Row(
+                    children: [Icon(Icons.upload_file, size: 18), SizedBox(width: 12), Text('Upload File')],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () => _pickFile());
+                  },
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  child: const Row(
+                    children: [Icon(Icons.download, size: 18), SizedBox(width: 12), Text('Export as JSON')],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () {
+                      final json = ref.read(documentControllerProvider.notifier).exportToJson();
+                      Clipboard.setData(ClipboardData(text: json));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Exported to clipboard')),
+                      );
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(
+                    children: [
+                      Icon(focusMode ? Icons.fullscreen_exit : Icons.fullscreen, size: 18),
+                      const SizedBox(width: 12),
+                      Text(focusMode ? 'Exit Focus Mode' : 'Focus Mode'),
+                    ],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () {
+                      ref.read(focusModeProvider.notifier).state = !focusMode;
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(
+                    children: [
+                      Icon(ref.read(themeProvider) ? Icons.light_mode : Icons.dark_mode, size: 18),
+                      const SizedBox(width: 12),
+                      Text(ref.read(themeProvider) ? 'Light Mode' : 'Dark Mode'),
+                    ],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () {
+                      ref.read(themeProvider.notifier).state = !ref.read(themeProvider);
+                    });
+                  },
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  child: const Row(
+                    children: [Icon(Icons.info_outline, size: 18), SizedBox(width: 12), Text('Document Info')],
+                  ),
+                  onTap: () {
+                    Future.delayed(Duration.zero, () => _showDocumentInfo(context, stats));
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                if (toolbarVisible && !focusMode) 
+                  CustomToolbar(controller: docState.controller),
+                Expanded(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                    child: Center(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: focusMode ? 900 : 800,
+                        ),
+                        margin: EdgeInsets.all(focusMode ? 48 : 24),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(focusMode ? 0 : 8),
+                          boxShadow: focusMode ? null : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(focusMode ? 0 : 8),
+                          child: SlashCommandEditor(
+                            controller: docState.controller,
+                            focusNode: _focusNode,
+                            scrollController: _scrollController,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (!focusMode) StatusBar(stats: stats, lastModified: docState.lastModified),
+              ],
+            ),
+            if (showCommandPalette)
+              CommandPalette(
+                onDismiss: () => ref.read(commandPaletteProvider.notifier).state = false,
+              ),
+          ],
+        ),
+        floatingActionButton: focusMode ? FloatingActionButton.small(
+          onPressed: () => ref.read(focusModeProvider.notifier).state = false,
+          tooltip: 'Exit Focus Mode',
+          child: const Icon(Icons.fullscreen_exit, size: 20),
+        ) : null,
+      ),
+    );
+  }
+
+  void _showSharingPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const SharingPanel(),
+    );
+  }
+
+  void _showVersionHistory(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const VersionHistoryPanel(),
+    );
+  }
+
+  void _showCommentsPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const CommentsPanel(),
+    );
+  }
+
+  void _showAttachmentsPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const AttachmentsPanel(),
+    );
+  }
+
+  void _showTemplateGallery(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const TemplateGalleryDialog(),
+    );
+  }
+
+  void _pickFile() {
+    // Simulate file picker
+    ref.read(attachmentsProvider.notifier).addAttachment(
+      'example_document.pdf',
+      'application/pdf',
+      1024576, // 1MB
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('File uploaded successfully')),
+    );
+  }
+
+  void _showDocumentInfo(BuildContext context, DocumentStats stats) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Document Statistics'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow('Words', stats.words.toString()),
+            _buildInfoRow('Characters', stats.characters.toString()),
+            _buildInfoRow('Characters (no spaces)', stats.charactersNoSpaces.toString()),
+            _buildInfoRow('Paragraphs', stats.paragraphs.toString()),
+            _buildInfoRow('Reading time', '${stats.readingTime} min'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// SLASH COMMAND EDITOR
+// ============================================================================
+
+
+// ============================================================================
+// SLASH MENU CONTENT
+// ============================================================================
+
+class SlashMenuContent extends StatelessWidget {
+  final String query;
+  final Function(String) onSelect;
+
+  const SlashMenuContent({
+    Key? key,
+    required this.query,
+    required this.onSelect,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final blocks = [
+      BlockOption('heading1', 'Heading 1', Icons.title, 'Large section heading'),
+      BlockOption('heading2', 'Heading 2', Icons.title, 'Medium section heading'),
+      BlockOption('heading3', 'Heading 3', Icons.title, 'Small section heading'),
+      BlockOption('bullet', 'Bulleted List', Icons.format_list_bulleted, 'Create a simple list'),
+      BlockOption('numbered', 'Numbered List', Icons.format_list_numbered, 'Create a list with numbering'),
+      BlockOption('quote', 'Quote', Icons.format_quote, 'Capture a quote'),
+      BlockOption('code', 'Code Block', Icons.code, 'Capture a code snippet'),
+      BlockOption('divider', 'Divider', Icons.horizontal_rule, 'Visually divide blocks'),
+      BlockOption('table', 'Table', Icons.table_chart, 'Insert a table'),
+      BlockOption('callout', 'Callout', Icons.campaign, 'Add a highlighted note'),
+      BlockOption('checkbox', 'Checkbox', Icons.check_box_outlined, 'Track tasks with checkboxes'),
+    ];
+
+    final filtered = blocks.where((block) {
+      return block.title.toLowerCase().contains(query.toLowerCase()) ||
+             block.description.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final block = filtered[index];
+        return InkWell(
+          onTap: () => onSelect(block.id),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(block.icon, size: 20, color: Theme.of(context).colorScheme.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        block.title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        block.description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class BlockOption {
+  final String id;
+  final String title;
+  final IconData icon;
+  final String description;
+
+  BlockOption(this.id, this.title, this.icon, this.description);
+}
+
+// ============================================================================
+// COMMAND PALETTE
+// ============================================================================
+
+class CommandPalette extends ConsumerStatefulWidget {
+  final VoidCallback onDismiss;
+
+  const CommandPalette({Key? key, required this.onDismiss}) : super(key: key);
+
+  @override
+  ConsumerState<CommandPalette> createState() => _CommandPaletteState();
+}
+
+class _CommandPaletteState extends ConsumerState<CommandPalette> {
+  final _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final commands = _getFilteredCommands();
+
+    return GestureDetector(
+      onTap: widget.onDismiss,
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: 600,
+              constraints: const BoxConstraints(maxHeight: 500),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: 'Type a command or search...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _query = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: commands.length,
+                      itemBuilder: (context, index) {
+                        final cmd = commands[index];
+                        return ListTile(
+                          leading: Icon(cmd.icon, size: 20),
+                          title: Text(cmd.title),
+                          subtitle: Text(cmd.description),
+                          trailing: cmd.shortcut != null
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceVariant,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    cmd.shortcut!,
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                )
+                              : null,
+                          onTap: () {
+                            cmd.action(ref);
+                            widget.onDismiss();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Command> _getFilteredCommands() {
+    final allCommands = [
+      Command(
+        'Save Document',
+        'Save current document',
+        Icons.save,
+        (ref) => ref.read(documentControllerProvider.notifier).saveDocument(),
+        '⌘S',
+      ),
+      Command(
+        'Toggle Theme',
+        'Switch between light and dark mode',
+        Icons.brightness_4,
+        (ref) => ref.read(themeProvider.notifier).state = !ref.read(themeProvider),
+        null,
+      ),
+      Command(
+        'Focus Mode',
+        'Enter distraction-free writing mode',
+        Icons.fullscreen,
+        (ref) => ref.read(focusModeProvider.notifier).state = !ref.read(focusModeProvider),
+        null,
+      ),
+      Command(
+        'Share Document',
+        'Share with others',
+        Icons.share,
+        (ref) {},
+        null,
+      ),
+      Command(
+        'Version History',
+        'View document versions',
+        Icons.history,
+        (ref) {},
+        null,
+      ),
+    ];
+
+    if (_query.isEmpty) return allCommands;
+
+    return allCommands.where((cmd) {
+      return cmd.title.toLowerCase().contains(_query.toLowerCase()) ||
+             cmd.description.toLowerCase().contains(_query.toLowerCase());
+    }).toList();
+  }
+}
+
+class Command {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Function(WidgetRef) action;
+  final String? shortcut;
+
+  Command(this.title, this.description, this.icon, this.action, this.shortcut);
+}
+
+// ============================================================================
+// SHARING PANEL
+// ============================================================================
+
+class SharingPanel extends ConsumerStatefulWidget {
+  const SharingPanel({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<SharingPanel> createState() => _SharingPanelState();
+}
+
+class _SharingPanelState extends ConsumerState<SharingPanel> {
+  final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
+  DocumentPermission _selectedPermission = DocumentPermission.view;
+
+  @override
+  Widget build(BuildContext context) {
+    final sharingState = ref.watch(sharingProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.8,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Share Document',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Add people section
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Add People',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: _nameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Name',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _emailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButtonFormField<DocumentPermission>(
+                                    value: _selectedPermission,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Permission',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    items: DocumentPermission.values.map((perm) {
+                                      return DropdownMenuItem(
+                                        value: perm,
+                                        child: Text(_permissionName(perm)),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      if (value != null) {
+                                        setState(() {
+                                          _selectedPermission = value;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (_nameController.text.isNotEmpty &&
+                                        _emailController.text.isNotEmpty) {
+                                      ref.read(sharingProvider.notifier).shareWithUser(
+                                            _nameController.text,
+                                            _emailController.text,
+                                            _selectedPermission,
+                                          );
+                                      _nameController.clear();
+                                      _emailController.clear();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('User added')),
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Add'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Public link
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Public Link',
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const Spacer(),
+                                Switch(
+                                  value: sharingState.isPublic,
+                                  onChanged: (_) {
+                                    ref.read(sharingProvider.notifier).togglePublicAccess();
+                                  },
+                                ),
+                              ],
+                            ),
+                            if (sharingState.isPublic && sharingState.publicLink != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceVariant,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        sharingState.publicLink!,
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18),
+                                      onPressed: () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: sharingState.publicLink!),
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Link copied')),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Shared users
+                    Text(
+                      'People with access',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ...sharingState.sharedUsers.map((user) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            child: Text(user.name[0]),
+                          ),
+                          title: Text(user.name),
+                          subtitle: Text(user.email),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DropdownButton<DocumentPermission>(
+                                value: user.permission,
+                                underline: const SizedBox(),
+                                items: DocumentPermission.values.map((perm) {
+                                  return DropdownMenuItem(
+                                    value: perm,
+                                    child: Text(_permissionName(perm)),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    ref
+                                        .read(sharingProvider.notifier)
+                                        .updatePermission(user.id, value);
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                onPressed: () {
+                                  ref
+                                      .read(sharingProvider.notifier)
+                                      .removeUser(user.id);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _permissionName(DocumentPermission perm) {
+    switch (perm) {
+      case DocumentPermission.view:
+        return 'View';
+      case DocumentPermission.comment:
+        return 'Comment';
+      case DocumentPermission.edit:
+        return 'Edit';
+      case DocumentPermission.admin:
+        return 'Admin';
+    }
+  }
+}
+
+// ============================================================================
+// VERSION HISTORY PANEL
+// ============================================================================
+
+class VersionHistoryPanel extends ConsumerWidget {
+  const VersionHistoryPanel({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final versions = ref.watch(versionHistoryProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.history),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Version History',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: versions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.history,
+                              size: 64,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No version history yet',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: versions.length,
+                        itemBuilder: (context, index) {
+                          final version = versions[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                child: Text(version.author[0]),
+                              ),
+                              title: Text(version.title),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Text(version.description),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${version.author} • ${_formatTime(version.timestamp)}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.restore, size: 20),
+                                    tooltip: 'Restore',
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Restored to "${version.title}"'),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.visibility, size: 20),
+                                    tooltip: 'Preview',
+                                    onPressed: () {
+                                      _showVersionPreview(context, version);
+                                    },
+                                  ),
+                                ],
+                              ),
+                              isThreeLine: true,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showVersionPreview(BuildContext context, DocumentVersion version) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(version.title),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'By ${version.author} • ${_formatTime(version.timestamp)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              Text(version.description),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Restored to "${version.title}"')),
+              );
+            },
+            child: const Text('Restore'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('MMM d, yyyy').format(time);
+  }
+}
+
+// ============================================================================
+// ATTACHMENTS PANEL
+// ============================================================================
+
+class AttachmentsPanel extends ConsumerWidget {
+  const AttachmentsPanel({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attachments = ref.watch(attachmentsProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.attach_file),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Attachments',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        ref.read(attachmentsProvider.notifier).addAttachment(
+                              'new_file_${DateTime.now().millisecondsSinceEpoch}.pdf',
+                              'application/pdf',
+                              512000,
+                            );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: attachments.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.attach_file,
+                              size: 64,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No attachments yet',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              icon: const Icon(Icons.upload_file),
+                              label: const Text('Upload File'),
+                              onPressed: () {
+                                ref.read(attachmentsProvider.notifier).addAttachment(
+                                      'sample_document.pdf',
+                                      'application/pdf',
+                                      1024576,
+                                    );
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: attachments.length,
+                        itemBuilder: (context, index) {
+                          final attachment = attachments[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: _getFileColor(attachment.type),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _getFileIcon(attachment.type),
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(attachment.name),
+                              subtitle: Text(
+                                '${_formatFileSize(attachment.size)} • ${_formatTime(attachment.uploadedAt)}',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.download, size: 20),
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Downloading ${attachment.name}'),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 20),
+                                    onPressed: () {
+                                      ref
+                                          .read(attachmentsProvider.notifier)
+                                          .removeAttachment(attachment.id);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _getFileColor(String type) {
+    if (type.contains('pdf')) return Colors.red;
+    if (type.contains('image')) return Colors.blue;
+    if (type.contains('word') || type.contains('document')) return Colors.indigo;
+    if (type.contains('excel') || type.contains('spreadsheet')) return Colors.green;
+    return Colors.grey;
+  }
+
+  IconData _getFileIcon(String type) {
+    if (type.contains('pdf')) return Icons.picture_as_pdf;
+    if (type.contains('image')) return Icons.image;
+    if (type.contains('word') || type.contains('document')) return Icons.description;
+    if (type.contains('excel') || type.contains('spreadsheet')) return Icons.table_chart;
+    return Icons.insert_drive_file;
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return DateFormat('MMM d, yyyy').format(time);
+  }
+}
+
+// ============================================================================
+// TEMPLATE GALLERY
+// ============================================================================
+
+class TemplateGalleryDialog extends ConsumerStatefulWidget {
+  const TemplateGalleryDialog({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<TemplateGalleryDialog> createState() => _TemplateGalleryDialogState();
+}
+
+class _TemplateGalleryDialogState extends ConsumerState<TemplateGalleryDialog> {
+  String _selectedCategory = 'all';
+
+  @override
+  Widget build(BuildContext context) {
+    final templates = ref.watch(templateProvider);
+    final filteredTemplates = _selectedCategory == 'all'
+        ? templates
+        : templates.where((t) => t.tags.contains(_selectedCategory)).toList();
+
+    return Dialog(
+      child: Container(
+        width: 800,
+        height: 600,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Template Gallery',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _CategoryChip('all', 'All Templates'),
+                  _CategoryChip('productivity', 'Productivity'),
+                  _CategoryChip('business', 'Business'),
+                  _CategoryChip('writing', 'Writing'),
+                  _CategoryChip('personal', 'Personal'),
+                  _CategoryChip('creative', 'Creative'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1.2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: filteredTemplates.length,
+                itemBuilder: (context, index) {
+                  final template = filteredTemplates[index];
+                  return Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () {
+                        ref
+                            .read(documentControllerProvider.notifier)
+                            .loadFromTemplate(template.content);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Created from "${template.name}"'),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                template.icon,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              template.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              template.description,
+                              style: Theme.of(context).textTheme.bodySmall,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Spacer(),
+                            Wrap(
+                              spacing: 4,
+                              children: template.tags.take(2).map((tag) {
+                                return Chip(
+                                  label: Text(tag),
+                                  labelStyle: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 10),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _CategoryChip(String value, String label) {
+    final isSelected = _selectedCategory == value;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (_) {
+          setState(() {
+            _selectedCategory = value;
+          });
+        },
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// COMMENTS PANEL
+// ============================================================================
+
+class CommentsPanel extends ConsumerStatefulWidget {
+  const CommentsPanel({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<CommentsPanel> createState() => _CommentsPanelState();
+}
+
+class _CommentsPanelState extends ConsumerState<CommentsPanel> {
+  final _commentController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final docState = ref.watch(documentControllerProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Comments',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: docState.comments.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.comment_outlined,
+                              size: 64,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No comments yet',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: docState.comments.length,
+                        itemBuilder: (context, index) {
+                          final comment = docState.comments[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16,
+                                        child: Text(comment.author[0]),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        comment.author,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        _formatCommentTime(comment.timestamp),
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(comment.text),
+                                  if (comment.replies.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    const Divider(),
+                                    ...comment.replies.map((reply) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(left: 16, top: 8),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 12,
+                                              child: Text(
+                                                reply.author[0],
+                                                style: const TextStyle(fontSize: 10),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        reply.author,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                        _formatCommentTime(reply.timestamp),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(fontSize: 10),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    reply.text,
+                                                    style: const TextStyle(fontSize: 12),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _commentController,
+                        decoration: const InputDecoration(
+                          hintText: 'Add a comment...',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        maxLines: null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      icon: const Icon(Icons.send),
+                      onPressed: () {
+                        if (_commentController.text.isNotEmpty) {
+                          ref
+                              .read(documentControllerProvider.notifier)
+                              .addComment(_commentController.text);
+                          _commentController.clear();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatCommentTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return DateFormat('MMM d').format(time);
+  }
+}
+
+// ============================================================================
+// CUSTOM TOOLBAR
+// ============================================================================
+
+class CustomToolbar extends StatelessWidget {
+  final quill.QuillController controller;
+
+  const CustomToolbar({Key? key, required this.controller}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            quill.QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: true,
+              options: const quill.QuillToolbarHistoryButtonOptions(),
+            ),
+            quill.QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: false,
+              options: const quill.QuillToolbarHistoryButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.bold,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.italic,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.underline,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.strikeThrough,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarColorButton(
+              controller: controller,
+              isBackground: false,
+              options: const quill.QuillToolbarColorButtonOptions(),
+            ),
+            quill.QuillToolbarColorButton(
+              controller: controller,
+              isBackground: true,
+              options: const quill.QuillToolbarColorButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarSelectHeaderStyleDropdownButton(
+              controller: controller,
+              options: const quill.QuillToolbarSelectHeaderStyleDropdownButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.ol,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.ul,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarIndentButton(
+              controller: controller,
+              isIncrease: true,
+              options: const quill.QuillToolbarIndentButtonOptions(),
+            ),
+            quill.QuillToolbarIndentButton(
+              controller: controller,
+              isIncrease: false,
+              options: const quill.QuillToolbarIndentButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.blockQuote,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            quill.QuillToolbarToggleStyleButton(
+              attribute: quill.Attribute.codeBlock,
+              controller: controller,
+              options: const quill.QuillToolbarToggleStyleButtonOptions(),
+            ),
+            const VerticalDivider(),
+            quill.QuillToolbarLinkStyleButton(
+              controller: controller,
+              options: const quill.QuillToolbarLinkStyleButtonOptions(),
+            ),
+            quill.QuillToolbarClearFormatButton(
+              controller: controller,
+              options: const quill.QuillToolbarClearFormatButtonOptions(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// STATUS BAR
+// ============================================================================
+
+class StatusBar extends StatelessWidget {
+  final DocumentStats stats;
+  final DateTime lastModified;
+
+  const StatusBar({
+    Key? key,
+    required this.stats,
+    required this.lastModified,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        border: Border(
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          _StatusItem(
+            icon: Icons.article_outlined,
+            label: '${stats.words} words',
+          ),
+          const SizedBox(width: 16),
+          _StatusItem(
+            icon: Icons.text_fields,
+            label: '${stats.characters} chars',
+          ),
+          const SizedBox(width: 16),
+          _StatusItem(
+            icon: Icons.schedule,
+            label: '${stats.readingTime} min read',
+          ),
+          const Spacer(),
+          _StatusItem(
+            icon: Icons.update,
+            label: 'Modified ${_formatTime(lastModified)}',
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${time.day}/${time.month}/${time.year}';
+  }
+}
+
+class _StatusItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatusItem({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+        ),
+      ],
+    );
+  }
+}

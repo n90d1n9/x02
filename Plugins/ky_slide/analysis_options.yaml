@@ -1,0 +1,21 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # Historical prototypes and scratch imports kept for reference only.
+    # Active PPT/PPTX flows live under lib/services/presentation_io.
+    - lib/PPT2-zz-20
+    - lib/PPT3-zz-1
+    - lib/pdf_ppt.dart
+    - lib/ppt.dart
+    - lib/ppt_provider.dart
+    - lib/ppt_service.dart
+    - lib/zz-10.dart
+    - lib/zz-23
+    - lib/zz-new-ppt.dart
+    - lib/zz-new10
+    - lib/zz-new15.dart
+    - lib/zz-new6.dart
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

@@ -1,0 +1,250 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `examples/git.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>git.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="/SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="/normalize-20220928-1.66.0-nightly-ce7f0f1aa.css"><link rel="stylesheet" href="/rustdoc-20220928-1.66.0-nightly-ce7f0f1aa.css" id="mainThemeStyle"><link rel="stylesheet" href="/ayu-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/dark-20220928-1.66.0-nightly-ce7f0f1aa.css" disabled><link rel="stylesheet" href="/light-20220928-1.66.0-nightly-ce7f0f1aa.css" id="themeStyle"><script id="default-settings" ></script><script src="/storage-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/source-script-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="../../source-files-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><script defer src="/main-20220928-1.66.0-nightly-ce7f0f1aa.js"></script><noscript><link rel="stylesheet" href="/noscript-20220928-1.66.0-nightly-ce7f0f1aa.css"></noscript><link rel="alternate icon" type="image/png" href="/favicon-16x16-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="alternate icon" type="image/png" href="/favicon-32x32-20220928-1.66.0-nightly-ce7f0f1aa.png"><link rel="icon" type="image/svg+xml" href="/favicon-20220928-1.66.0-nightly-ce7f0f1aa.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../git/index.html"><div class="logo-container"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../git/index.html"><div class="logo-container"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../git/index.html"><img class="rust-logo" src="/rust-logo-20220928-1.66.0-nightly-ce7f0f1aa.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="/wheel-20220928-1.66.0-nightly-ce7f0f1aa.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::ffi::OsString;
+<span class="kw">use </span>std::path::PathBuf;
+
+<span class="kw">use </span>clap::{arg, Command};
+
+<span class="kw">fn </span>cli() -&gt; Command {
+    Command::new(<span class="string">&quot;git&quot;</span>)
+        .about(<span class="string">&quot;A fictional versioning CLI&quot;</span>)
+        .subcommand_required(<span class="bool-val">true</span>)
+        .arg_required_else_help(<span class="bool-val">true</span>)
+        .allow_external_subcommands(<span class="bool-val">true</span>)
+        .subcommand(
+            Command::new(<span class="string">&quot;clone&quot;</span>)
+                .about(<span class="string">&quot;Clones repos&quot;</span>)
+                .arg(<span class="macro">arg!</span>(&lt;REMOTE&gt; <span class="string">&quot;The remote to clone&quot;</span>))
+                .arg_required_else_help(<span class="bool-val">true</span>),
+        )
+        .subcommand(
+            Command::new(<span class="string">&quot;diff&quot;</span>)
+                .about(<span class="string">&quot;Compare two commits&quot;</span>)
+                .arg(<span class="macro">arg!</span>(base: [COMMIT]))
+                .arg(<span class="macro">arg!</span>(head: [COMMIT]))
+                .arg(<span class="macro">arg!</span>(path: [PATH]).last(<span class="bool-val">true</span>)),
+        )
+        .subcommand(
+            Command::new(<span class="string">&quot;push&quot;</span>)
+                .about(<span class="string">&quot;pushes things&quot;</span>)
+                .arg(<span class="macro">arg!</span>(&lt;REMOTE&gt; <span class="string">&quot;The remote to target&quot;</span>))
+                .arg_required_else_help(<span class="bool-val">true</span>),
+        )
+        .subcommand(
+            Command::new(<span class="string">&quot;add&quot;</span>)
+                .about(<span class="string">&quot;adds things&quot;</span>)
+                .arg_required_else_help(<span class="bool-val">true</span>)
+                .arg(<span class="macro">arg!</span>(&lt;PATH&gt; ... <span class="string">&quot;Stuff to add&quot;</span>).value_parser(<span class="macro">clap::value_parser!</span>(PathBuf))),
+        )
+        .subcommand(
+            Command::new(<span class="string">&quot;stash&quot;</span>)
+                .args_conflicts_with_subcommands(<span class="bool-val">true</span>)
+                .args(push_args())
+                .subcommand(Command::new(<span class="string">&quot;push&quot;</span>).args(push_args()))
+                .subcommand(Command::new(<span class="string">&quot;pop&quot;</span>).arg(<span class="macro">arg!</span>([STASH])))
+                .subcommand(Command::new(<span class="string">&quot;apply&quot;</span>).arg(<span class="macro">arg!</span>([STASH]))),
+        )
+}
+
+<span class="kw">fn </span>push_args() -&gt; Vec&lt;clap::Arg&gt; {
+    <span class="macro">vec!</span>[<span class="macro">arg!</span>(-m --message &lt;MESSAGE&gt;)]
+}
+
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>matches = cli().get_matches();
+
+    <span class="kw">match </span>matches.subcommand() {
+        <span class="prelude-val">Some</span>((<span class="string">&quot;clone&quot;</span>, sub_matches)) =&gt; {
+            <span class="macro">println!</span>(
+                <span class="string">&quot;Cloning {}&quot;</span>,
+                sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;REMOTE&quot;</span>).expect(<span class="string">&quot;required&quot;</span>)
+            );
+        }
+        <span class="prelude-val">Some</span>((<span class="string">&quot;diff&quot;</span>, sub_matches)) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>base = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;base&quot;</span>).map(|s| s.as_str());
+            <span class="kw">let </span><span class="kw-2">mut </span>head = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;head&quot;</span>).map(|s| s.as_str());
+            <span class="kw">let </span><span class="kw-2">mut </span>path = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;path&quot;</span>).map(|s| s.as_str());
+            <span class="kw">if </span>path.is_none() {
+                path = head;
+                head = <span class="prelude-val">None</span>;
+                <span class="kw">if </span>path.is_none() {
+                    path = base;
+                    base = <span class="prelude-val">None</span>;
+                }
+            }
+            <span class="kw">let </span>base = base.unwrap_or(<span class="string">&quot;stage&quot;</span>);
+            <span class="kw">let </span>head = head.unwrap_or(<span class="string">&quot;worktree&quot;</span>);
+            <span class="kw">let </span>path = path.unwrap_or(<span class="string">&quot;&quot;</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;Diffing {}..{} {}&quot;</span>, base, head, path);
+        }
+        <span class="prelude-val">Some</span>((<span class="string">&quot;push&quot;</span>, sub_matches)) =&gt; {
+            <span class="macro">println!</span>(
+                <span class="string">&quot;Pushing to {}&quot;</span>,
+                sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;REMOTE&quot;</span>).expect(<span class="string">&quot;required&quot;</span>)
+            );
+        }
+        <span class="prelude-val">Some</span>((<span class="string">&quot;add&quot;</span>, sub_matches)) =&gt; {
+            <span class="kw">let </span>paths = sub_matches
+                .get_many::&lt;PathBuf&gt;(<span class="string">&quot;PATH&quot;</span>)
+                .into_iter()
+                .flatten()
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+            <span class="macro">println!</span>(<span class="string">&quot;Adding {:?}&quot;</span>, paths);
+        }
+        <span class="prelude-val">Some</span>((<span class="string">&quot;stash&quot;</span>, sub_matches)) =&gt; {
+            <span class="kw">let </span>stash_command = sub_matches.subcommand().unwrap_or((<span class="string">&quot;push&quot;</span>, sub_matches));
+            <span class="kw">match </span>stash_command {
+                (<span class="string">&quot;apply&quot;</span>, sub_matches) =&gt; {
+                    <span class="kw">let </span>stash = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;STASH&quot;</span>);
+                    <span class="macro">println!</span>(<span class="string">&quot;Applying {:?}&quot;</span>, stash);
+                }
+                (<span class="string">&quot;pop&quot;</span>, sub_matches) =&gt; {
+                    <span class="kw">let </span>stash = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;STASH&quot;</span>);
+                    <span class="macro">println!</span>(<span class="string">&quot;Popping {:?}&quot;</span>, stash);
+                }
+                (<span class="string">&quot;push&quot;</span>, sub_matches) =&gt; {
+                    <span class="kw">let </span>message = sub_matches.get_one::&lt;String&gt;(<span class="string">&quot;message&quot;</span>);
+                    <span class="macro">println!</span>(<span class="string">&quot;Pushing {:?}&quot;</span>, message);
+                }
+                (name, <span class="kw">_</span>) =&gt; {
+                    <span class="macro">unreachable!</span>(<span class="string">&quot;Unsupported subcommand `{}`&quot;</span>, name)
+                }
+            }
+        }
+        <span class="prelude-val">Some</span>((ext, sub_matches)) =&gt; {
+            <span class="kw">let </span>args = sub_matches
+                .get_many::&lt;OsString&gt;(<span class="string">&quot;&quot;</span>)
+                .into_iter()
+                .flatten()
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+            <span class="macro">println!</span>(<span class="string">&quot;Calling out to {:?} with {:?}&quot;</span>, ext, args);
+        }
+        <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(), <span class="comment">// If all subcommands are defined above, anything else is unreachabe!()
+    </span>}
+
+    <span class="comment">// Continued program logic goes here...
+</span>}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="git" data-themes="ayu,dark,light" data-resource-suffix="-20220928-1.66.0-nightly-ce7f0f1aa" data-rustdoc-version="1.66.0-nightly (ce7f0f1aa 2022-09-28)" ></div></body></html>
