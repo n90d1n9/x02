@@ -4,6 +4,7 @@ import '../model/cell/cell_selection.dart';
 import '../model/sheet_table.dart';
 import '../state/sheet_sidebar_provider.dart';
 import '../state/toolbar_provider.dart';
+import 'sheet_ribbon_conditional_formatting_group.dart';
 import 'sheet_ribbon_data_group.dart';
 import 'sheet_ribbon_formula_group.dart';
 import 'sheet_ribbon_group.dart';

@@ -17,6 +17,7 @@ import '../theme/ky_sheet_theme.dart';
 import '../widget/formula_bar.dart';
 import '../widget/quick_action_sheet.dart';
 import '../widget/sheet_command_palette_dialog.dart';
+import '../widget/sheet_file_menu.dart';
 import '../widget/sheet_sidebar.dart';
 import '../widget/sheet_tabs_bar.dart';
 import '../widget/sheet_workbook_shortcuts.dart';
@@ -68,6 +69,7 @@ class _SpreadsheetScreenState extends ConsumerState<SpreadsheetScreen> {
           foregroundColor: KySheetColors.text,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
+          leading: const SheetFileMenu(),
           title: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -102,6 +104,8 @@ class _SpreadsheetScreenState extends ConsumerState<SpreadsheetScreen> {
               tooltip: 'Command Palette (Ctrl+K)',
             ),
             const VerticalDivider(),
+            // Note: Import/Export now available via File menu
+            // Keeping these buttons for quick access but they duplicate File menu functionality
             IconButton(
               icon: const Icon(Icons.upload_file),
               onPressed: _importFile,

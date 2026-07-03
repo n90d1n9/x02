@@ -8,6 +8,7 @@ import '../model/cell/cell_data.dart';
 import '../model/cell/cell_selection.dart';
 import '../model/cell/cell_style.dart';
 import '../model/cell/cell_validation.dart';
+import '../model/conditional_format_rule.dart';
 import '../model/sheet_filter_rule.dart';
 import '../model/sheet_table.dart';
 import '../utils/sheet_cell_quick_filter_rule_builder.dart';
@@ -818,6 +819,79 @@ class ToolbarController {
       errorMessage: errorMessage,
     );
     applyValidation(selection, validation);
+  }
+
+  //---------- Conditional Formatting ----------
+
+  /// Apply conditional formatting rule to selected cells
+  void applyConditionalFormat(
+    CellSelection selection, {
+    required ConditionalFormatCondition condition,
+    Color? backgroundColor,
+    Color? textColor,
+    String? operand,
+  }) {
+    final rule = ConditionalFormatRule(
+      condition: condition,
+      backgroundColor: backgroundColor ?? Colors.red.shade100,
+      textColor: textColor ?? Colors.black87,
+      operand: operand ?? '0',
+      range: selection.toRange(),
+    );
+    ref
+        .read(spreadsheetProvider.notifier)
+        .addConditionalFormatRule(rule);
+  }
+
+  /// Clear all conditional formats from selected cells
+  void clearConditionalFormats(CellSelection selection) {
+    ref
+        .read(spreadsheetProvider.notifier)
+        .removeConditionalFormatRules(selection.toRange());
+  }
+
+  /// Apply data bar conditional format
+  void applyDataBarConditionalFormat(
+    CellSelection selection, {
+    required Color color,
+    required bool gradient,
+  }) {
+    final rule = ConditionalFormatRule.dataBar(
+      color: color,
+      gradient: gradient,
+      range: selection.toRange(),
+    );
+    ref
+        .read(spreadsheetProvider.notifier)
+        .addConditionalFormatRule(rule);
+  }
+
+  /// Apply color scale conditional format
+  void applyColorScaleConditionalFormat(
+    CellSelection selection, {
+    required List<Color> colors,
+  }) {
+    final rule = ConditionalFormatRule.colorScale(
+      colors: colors,
+      range: selection.toRange(),
+    );
+    ref
+        .read(spreadsheetProvider.notifier)
+        .addConditionalFormatRule(rule);
+  }
+
+  /// Apply icon set conditional format
+  void applyIconSetConditionalFormat(
+    CellSelection selection, {
+    required ConditionalFormatIconSet iconSet,
+  }) {
+    final rule = ConditionalFormatRule.iconSet(
+      iconSet: iconSet,
+      range: selection.toRange(),
+    );
+    ref
+        .read(spreadsheetProvider.notifier)
+        .addConditionalFormatRule(rule);
   }
 
   ////---------

@@ -1,6 +1,6 @@
 name: ky_sheet
 description: "A reusable Flutter spreadsheet editor package for Kaysir."
-version: 0.0.1
+version: 0.0.2
 publish_to: none
 homepage:
 
@@ -10,17 +10,22 @@ environment:
 
 dependencies:
   csv: ^8.0.0
-  excel: ^4.0.6
+  ffi: ^2.1.3
   file_picker: ^11.0.2
   flutter:
     sdk: flutter
   flutter_riverpod: ^3.3.1
   intl: ^0.20.2
+  ky_of_xlsx:
+    path: ../../Parser/Core/ky-of-xlsx
+  ky_of_chart:
+    path: ../../Parser/Common/ky-of-chart
   ky_office:
     path: ../ky_office
   ky_office_core:
     path: ../ky_office_core
   path_provider: ^2.1.5
+  tenun: ^0.3.0
 
 dev_dependencies:
   flutter_test:

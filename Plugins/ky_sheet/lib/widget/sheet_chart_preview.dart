@@ -4,16 +4,40 @@ import 'package:flutter/material.dart';
 
 import '../model/sheet_chart.dart';
 import '../theme/ky_sheet_theme.dart';
+import 'tenun_chart_widget.dart';
 
+/// Chart preview widget with support for both native Canvas rendering
+/// and advanced Tenun-powered charts.
 class SheetChartPreview extends StatelessWidget {
-  const SheetChartPreview({super.key, required this.data, required this.type});
+  const SheetChartPreview({
+    super.key,
+    required this.data,
+    required this.type,
+    this.useAdvancedRendering = false,
+    this.height = 190,
+  });
 
   final SheetChartData data;
   final SheetChartType type;
+  final bool useAdvancedRendering;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    if (!data.hasData) return const _EmptyChartPreview();
+    if (!data.hasData) return const _EmptyChartPreview(height: 190);
+
+    if (useAdvancedRendering) {
+      return SizedBox(
+        height: height,
+        child: TenunChartWidget(
+          data: data,
+          type: type,
+          showLegend: true,
+          showTitle: false,
+          animate: true,
+        ),
+      );
+    }
 
     final painter = switch (type) {
       SheetChartType.bar => _BarChartPainter(data),
@@ -33,7 +57,7 @@ class SheetChartPreview extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 170,
+              height: height - 20,
               child: CustomPaint(
                 key: const ValueKey('ky-sheet-chart-preview-canvas'),
                 painter: painter,
