@@ -1,9 +1,12 @@
 #![allow(non_snake_case)]
 
 use serde::Serialize;
-use slide_engine::{Geometry, Presentation, Shape, Slide, SlideRenderer};
+use slide_engine::{Geometry, Presentation, Shape, Slide, SlideRenderer, Fill, Stroke, TextBox, TextRun, TextAlign, VerticalAlign};
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_double};
+use std::io::Read;
+use zip::ZipArchive;
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 
 fn string_to_raw(value: impl Into<String>) -> *mut c_char {
     CString::new(value.into())
@@ -26,6 +29,218 @@ fn read_c_string(ptr: *const c_char) -> Option<String> {
         .to_str()
         .ok()
         .map(str::to_owned)
+}
+
+/// Import PPTX from bytes by parsing the ZIP archive and OpenXML content
+fn import_pptx_bytes(bytes: &[u8]) -> Result<Presentation, String> {
+    let cursor = std::io::Cursor::new(bytes);
+    let mut archive = ZipArchive::new(cursor)
+        .map_err(|e| format!("Failed to open PPTX ZIP: {}", e))?;
+
+    let mut presentation = Presentation::new("Imported Presentation");
+
+    // Read presentation.xml to get slide count
+    let mut presentation_xml_content = String::new();
+    if let Ok(mut file) = archive.by_name("ppt/presentation.xml") {
+        file.read_to_string(&mut presentation_xml_content)
+            .map_err(|e| format!("Failed to read presentation.xml: {}", e))?;
+        
+        // Parse slide IDs from presentation.xml
+        if let Some(sld_id_lst_start) = presentation_xml_content.find("<p:sldIdLst") {
+            if let Some(sld_id_lst_end) = presentation_xml_content[sld_id_lst_start..].find("</p:sldIdLst>") {
+                let sld_id_lst = &presentation_xml_content[sld_id_lst_start..sld_id_lst_start + sld_id_lst_end + 13];
+                
+                // Count sldId elements
+                let slide_count = sld_id_lst.matches("<p:sldId").count();
+                
+                // Create slides
+                for i in 0..slide_count {
+                    let slide_id = format!("slide_{}", i);
+                    let mut slide = Slide::new(&slide_id);
+                    
+                    // Try to read slide XML
+                    let slide_xml_name = format!("ppt/slides/slide{}.xml", i + 1);
+                    if let Ok(mut slide_file) = archive.by_name(&slide_xml_name) {
+                        let mut slide_xml_content = String::new();
+                        if slide_file.read_to_string(&mut slide_xml_content).is_ok() {
+                            // Parse shapes from slide XML
+                            parse_slide_shapes(&slide_xml_content, &mut slide, &mut archive);
+                        }
+                    }
+                    
+                    presentation.add_slide(slide);
+                }
+            }
+        }
+    }
+
+    // If no slides found, create a default slide
+    if presentation.slides.is_empty() {
+        presentation.add_slide(Slide::new("slide_0"));
+    }
+
+    Ok(presentation)
+}
+
+/// Parse shapes from slide XML content
+fn parse_slide_shapes(
+    xml_content: &str,
+    slide: &mut Slide,
+    archive: &mut ZipArchive<std::io::Cursor<&[u8]>>,
+) {
+    // Simple XML parsing for p:sp (shape) elements
+    let mut shape_index = 0;
+    let mut search_start = 0;
+    
+    while let Some(sp_start) = xml_content[search_start..].find("<p:sp") {
+        let abs_start = search_start + sp_start;
+        
+        // Find the end of this shape element (simplified - looks for </p:sp>)
+        if let Some(sp_end_rel) = xml_content[abs_start..].find("</p:sp>") {
+            let sp_end = abs_start + sp_end_rel + 7;
+            let sp_content = &xml_content[abs_start..sp_end];
+            
+            // Extract shape ID
+            let shape_id = format!("shape_{}_{}", slide.id, shape_index);
+            
+            // Try to extract text content
+            let text_content = extract_text_from_shape(sp_content);
+            
+            // Create a rectangle shape with text
+            let mut shape = Shape::rect(
+                &shape_id,
+                slide_engine::Rect::new(
+                    50.0 + (shape_index % 5) as f64 * 120.0,
+                    50.0 + (shape_index / 5) as f64 * 80.0,
+                    200.0,
+                    60.0,
+                ),
+                "#4472C4",
+            );
+            
+            // Add text box if text was found
+            if !text_content.is_empty() {
+                shape.text_box = Some(TextBox {
+                    runs: vec![TextRun {
+                        text: text_content,
+                        font_family: Some("Arial".to_string()),
+                        font_size: Some(18.0),
+                        bold: Some(false),
+                        italic: Some(false),
+                        underline: Some(false),
+                        color: Some("#000000".to_string()),
+                    }],
+                    align: TextAlign::Left,
+                    vertical_align: VerticalAlign::Top,
+                });
+            }
+            
+            slide.add_shape(shape);
+            shape_index += 1;
+        }
+        
+        search_start = abs_start + 1;
+    }
+    
+    // Also parse p:pic (picture/image) elements
+    let mut image_index = 0;
+    search_start = 0;
+    
+    while let Some(pic_start) = xml_content[search_start..].find("<p:pic") {
+        let abs_start = search_start + pic_start;
+        
+        if let Some(pic_end_rel) = xml_content[abs_start..].find("</p:pic>") {
+            let pic_end = abs_start + pic_end_rel + 8;
+            let pic_content = &xml_content[abs_start..pic_end];
+            
+            // Extract image relationship ID
+            if let Some(embed_start) = pic_content.find("r:embed=\"") {
+                let embed_rest = &pic_content[embed_start + 9..];
+                if let Some(embed_end) = embed_rest.find('\"') {
+                    let rel_id = &embed_rest[..embed_end];
+                    
+                    // Try to find and load the image
+                    if let Some(image_data) = load_image_by_rel_id(rel_id, archive) {
+                        let image_id = format!("image_{}_{}", slide.id, image_index);
+                        let mut shape = Shape::rect(
+                            &image_id,
+                            slide_engine::Rect::new(
+                                100.0 + image_index as f64 * 150.0,
+                                200.0,
+                                150.0,
+                                100.0,
+                            ),
+                            "#FFFFFF",
+                        );
+                        
+                        // Set image fill
+                        shape.fill = Some(Fill::Picture {
+                            data: image_data,
+                            content_type: "image/png".to_string(),
+                            fit: slide_engine::ImageFit::Contain,
+                        });
+                        
+                        slide.add_shape(shape);
+                        image_index += 1;
+                    }
+                }
+            }
+        }
+        
+        search_start = abs_start + 1;
+    }
+}
+
+/// Extract plain text from shape XML
+fn extract_text_from_shape(xml_content: &str) -> String {
+    let mut text = String::new();
+    let mut search_start = 0;
+    
+    // Look for <a:t> elements which contain text
+    while let Some(t_start) = xml_content[search_start..].find("<a:t>") {
+        let abs_start = search_start + t_start;
+        let content_start = abs_start + 5;
+        
+        if let Some(t_end_rel) = xml_content[content_start..].find("</a:t>") {
+            let content = &xml_content[content_start..content_start + t_end_rel];
+            if !text.is_empty() {
+                text.push(' ');
+            }
+            text.push_str(content.trim());
+            search_start = content_start + t_end_rel + 6;
+        } else {
+            break;
+        }
+    }
+    
+    text
+}
+
+/// Load image data by relationship ID
+fn load_image_by_rel_id(
+    rel_id: &str,
+    archive: &mut ZipArchive<std::io::Cursor<&[u8]>>,
+) -> Option<Vec<u8>> {
+    // This is simplified - in a real implementation, we'd parse the .rels files
+    // to map relationship IDs to actual image paths
+    // For now, try common image paths
+    let possible_paths = vec![
+        format!("ppt/media/{}", rel_id),
+        format!("ppt/media/image{}.png", rel_id.trim_start_matches("rId")),
+        format!("ppt/media/image{}.jpeg", rel_id.trim_start_matches("rId")),
+        format!("ppt/media/image{}.jpg", rel_id.trim_start_matches("rId")),
+    ];
+    
+    for path in possible_paths {
+        if let Ok(mut file) = archive.by_name(&path) {
+            let mut data = Vec::new();
+            if file.read_to_end(&mut data).is_ok() && !data.is_empty() {
+                return Some(data);
+            }
+        }
+    }
+    
+    None
 }
 
 fn render_first_slide_commands(pres: &Presentation) -> *mut c_char {
@@ -68,12 +283,25 @@ pub extern "C" fn slide_engine_free_presentation(pres: *mut Presentation) {
 // ---------------------------------------------------------------------
 #[no_mangle]
 pub extern "C" fn import_pptx_from_bytes(ptr: *const u8, len: usize) -> *mut c_char {
-    // Placeholder: real import will parse ZIP+XML. Keep the ABI stable and
-    // return an empty presentation for now.
+    // Import PPTX from bytes by parsing the ZIP archive and OpenXML content
     if ptr.is_null() && len > 0 {
         return std::ptr::null_mut();
     }
-    json_to_raw(&Presentation::default())
+    
+    let bytes = if !ptr.is_null() && len > 0 {
+        unsafe { std::slice::from_raw_parts(ptr, len) }
+    } else {
+        &[]
+    };
+    
+    match import_pptx_bytes(bytes) {
+        Ok(presentation) => json_to_raw(&presentation),
+        Err(e) => {
+            eprintln!("PPTX import error: {}", e);
+            // Return empty presentation on error to maintain stability
+            json_to_raw(&Presentation::default())
+        }
+    }
 }
 
 #[no_mangle]

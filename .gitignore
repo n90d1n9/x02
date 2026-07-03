@@ -1,4 +1,19 @@
 ```
+# Dependency directories
+node_modules/
+pubspec.lock
+
+# Build artifacts
+build/
+*.apk
+*.aab
+*.app
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE files
 # Dependencies
 node_modules/
 .venv/
@@ -43,6 +58,18 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Coverage
+coverage/
+htmlcov/
 *~
 .DS_Store
 Thumbs.db
