@@ -1,0 +1,8 @@
+[package]
+name = "reader_ods"
+version = "0.1.0"
+edition = "2021"
+description = "ODS export for parser-xlsx"
+
+[dependencies]
+parser-xlsx = { path = "../../Core/parser-xlsx", features = ["ods"] }

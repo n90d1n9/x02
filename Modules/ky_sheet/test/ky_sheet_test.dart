@@ -1829,7 +1829,7 @@ void main() {
       expect(container.read(redoStackProvider), isEmpty);
     });
 
-    test('records Waraq sheet_engine operations for direct cell edits', () {
+    test('records Waraq xlsx_reader operations for direct cell edits', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -1875,7 +1875,7 @@ void main() {
       );
     });
 
-    test('records Waraq sheet_engine format and clear operations', () {
+    test('records Waraq xlsx_reader format and clear operations', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -1911,7 +1911,7 @@ void main() {
       });
     });
 
-    test('resets Waraq sheet_engine operation logs after sheet imports', () {
+    test('resets Waraq xlsx_reader operation logs after sheet imports', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -1931,7 +1931,7 @@ void main() {
       expect(log.documentId, 'sheet-1');
     });
 
-    test('applies Waraq sheet_engine operation logs without local echo', () {
+    test('applies Waraq xlsx_reader operation logs without local echo', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -1979,7 +1979,7 @@ void main() {
       expect(container.read(undoStackProvider), isEmpty);
     });
 
-    test('skips Waraq sheet_engine operations for other documents', () {
+    test('skips Waraq xlsx_reader operations for other documents', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -2009,7 +2009,7 @@ void main() {
     });
 
     test(
-      'applies Waraq sheet_engine recalculation edits without local echo',
+      'applies Waraq xlsx_reader recalculation edits without local echo',
       () {
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -2623,7 +2623,7 @@ void main() {
       expect(container.read(workbookProvider).activeSheetId, firstSheetId);
     });
 
-    test('uses active sheet ids as Waraq sheet_engine document ids', () {
+    test('uses active sheet ids as Waraq xlsx_reader document ids', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -2702,7 +2702,7 @@ void main() {
       expect(target.read(sheetNamedRangesProvider).single.name, 'First_Cell');
     });
 
-    test('imports and exports Waraq sheet_engine JSON snapshots', () {
+    test('imports and exports Waraq xlsx_reader JSON snapshots', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -2889,7 +2889,7 @@ void main() {
   });
 
   group('SheetEngineCodec', () {
-    test('decodes Waraq sheet_engine grid snapshots into workbooks', () {
+    test('decodes Waraq xlsx_reader grid snapshots into workbooks', () {
       final workbook = SheetEngineCodec.decodeWorkbook({
         'name': 'Engine Sheet',
         'max_col': 1,
@@ -2957,7 +2957,7 @@ void main() {
       expect(sheet.cells[CellAddress(1, 0)]?.value, 'Ready');
     });
 
-    test('encodes ky sheet workbooks as Waraq sheet_engine snapshots', () {
+    test('encodes ky sheet workbooks as Waraq xlsx_reader snapshots', () {
       final workbook = SheetWorkbook(
         activeSheetId: 'sheet-2',
         sheets: [
@@ -3011,7 +3011,7 @@ void main() {
   });
 
   group('SheetEngineEditCodec', () {
-    test('encodes Waraq sheet_engine cell edits', () {
+    test('encodes Waraq xlsx_reader cell edits', () {
       final address = CellAddress(2, 1);
       final formulaEdit = SheetEngineEditCodec.setCell(
         address,
@@ -3065,7 +3065,7 @@ void main() {
       expect(SheetEngineEditCodec.recalculate(), 'Recalculate');
     });
 
-    test('builds Waraq sheet_engine operation envelopes', () {
+    test('builds Waraq xlsx_reader operation envelopes', () {
       final edit = SheetEngineEditCodec.setCellRaw(CellAddress(0, 0), '=1+2');
       final operation = SheetEngineEditCodec.operation(
         operationId: 'op-1',
@@ -3200,7 +3200,7 @@ void main() {
       expect(result.cells[CellAddress(0, 1)]?.value, '20');
     });
 
-    test('applies Waraq sheet_engine operation logs to cell maps', () {
+    test('applies Waraq xlsx_reader operation logs to cell maps', () {
       final result = SheetEngineOperationReplayer.applyOperationLog(
         cells: {
           CellAddress(0, 0): CellData(value: '10'),

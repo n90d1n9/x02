@@ -1,4 +1,4 @@
-// lib/services/slide_engine_service.dart
+// lib/services/pptx_reader_service.dart
 import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:io';
@@ -119,11 +119,11 @@ class SlideEngineService {
   SlideEngineService._internal() {
     String libraryPath;
     if (Platform.isMacOS) {
-      libraryPath = 'libslide_engine_ffi.dylib';
+      libraryPath = 'libpptx_reader_ffi.dylib';
     } else if (Platform.isWindows) {
-      libraryPath = 'slide_engine_ffi.dll';
+      libraryPath = 'pptx_reader_ffi.dll';
     } else {
-      libraryPath = 'libslide_engine_ffi.so';
+      libraryPath = 'libpptx_reader_ffi.so';
     }
 
     // In a real flutter app, this is bundled via ffi plugins or loaded from bundle.
@@ -135,13 +135,11 @@ class SlideEngineService {
     }
 
     _slideEngineVersion = _dylib
-        .lookup<ffi.NativeFunction<_SlideEngineVersionC>>(
-          'slide_engine_version',
-        )
+        .lookup<ffi.NativeFunction<_SlideEngineVersionC>>('pptx_reader_version')
         .asFunction();
     _slideEngineFreeString = _dylib
         .lookup<ffi.NativeFunction<_SlideEngineFreeStringC>>(
-          'slide_engine_free_string',
+          'pptx_reader_free_string',
         )
         .asFunction();
     _importPptxFromBytes = _dylib
@@ -166,7 +164,7 @@ class SlideEngineService {
         .asFunction();
     _slideEngineFreePresentation = _dylib
         .lookup<ffi.NativeFunction<_SlideEngineFreePresentationC>>(
-          'slide_engine_free_presentation',
+          'pptx_reader_free_presentation',
         )
         .asFunction();
 

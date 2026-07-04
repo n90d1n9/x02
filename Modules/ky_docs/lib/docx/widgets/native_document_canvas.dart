@@ -7,7 +7,7 @@
 /// - Direct rendering of blocks from DocumentEngine
 /// - Page layout with margins, headers, footers
 /// - Real-time collaboration support via CRDT operations
-/// - DOCX import/export via ky-of-docx parser
+/// - DOCX import/export via parser-docx parser
 library;
 
 import 'dart:async';

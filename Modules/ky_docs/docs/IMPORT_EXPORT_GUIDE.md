@@ -6,10 +6,10 @@ This guide demonstrates how to use the improved `ky_docs` package to import and 
 
 The `Plugins/ky_docs` package now includes:
 - **File Menu**: MS Word/Google Docs-style File menu with New, Open, Save, Save As, Import, Export, Print, Share options
-- **DOCX Import**: Full integration with the Rust `ky-of-docx` parser for high-fidelity DOCX import
+- **DOCX Import**: Full integration with the Rust `parser-docx` parser for high-fidelity DOCX import
 - **DOCX Export**: Complete DOCX export with formatting preservation
 - **PDF Export**: PDF export with advanced options
-- **Engine Integration**: Seamless integration with the Rust `docs_engine` for document operations
+- **Engine Integration**: Seamless integration with the Rust `docx_reader` for document operations
 
 ## Sample Files
 
@@ -269,7 +269,7 @@ WaraqDocumentBridge creates import request
     ↓
 DocumentImportExtractor extracts content
     ├─→ Uses DocxService for basic text extraction
-    └─→ Uses ky-of-docx Rust parser for structured content (if available)
+    └─→ Uses parser-docx Rust parser for structured content (if available)
     ↓
 DocumentImportPreviewAnalyzer analyzes structure
     ↓
@@ -297,7 +297,7 @@ WaraqDocumentBridge creates export request
     ↓
 DocumentExportRenderer.renderDocx()
     ├─→ Uses DocxService for basic DOCX creation
-    └─→ Uses ky-of-docx Rust parser for advanced export (if available)
+    └─→ Uses parser-docx Rust parser for advanced export (if available)
     ↓
 Writes file to application documents directory
     ↓
@@ -387,16 +387,16 @@ void testExportRoundTrip() async {
 
 1. **Build Rust FFI Library**:
    ```bash
-   cd Plugins/Engine/docs_engine_ffi
+   cd Plugins/Engine/docx_reader_ffi
    cargo build --release
    ```
 
 2. **Copy Native Libraries**:
-   - Android: `libdocs_engine_ffi.so` → `android/app/src/main/jniLibs/`
-   - iOS: `libdocs_engine_ffi.dylib` → `ios/`
-   - Linux: `libdocs_engine_ffi.so` → `linux/`
-   - macOS: `libdocs_engine_ffi.dylib` → `macos/`
-   - Windows: `docs_engine_ffi.dll` → `windows/`
+   - Android: `libdocx_reader_ffi.so` → `android/app/src/main/jniLibs/`
+   - iOS: `libdocx_reader_ffi.dylib` → `ios/`
+   - Linux: `libdocx_reader_ffi.so` → `linux/`
+   - macOS: `libdocx_reader_ffi.dylib` → `macos/`
+   - Windows: `docx_reader_ffi.dll` → `windows/`
 
 3. **Initialize Engine**:
    ```dart

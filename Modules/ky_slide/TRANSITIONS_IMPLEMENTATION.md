@@ -167,7 +167,7 @@ AnimatedSwitcher(
 ```
 
 ### 3. PPTX Export (Rust Engine)
-Update `slide_engine_ffi` to serialize transitions:
+Update `pptx_reader_ffi` to serialize transitions:
 ```rust
 // In Rust FFI layer
 pub fn set_slide_transition(presentation_id: &str, slide_id: &str, transition: SlideTransition) {

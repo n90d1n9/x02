@@ -10,7 +10,7 @@ void main() {
   group('WaraqQuillDocumentMapper', () {
     const mapper = WaraqQuillDocumentMapper();
 
-    test('maps Quill headings and inline styles to docs_engine JSON', () {
+    test('maps Quill headings and inline styles to docx_reader JSON', () {
       final document = _documentFromDelta(
         d.Delta()
           ..insert('Proposal', {'bold': true})
@@ -79,7 +79,7 @@ void main() {
       expect(spans.single['text'], '');
     });
 
-    test('restores docs_engine JSON into Quill delta attributes', () {
+    test('restores docx_reader JSON into Quill delta attributes', () {
       final document = mapper.fromDocsEngineJson(
         jsonEncode({
           'title': 'Imported',

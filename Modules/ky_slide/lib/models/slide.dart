@@ -70,7 +70,7 @@ class Slide {
   }
 
   // ---------------------------------------------------------------------
-  // JSON deserialization (used by the slide_engine FFI bridge)
+  // JSON deserialization (used by the pptx_reader FFI bridge)
   // ---------------------------------------------------------------------
   factory Slide.fromJson(Map<String, dynamic> json) {
     return Slide(

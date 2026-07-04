@@ -2,7 +2,7 @@
 import 'dart:math' as math;
 
 import 'package:csv/csv.dart';
-// TODO: excel package dependency conflict with tenun - using FFI-based ky-of-xlsx instead
+// TODO: excel package dependency conflict with tenun - using FFI-based parser-xlsx instead
 import '../compat/excel_lib.dart' as excel_lib;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -23,11 +23,11 @@ import '../model/sheet_table.dart';
 import '../model/undo_redo_action.dart';
 import '../service/kyo_xlsx_reader.dart';
 import '../service/sheet_formula_engine.dart';
-import '../utils/engine/sheet_engine_operation_replayer.dart';
-import '../utils/sheet_engine_operation_diff.dart';
-import '../utils/sheet_engine_operation_replayer.dart';
+import '../utils/engine/xlsx_reader_operation_replayer.dart';
+import '../utils/xlsx_reader_operation_diff.dart';
+import '../utils/xlsx_reader_operation_replayer.dart';
 import '../utils/sheet_find_replace_engine.dart';
-import 'sheet_engine_operation_provider.dart';
+import 'xlsx_reader_operation_provider.dart';
 import 'sheet_named_range_provider.dart';
 import 'sheet_table_provider.dart';
 
@@ -371,7 +371,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   int applySheetEngineEdit(
     Object? edit, {
-    String description = 'Apply Waraq sheet_engine edit',
+    String description = 'Apply Waraq xlsx_reader edit',
   }) {
     return applySheetEngineEditWithResult(
       edit,
@@ -381,7 +381,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   SheetEngineOperationReplayResult applySheetEngineEditWithResult(
     Object? edit, {
-    String description = 'Apply Waraq sheet_engine edit',
+    String description = 'Apply Waraq xlsx_reader edit',
   }) {
     final result = SheetEngineOperationReplayer.applyEdit(
       cells: state,
@@ -393,7 +393,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   int applySheetEngineOperation(
     Map<String, dynamic> operation, {
-    String description = 'Apply Waraq sheet_engine operation',
+    String description = 'Apply Waraq xlsx_reader operation',
     String? expectedDocumentId,
   }) {
     return applySheetEngineOperationWithResult(
@@ -405,7 +405,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   SheetEngineOperationReplayResult applySheetEngineOperationWithResult(
     Map<String, dynamic> operation, {
-    String description = 'Apply Waraq sheet_engine operation',
+    String description = 'Apply Waraq xlsx_reader operation',
     String? expectedDocumentId,
   }) {
     final result = SheetEngineOperationReplayer.applyOperation(
@@ -419,7 +419,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   int applySheetEngineOperationLog(
     Map<String, dynamic> operationLog, {
-    String description = 'Apply Waraq sheet_engine operation log',
+    String description = 'Apply Waraq xlsx_reader operation log',
     String? expectedDocumentId,
   }) {
     return applySheetEngineOperationLogWithResult(
@@ -431,7 +431,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   SheetEngineOperationReplayResult applySheetEngineOperationLogWithResult(
     Map<String, dynamic> operationLog, {
-    String description = 'Apply Waraq sheet_engine operation log',
+    String description = 'Apply Waraq xlsx_reader operation log',
     String? expectedDocumentId,
   }) {
     final result = SheetEngineOperationReplayer.applyOperationLog(
@@ -586,7 +586,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
     }
   }
 
-  /// Import Excel using high-performance ky-of-xlsx parser (preferred for large files)
+  /// Import Excel using high-performance parser-xlsx parser (preferred for large files)
   Future<void> importFromExcelBytesKyo(String filePath) async {
     try {
       final workbookData = await KyoXlsxReader.readWorkbook(filePath);
@@ -616,13 +616,13 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
       _replaceAllState(
         newState,
-        'Import Excel (ky-of-xlsx)',
+        'Import Excel (parser-xlsx)',
         recordSheetEngineOperations: false,
       );
       _clearSheetEngineOperations();
       _clearSheetMetadata();
     } catch (e) {
-      throw Exception('Failed to import Excel with ky-of-xlsx: $e');
+      throw Exception('Failed to import Excel with parser-xlsx: $e');
     }
   }
 

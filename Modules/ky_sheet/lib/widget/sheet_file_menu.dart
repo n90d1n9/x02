@@ -47,12 +47,7 @@ class SheetFileMenu extends ConsumerWidget {
           shortcut: 'Ctrl+O',
         ),
         const PopupMenuDivider(),
-        _buildMenuItem(
-          Icons.save,
-          'Save',
-          'save',
-          shortcut: 'Ctrl+S',
-        ),
+        _buildMenuItem(Icons.save, 'Save', 'save', shortcut: 'Ctrl+S'),
         _buildMenuItem(
           Icons.save_as,
           'Save As...',
@@ -78,32 +73,18 @@ class SheetFileMenu extends ConsumerWidget {
             _buildSubMenuItem('Excel Workbook (.xlsx)', 'export_xlsx'),
             _buildSubMenuItem('CSV File (.csv)', 'export_csv'),
             _buildSubMenuItem('JSON Workbook (.json)', 'export_json'),
-            _buildSubMenuItem('Sheet Engine JSON (.sheet-engine.json)', 'export_sheet_engine'),
+            _buildSubMenuItem(
+              'Sheet Engine JSON (.sheet-engine.json)',
+              'export_xlsx_reader',
+            ),
           ],
         ),
         const PopupMenuDivider(),
-        _buildMenuItem(
-          Icons.print,
-          'Print...',
-          'print',
-          shortcut: 'Ctrl+P',
-        ),
-        _buildMenuItem(
-          Icons.share,
-          'Share',
-          'share',
-        ),
+        _buildMenuItem(Icons.print, 'Print...', 'print', shortcut: 'Ctrl+P'),
+        _buildMenuItem(Icons.share, 'Share', 'share'),
         const PopupMenuDivider(),
-        _buildMenuItem(
-          Icons.info_outline,
-          'Workbook Info',
-          'info',
-        ),
-        _buildMenuItem(
-          Icons.settings,
-          'Options',
-          'options',
-        ),
+        _buildMenuItem(Icons.info_outline, 'Workbook Info', 'info'),
+        _buildMenuItem(Icons.settings, 'Options', 'options'),
       ],
     );
   }
@@ -131,10 +112,7 @@ class SheetFileMenu extends ConsumerWidget {
               padding: EdgeInsets.only(left: 16),
               child: Text(
                 shortcut,
-                style: TextStyle(
-                  color: KySheetColors.mutedText,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: KySheetColors.mutedText, fontSize: 12),
               ),
             ),
           if (submenu != null) ...[
@@ -181,7 +159,7 @@ class SheetFileMenu extends ConsumerWidget {
       case 'export_xlsx':
       case 'export_csv':
       case 'export_json':
-      case 'export_sheet_engine':
+      case 'export_xlsx_reader':
         await _exportFile(context, ref, value.replaceFirst('export_', ''));
         break;
       case 'print':
@@ -242,7 +220,7 @@ class SheetFileMenu extends ConsumerWidget {
         final extension = result.files.single.extension?.toLowerCase();
 
         if (extension == 'xlsx' || extension == 'xls') {
-          // Use high-performance ky-of-xlsx parser for large files
+          // Use high-performance parser-xlsx parser for large files
           // Falls back to package:excel if FFI library not available
           try {
             await ref
@@ -250,7 +228,7 @@ class SheetFileMenu extends ConsumerWidget {
                 .importFromExcelBytesKyo(file.path);
             _showSnackBar(
               context,
-              'Excel file opened successfully (ky-of-xlsx)',
+              'Excel file opened successfully (parser-xlsx)',
             );
           } catch (e) {
             // Fallback to package:excel
@@ -296,7 +274,7 @@ class SheetFileMenu extends ConsumerWidget {
   Future<void> _saveAsFile(BuildContext context, WidgetRef ref) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      
+
       final fileName = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
@@ -323,7 +301,10 @@ class SheetFileMenu extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 // Get text from field - simplified for demo
-                Navigator.pop(context, 'workbook_${DateTime.now().millisecondsSinceEpoch}.xlsx');
+                Navigator.pop(
+                  context,
+                  'workbook_${DateTime.now().millisecondsSinceEpoch}.xlsx',
+                );
               },
               child: Text('Save'),
             ),
@@ -348,7 +329,7 @@ class SheetFileMenu extends ConsumerWidget {
     String filePath,
   ) async {
     final extension = filePath.split('.').last.toLowerCase();
-    
+
     if (extension == 'xlsx') {
       final excel = ref.read(spreadsheetProvider.notifier).exportToExcel();
       final bytes = excel.encode();
@@ -363,12 +344,18 @@ class SheetFileMenu extends ConsumerWidget {
       ref.read(workbookProvider.notifier).setCurrentFilePath(filePath);
       _showSnackBar(context, 'Saved to $filePath');
     } else if (extension == 'sheet-engine.json') {
-      final data = ref.read(workbookProvider.notifier).exportToSheetEngineJson();
+      final data = ref
+          .read(workbookProvider.notifier)
+          .exportToSheetEngineJson();
       await File(filePath).writeAsString(jsonEncode(data));
       ref.read(workbookProvider.notifier).setCurrentFilePath(filePath);
       _showSnackBar(context, 'Saved to $filePath');
     } else {
-      _showSnackBar(context, 'Unsupported file format: $extension', isError: true);
+      _showSnackBar(
+        context,
+        'Unsupported file format: $extension',
+        isError: true,
+      );
     }
   }
 
@@ -380,25 +367,25 @@ class SheetFileMenu extends ConsumerWidget {
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: format == 'xlsx' 
-            ? ['xlsx', 'xls'] 
-            : format == 'csv' 
-                ? ['csv'] 
-                : ['json'],
+        allowedExtensions: format == 'xlsx'
+            ? ['xlsx', 'xls']
+            : format == 'csv'
+            ? ['csv']
+            : ['json'],
       );
 
       if (result != null && result.files.single.path != null) {
         final file = File(result.files.single.path!);
 
         if (format == 'xlsx') {
-          // Use high-performance ky-of-xlsx parser for large files
+          // Use high-performance parser-xlsx parser for large files
           try {
             await ref
                 .read(spreadsheetProvider.notifier)
                 .importFromExcelBytesKyo(file.path);
             _showSnackBar(
               context,
-              'Excel file imported successfully (ky-of-xlsx)',
+              'Excel file imported successfully (parser-xlsx)',
             );
           } catch (e) {
             // Fallback to package:excel
@@ -432,9 +419,7 @@ class SheetFileMenu extends ConsumerWidget {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final extension = format == 'sheet_engine' 
-          ? 'sheet-engine.json' 
-          : format;
+      final extension = format == 'xlsx_reader' ? 'sheet-engine.json' : format;
       final fileName = 'spreadsheet_$timestamp.$extension';
       final filePath = '${directory.path}/$fileName';
 
@@ -450,8 +435,10 @@ class SheetFileMenu extends ConsumerWidget {
       } else if (format == 'json') {
         final data = ref.read(workbookProvider.notifier).exportToJson();
         await File(filePath).writeAsString(jsonEncode(data));
-      } else if (format == 'sheet_engine') {
-        final data = ref.read(workbookProvider.notifier).exportToSheetEngineJson();
+      } else if (format == 'xlsx_reader') {
+        final data = ref
+            .read(workbookProvider.notifier)
+            .exportToSheetEngineJson();
         await File(filePath).writeAsString(jsonEncode(data));
       }
 
@@ -469,9 +456,9 @@ class SheetFileMenu extends ConsumerWidget {
     final workbook = ref.read(workbookProvider);
     final sheetCount = workbook.sheets.length;
     final totalCells = workbook.totalCellCount;
-    
+
     if (!context.mounted) return;
-    
+
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -504,10 +491,7 @@ class SheetFileMenu extends ConsumerWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(
-              label,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
           Expanded(child: Text(value)),
         ],
@@ -515,7 +499,11 @@ class SheetFileMenu extends ConsumerWidget {
     );
   }
 
-  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  void _showSnackBar(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

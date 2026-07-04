@@ -7,7 +7,7 @@ import 'package:ky_docs/docx/services/waraq_document_bridge.dart';
 
 void main() {
   group('WaraqDocumentBridge', () {
-    test('builds docs_engine compatible JSON blocks from plain text', () {
+    test('builds docx_reader compatible JSON blocks from plain text', () {
       const bridge = WaraqDocumentBridge();
       final json = bridge.toDocsEngineJson(
         text: 'Heading\nBody line\n',
@@ -26,10 +26,10 @@ void main() {
       expect(blocks.first['spans'].single['style']['bold'], isFalse);
     });
 
-    test('carries Waraq docs_engine, docx-core, and pdf-core paths', () {
+    test('carries Waraq docx_reader, docx-core, and pdf-core paths', () {
       const bridge = WaraqDocumentBridge(
         libraryPaths: WaraqLibraryPaths(
-          docsEngine: '/docs_engine',
+          docsEngine: '/docx_reader',
           docxCore: '/docx-core',
           pdfCore: '/pdf-core',
         ),
@@ -42,7 +42,7 @@ void main() {
 
       expect(request.plainText, 'Body');
       expect(request.libraryPaths.toJson(), {
-        'docs_engine': '/docs_engine',
+        'docx_reader': '/docx_reader',
         'docx_core': '/docx-core',
         'pdf_core': '/pdf-core',
       });
@@ -51,7 +51,7 @@ void main() {
     test('builds Waraq import requests for core extractors', () {
       const bridge = WaraqDocumentBridge(
         libraryPaths: WaraqLibraryPaths(
-          docsEngine: '/docs_engine',
+          docsEngine: '/docx_reader',
           docxCore: '/docx-core',
           pdfCore: '/pdf-core',
         ),

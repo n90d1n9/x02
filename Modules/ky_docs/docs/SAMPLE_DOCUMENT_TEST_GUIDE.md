@@ -306,7 +306,7 @@ class SampleDocumentWorkflow extends ConsumerWidget {
 **Solutions**:
 1. This is expected with basic Dart extractor
 2. Build and integrate Rust FFI parser for full fidelity
-3. Use `ky-of-docx` parser via FFI
+3. Use `parser-docx` parser via FFI
 4. Check `docsEngineJson` field in import result
 
 ### Performance Issues
@@ -348,7 +348,7 @@ After import, you should see:
 
 After successful testing:
 
-1. **Integrate Rust FFI Parser**: Build `docs_engine_ffi` for production-quality parsing
+1. **Integrate Rust FFI Parser**: Build `docx_reader_ffi` for production-quality parsing
 2. **Add Real-time Collaboration**: Enable multi-user editing
 3. **Implement Advanced Features**: Track changes, comments, suggestions
 4. **Optimize Performance**: Profile and optimize for large documents
@@ -361,4 +361,4 @@ For issues or questions:
 - Check the IMPORT_EXPORT_GUIDE.md for detailed architecture
 - Review FILE_MENU_IMPLEMENTATION.md for UI details
 - Examine doc_notifier.dart for state management
-- Consult Rust engine documentation in Plugins/Engine/docs_engine/
+- Consult Rust engine documentation in Plugins/Engine/docx_reader/

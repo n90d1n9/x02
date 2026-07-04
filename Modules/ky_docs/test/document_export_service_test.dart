@@ -108,7 +108,7 @@ void main() {
     });
 
     test(
-      'passes docs_engine payload and Waraq core paths to renderers',
+      'passes docx_reader payload and Waraq core paths to renderers',
       () async {
         final renderer = _RecordingRenderer();
         final exportService = service().copyWithRenderer(renderer);
@@ -125,7 +125,7 @@ void main() {
 
         expect(document['title'], 'Proposal');
         expect(blocks.first['spans'].single['text'], 'Line 1');
-        expect(request.libraryPaths.docsEngine, contains('/Waraq/docs_engine'));
+        expect(request.libraryPaths.docsEngine, contains('/Waraq/docx_reader'));
         expect(request.libraryPaths.docxCore, contains('/Waraq/docx-core'));
         expect(request.libraryPaths.pdfCore, contains('/Waraq/pdf-core'));
       },

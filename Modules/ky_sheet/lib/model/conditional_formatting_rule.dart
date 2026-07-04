@@ -1,5 +1,5 @@
 /// Conditional Formatting Rule Models
-/// 
+///
 /// Defines the data structures for conditional formatting rules similar to Excel/GSheet.
 /// Supports various rule types: cell value, formula, top/bottom, data bars, color scales, icon sets.
 
@@ -8,16 +8,16 @@ import 'package:flutter/material.dart';
 
 /// Types of conditional formatting rules
 enum ConditionalFormattingRuleType {
-  cellValue,        // Based on cell value comparison
-  formula,          // Based on custom formula evaluation
-  topBottom,        // Top/Bottom N items or percentage
-  dataBar,          // Gradient or solid fill data bars
-  colorScale,       // 2 or 3 color gradient scale
-  iconSet,          // Directional arrows, traffic lights, etc.
-  duplicateValues,  // Highlight duplicate or unique values
-  textContains,     // Text contains specific string
-  dateOccurring,    // Dates occurring in specific period
-  blankErrors,      // Cells that are blank or contain errors
+  cellValue, // Based on cell value comparison
+  formula, // Based on custom formula evaluation
+  topBottom, // Top/Bottom N items or percentage
+  dataBar, // Gradient or solid fill data bars
+  colorScale, // 2 or 3 color gradient scale
+  iconSet, // Directional arrows, traffic lights, etc.
+  duplicateValues, // Highlight duplicate or unique values
+  textContains, // Text contains specific string
+  dateOccurring, // Dates occurring in specific period
+  blankErrors, // Cells that are blank or contain errors
 }
 
 /// Comparison operators for cell value rules
@@ -33,22 +33,13 @@ enum ComparisonOperator {
 }
 
 /// Position for top/bottom rules
-enum TopBottomPosition {
-  top,
-  bottom,
-}
+enum TopBottomPosition { top, bottom }
 
 /// Type for top/bottom rules (items or percentage)
-enum TopBottomType {
-  items,
-  percent,
-}
+enum TopBottomType { items, percent }
 
 /// Data bar direction
-enum DataBarDirection {
-  leftToRight,
-  rightToLeft,
-}
+enum DataBarDirection { leftToRight, rightToLeft }
 
 /// Icon set types
 enum IconSetType {
@@ -143,7 +134,8 @@ class EvaluationContext {
   final List<dynamic>? rangeValues; // All values in the formatted range
   final int? rank; // Rank of current value in range
   final int? totalCount; // Total count of values in range
-  final Function(String address)? getCellValue; // Function to get other cell values
+  final Function(String address)?
+  getCellValue; // Function to get other cell values
 
   EvaluationContext({
     required this.cellValue,
@@ -221,13 +213,13 @@ class CellValueRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.cellValue,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.cellValue,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -329,13 +321,13 @@ class FormulaRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.formula,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.formula,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -343,12 +335,14 @@ class FormulaRule extends ConditionalFormattingRule {
     // This is a placeholder - actual implementation would call the formula engine
     try {
       // Remove leading '=' if present
-      final cleanFormula = formula.startsWith('=') ? formula.substring(1) : formula;
-      
-      // TODO: Integrate with sheet_engine formula evaluator
+      final cleanFormula = formula.startsWith('=')
+          ? formula.substring(1)
+          : formula;
+
+      // TODO: Integrate with xlsx_reader formula evaluator
       // For now, return false as placeholder
       // In production: return context.formulaEngine.evaluate(cleanFormula, context.cellAddress);
-      
+
       return false;
     } catch (e) {
       return false;
@@ -412,13 +406,13 @@ class TopBottomRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.topBottom,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.topBottom,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -506,11 +500,11 @@ class DataBarRule extends ConditionalFormattingRule {
     Color? fillColor,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.dataBar,
-          fillColor: fillColor,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.dataBar,
+         fillColor: fillColor,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -563,15 +557,12 @@ class DataBarRule extends ConditionalFormattingRule {
 class ColorScaleRule extends ConditionalFormattingRule {
   final List<ColorScalePoint> points;
 
-  ColorScaleRule({
-    required String id,
-    required this.points,
-    bool? stopIfTrue,
-  }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.colorScale,
-          stopIfTrue: stopIfTrue,
-        );
+  ColorScaleRule({required String id, required this.points, bool? stopIfTrue})
+    : super(
+        id: id,
+        type: ConditionalFormattingRuleType.colorScale,
+        stopIfTrue: stopIfTrue,
+      );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -608,7 +599,8 @@ class ColorScaleRule extends ConditionalFormattingRule {
 /// Point in a color scale
 class ColorScalePoint {
   final int index; // 0, 1, or 2
-  final String type; // min, max, percentile, number, percent, formula, percentil
+  final String
+  type; // min, max, percentile, number, percent, formula, percentil
   final dynamic value;
   final Color color;
 
@@ -653,10 +645,10 @@ class IconSetRule extends ConditionalFormattingRule {
     required this.points,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.iconSet,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.iconSet,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -714,12 +706,7 @@ class IconSetPoint {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'index': index,
-      'type': type,
-      'value': value,
-      'operator': operator,
-    };
+    return {'index': index, 'type': type, 'value': value, 'operator': operator};
   }
 
   factory IconSetPoint.fromJson(Map<String, dynamic> json) {
@@ -744,13 +731,13 @@ class DuplicateValueRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.duplicateValues,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.duplicateValues,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -816,20 +803,20 @@ class TextContainsRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.textContains,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.textContains,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
     if (cellValue == null) return false;
 
     final cellStr = cellValue.toString();
-    
+
     if (caseSensitive) {
       return cellStr.contains(text);
     } else {
@@ -882,7 +869,8 @@ class TextContainsRule extends ConditionalFormattingRule {
 
 /// Rule for dates occurring in specific period
 class DateOccurringRule extends ConditionalFormattingRule {
-  final String period; // today, yesterday, tomorrow, last7Days, thisMonth, lastMonth, nextMonth, thisWeek, lastWeek, nextWeek, thisYear, lastYear, nextYear
+  final String
+  period; // today, yesterday, tomorrow, last7Days, thisMonth, lastMonth, nextMonth, thisWeek, lastWeek, nextWeek, thisYear, lastYear, nextYear
 
   DateOccurringRule({
     required String id,
@@ -892,13 +880,13 @@ class DateOccurringRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.dateOccurring,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.dateOccurring,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -1006,13 +994,13 @@ class BlankErrorRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.blankErrors,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
+         id: id,
+         type: ConditionalFormattingRuleType.blankErrors,
+         fillColor: fillColor,
+         fontColor: fontColor,
+         fontWeight: fontWeight,
+         stopIfTrue: stopIfTrue,
+       );
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {

@@ -3,8 +3,8 @@
 A Flutter-based document editor inspired by MS Word and Google Docs, featuring:
 
 - **Modern UI/UX**: Clean, intuitive interface similar to leading word processors
-- **Rust-Powered Engine**: High-performance document operations via FFI integration with `docs_engine`
-- **DOCX Compatibility**: Full import/export support using the `ky-of-docx` parser
+- **Rust-Powered Engine**: High-performance document operations via FFI integration with `docx_reader`
+- **DOCX Compatibility**: Full import/export support using the `parser-docx` parser
 - **Real-time Collaboration**: Multi-user editing with presence indicators
 - **Rich Formatting**: Support for paragraphs, headings, lists, tables, and more
 - **Page Layout**: Print layout view with rulers, margins, and page settings
@@ -36,7 +36,7 @@ A Flutter-based document editor inspired by MS Word and Google Docs, featuring:
 ┌─────────────────────────────────────────────────────────────┐
 │                   Rust Engine Layer                         │
 │  ┌──────────────────┐  ┌──────────────────────────────────┐ │
-│  │  docs_engine     │  │  ky-of-docx (Parser)             │ │
+│  │  docx_reader     │  │  parser-docx (Parser)             │ │
 │  │  - Document DOM  │  │  - DOCX parsing                  │ │
 │  │  - Operations    │  │  - DOCX generation               │ │
 │  │  - Serialization │  │  - Format validation             │ │

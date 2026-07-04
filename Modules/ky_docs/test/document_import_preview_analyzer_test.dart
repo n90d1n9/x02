@@ -8,7 +8,7 @@ void main() {
   group('DocumentImportPreviewAnalyzer', () {
     const analyzer = DocumentImportPreviewAnalyzer();
 
-    test('detects docs_engine headings, lists, paragraphs, and pages', () {
+    test('detects docx_reader headings, lists, paragraphs, and pages', () {
       final summary = analyzer.analyzeStructure(
         text:
             'Executive summary for the regional performance report\n\n'

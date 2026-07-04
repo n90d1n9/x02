@@ -1,4 +1,4 @@
-/// DOCX Parser integration using the ky-of-docx Rust crate.
+/// DOCX Parser integration using the parser-docx Rust crate.
 ///
 /// This module provides seamless integration with the DOCX parser engine
 /// for importing and exporting Microsoft Word documents.
@@ -33,7 +33,7 @@ class DocxParserService {
 
   /// Parse a DOCX file and convert to Document model
   ///
-  /// Uses the ky-of-docx Rust parser to extract:
+  /// Uses the parser-docx Rust parser to extract:
   /// - Paragraphs and headings
   /// - Text formatting (bold, italic, underline, etc.)
   /// - Lists (numbered and bulleted)
@@ -87,7 +87,7 @@ class DocxParserService {
     // TODO: Integrate with Rust writer via FFI
 
     throw UnimplementedError(
-      'DOCX generation requires Rust FFI integration with ky-of-docx',
+      'DOCX generation requires Rust FFI integration with parser-docx',
     );
   }
 

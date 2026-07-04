@@ -31,7 +31,7 @@ void main() {
       expect(restored.selection.baseOffset, 0);
     });
 
-    test('creates controllers from Waraq docs_engine JSON', () {
+    test('creates controllers from Waraq docx_reader JSON', () {
       final controller = factory.createFromWaraqDocsEngineJson(
         jsonEncode({
           'title': 'Imported',

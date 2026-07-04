@@ -125,7 +125,7 @@ void main() {
     });
 
     test(
-      'carries structured docs_engine content from Waraq extractors',
+      'carries structured docx_reader content from Waraq extractors',
       () async {
         final docsEngineJson = jsonEncode({
           'title': 'Report',

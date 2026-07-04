@@ -8,7 +8,7 @@ void main() {
   group('WaraqPdfExtractionMapper', () {
     const mapper = WaraqPdfExtractionMapper();
 
-    test('maps pdf-core JSON pages to text and docs_engine paragraphs', () {
+    test('maps pdf-core JSON pages to text and docx_reader paragraphs', () {
       final content = mapper.fromPdfCoreJson(
         jsonEncode({
           'metadata': {'title': 'Native Report'},

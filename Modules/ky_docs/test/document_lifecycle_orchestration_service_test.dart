@@ -209,7 +209,7 @@ void main() {
     });
 
     test(
-      'imports structured Waraq docs_engine drafts with formatting',
+      'imports structured Waraq docx_reader drafts with formatting',
       () async {
         var currentState = _state();
         final docsEngineJson = jsonEncode({

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-// TODO: excel package dependency conflict with tenun - using FFI-based ky-of-xlsx instead
+// TODO: excel package dependency conflict with tenun - using FFI-based parser-xlsx instead
 // import 'package:excel/excel.dart' as excel_lib;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -127,8 +127,8 @@ class _SpreadsheetScreenState extends ConsumerState<SpreadsheetScreen> {
                   child: Text('Export as JSON'),
                 ),
                 const PopupMenuItem(
-                  value: 'sheet_engine_json',
-                  child: Text('Export for Waraq sheet_engine'),
+                  value: 'xlsx_reader_json',
+                  child: Text('Export for Waraq xlsx_reader'),
                 ),
               ],
             ),
@@ -258,7 +258,7 @@ class _SpreadsheetScreenState extends ConsumerState<SpreadsheetScreen> {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final extension = format == 'sheet_engine_json'
+      final extension = format == 'xlsx_reader_json'
           ? 'sheet-engine.json'
           : format;
       final fileName = 'spreadsheet_$timestamp.$extension';
@@ -276,7 +276,7 @@ class _SpreadsheetScreenState extends ConsumerState<SpreadsheetScreen> {
       } else if (format == 'json') {
         final data = ref.read(workbookProvider.notifier).exportToJson();
         await File(filePath).writeAsString(jsonEncode(data));
-      } else if (format == 'sheet_engine_json') {
+      } else if (format == 'xlsx_reader_json') {
         final data = ref
             .read(workbookProvider.notifier)
             .exportToSheetEngineJson();

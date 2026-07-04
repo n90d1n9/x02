@@ -7,7 +7,7 @@ This guide explains how to migrate from `flutter_quill` to the native Rust-backe
 The `ky_docs` package now supports two modes of operation:
 
 1. **Quill Mode** (Legacy): Uses `flutter_quill` for rich text editing
-2. **Native Engine Mode**: Uses the Rust `docs_engine` via FFI for block-based editing (MS Word/GDocs-like)
+2. **Native Engine Mode**: Uses the Rust `docx_reader` via FFI for block-based editing (MS Word/GDocs-like)
 
 ## Architecture Comparison
 
@@ -18,9 +18,9 @@ Flutter UI → QuillController → Delta Document → JSON Storage
 
 ### After (Native Engine)
 ```
-Flutter UI → DocumentEngine (FFI) → Rust docs_engine → JSON/DOCX
+Flutter UI → DocumentEngine (FFI) → Rust docx_reader → JSON/DOCX
                               ↓
-                       ky-of-docx Parser
+                       parser-docx Parser
 ```
 
 ## Step-by-Step Migration
@@ -189,8 +189,8 @@ final docxBytes = await DocxParserService().generateDocx(await handle.getDocumen
 | Headers/Footers | ❌ | ✅ | Native only |
 | Page layout | ❌ | ✅ | Print/Web/Outline modes |
 | Rulers | ❌ | ✅ | Horizontal & vertical |
-| DOCX import | ⚠️ Limited | ✅ Full | Via ky-of-docx |
-| DOCX export | ❌ | ✅ | Via ky-of-docx |
+| DOCX import | ⚠️ Limited | ✅ Full | Via parser-docx |
+| DOCX export | ❌ | ✅ | Via parser-docx |
 | Real-time collaboration | ❌ | 🔄 CRDT-ready | Edit operations |
 | Track changes | ❌ | 🔄 Planned | |
 | Comments | ✅ | 🔄 Planned | |
@@ -248,11 +248,11 @@ Warning: Failed to load native library
 ```
 
 **Solution:** Ensure the Rust FFI library is built and copied to the correct location:
-- Android: `android/app/src/main/jniLibs/<abi>/libdocs_engine_ffi.so`
+- Android: `android/app/src/main/jniLibs/<abi>/libdocx_reader_ffi.so`
 - iOS: Included in framework bundle
-- Linux: `libdocs_engine_ffi.so` in library path
-- macOS: `libdocs_engine_ffi.dylib` in Frameworks
-- Windows: `docs_engine_ffi.dll` alongside executable
+- Linux: `libdocx_reader_ffi.so` in library path
+- macOS: `libdocx_reader_ffi.dylib` in Frameworks
+- Windows: `docx_reader_ffi.dll` alongside executable
 
 ### Blocks not rendering
 

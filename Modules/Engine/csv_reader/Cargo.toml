@@ -1,0 +1,9 @@
+[package]
+name = "reader_csv"
+version = "0.1.0"
+edition = "2021"
+description = "CSV export for parser-xlsx"
+
+[dependencies]
+parser-xlsx = { path = "../../Core/parser-xlsx" }
+csv = "1.1"

@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../state/sheet_engine_operation_provider.dart';
+import '../../state/xlsx_reader_operation_provider.dart';
 import '../../state/spreadsheet_provider.dart';
 import '../../theme/ky_sheet_theme.dart';
-import '../../utils/engine/sheet_engine_operation_payload_parser.dart';
-import '../../utils/engine/sheet_engine_operation_replayer.dart';
-import 'sheet_engine_operation_import_dialog.dart';
+import '../../utils/engine/xlsx_reader_operation_payload_parser.dart';
+import '../../utils/engine/xlsx_reader_operation_replayer.dart';
+import 'xlsx_reader_operation_import_dialog.dart';
 import '../sidebar/sheet_sidebar_panel_surface.dart';
 
 /// Sidebar panel for inspecting and replaying Waraq sheet engine operations.

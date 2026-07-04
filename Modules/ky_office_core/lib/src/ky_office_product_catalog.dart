@@ -63,7 +63,7 @@ abstract final class KyOfficeProducts {
 
   static const pdf = KyOfficeProductDescriptor(
     id: 'pdf',
-    packageName: 'ky-of-pdf',
+    packageName: 'reader_pdf',
     displayName: 'PDF',
     shortName: 'PDF',
     familyName: 'Kaysir',

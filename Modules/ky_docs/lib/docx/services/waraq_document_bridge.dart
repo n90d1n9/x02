@@ -21,7 +21,7 @@ class WaraqLibraryPaths {
 
   static const workspace = WaraqLibraryPaths(
     docsEngine:
-        '/Users/bhangun/Workspace/workkayys/Products/Libraries/Productivity/Waraq/docs_engine',
+        '/Users/bhangun/Workspace/workkayys/Products/Libraries/Productivity/Waraq/docx_reader',
     docxCore:
         '/Users/bhangun/Workspace/workkayys/Products/Libraries/Productivity/Waraq/docx-core',
     pdfCore:
@@ -30,7 +30,7 @@ class WaraqLibraryPaths {
 
   Map<String, Object?> toJson() {
     return {
-      'docs_engine': docsEngine,
+      'docx_reader': docsEngine,
       'docx_core': docxCore,
       'pdf_core': pdfCore,
     };

@@ -287,7 +287,7 @@ DocumentLifecycleOrchestrationService
     ↓
 DocumentImportService
     ↓
-DocxService (or ky-of-docx Rust FFI)
+DocxService (or parser-docx Rust FFI)
     ↓
 Update DocumentState
     ↓
@@ -379,7 +379,7 @@ After implementing the above, verify these features:
 
 ### Issue: Rust FFI parser not working
 **Solution**: 
-1. Build the Rust library: `cd Plugins/Engine/docs_engine_ffi && cargo build --release`
+1. Build the Rust library: `cd Plugins/Engine/docx_reader_ffi && cargo build --release`
 2. Copy the `.so`/`.dylib`/`.dll` to the Flutter project
 3. Initialize FFI in app startup: `DocumentEngine.instance.initialize()`
 

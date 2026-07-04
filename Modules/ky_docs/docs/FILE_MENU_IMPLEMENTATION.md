@@ -151,7 +151,7 @@ DocumentLifecycleOrchestrationService / DocumentExportOrchestrationService
     ↓
 DocumentImportService / DocumentExportService
     ↓
-DocxService (Dart) + ky-of-docx (Rust FFI - optional)
+DocxService (Dart) + parser-docx (Rust FFI - optional)
 ```
 
 ## Future Enhancements

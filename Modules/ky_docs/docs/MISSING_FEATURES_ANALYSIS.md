@@ -307,7 +307,7 @@ Shortcuts(
 **Priority**: 🔴 Critical for Production
 
 **What's Needed**:
-1. Build `docs_engine_ffi` library for all platforms
+1. Build `docx_reader_ffi` library for all platforms
 2. Copy `.so`/`.dylib`/`.dll` to Flutter assets
 3. Initialize FFI in app startup
 4. Replace Dart extractors with Rust parser calls

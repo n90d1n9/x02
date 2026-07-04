@@ -1,5 +1,5 @@
-/// FFI bindings for ky-of-xlsx Rust library
-/// 
+/// FFI bindings for parser-xlsx Rust library
+///
 /// This provides high-performance XLSX parsing for large spreadsheets
 /// using the Worksuite Parser ecosystem.
 
@@ -20,10 +20,11 @@ class XlsxWorkbook {
     if (lib == null) return null;
 
     try {
-      final openFunc = lib.lookupFunction<
-        Pointer<Void> Function(Pointer<Utf8>),
-        Pointer<Void> Function(Pointer<Utf8>)
-      >('xlsx_open');
+      final openFunc = lib
+          .lookupFunction<
+            Pointer<Void> Function(Pointer<Utf8>),
+            Pointer<Void> Function(Pointer<Utf8>)
+          >('xlsx_open');
 
       final cPath = path.toNativeUtf8();
       try {
@@ -42,24 +43,25 @@ class XlsxWorkbook {
   static DynamicLibrary? _loadLibrary() {
     try {
       if (Platform.isWindows) {
-        return DynamicLibrary.open('ky-of-xlsx.dll');
+        return DynamicLibrary.open('parser-xlsx.dll');
       } else if (Platform.isMacOS) {
-        return DynamicLibrary.open('libky-of-xlsx.dylib');
+        return DynamicLibrary.open('libparser-xlsx.dylib');
       } else {
-        return DynamicLibrary.open('libky-of-xlsx.so');
+        return DynamicLibrary.open('libparser-xlsx.so');
       }
     } catch (e) {
-      print('Failed to load ky-of-xlsx library: $e');
+      print('Failed to load parser-xlsx library: $e');
       return null;
     }
   }
 
   int get sheetCount {
     try {
-      final func = _lib.lookupFunction<
-        Int32 Function(Pointer<Void>),
-        int Function(Pointer<Void>)
-      >('xlsx_sheet_count');
+      final func = _lib
+          .lookupFunction<
+            Int32 Function(Pointer<Void>),
+            int Function(Pointer<Void>)
+          >('xlsx_sheet_count');
       return func(_handle);
     } catch (e) {
       print('Error getting sheet count: $e');
@@ -69,11 +71,12 @@ class XlsxWorkbook {
 
   String? getSheetName(int index) {
     try {
-      final func = _lib.lookupFunction<
-        Pointer<Utf8> Function(Pointer<Void>, Int32),
-        Pointer<Utf8> Function(Pointer<Void>, int)
-      >('xlsx_sheet_name');
-      
+      final func = _lib
+          .lookupFunction<
+            Pointer<Utf8> Function(Pointer<Void>, Int32),
+            Pointer<Utf8> Function(Pointer<Void>, int)
+          >('xlsx_sheet_name');
+
       final result = func(_handle, index);
       if (result == nullptr) return null;
       return result.toDartString();
@@ -85,10 +88,11 @@ class XlsxWorkbook {
 
   XlsxSheet? getSheet(String name) {
     try {
-      final func = _lib.lookupFunction<
-        Pointer<Void> Function(Pointer<Void>, Pointer<Utf8>),
-        Pointer<Void> Function(Pointer<Void>, Pointer<Utf8>)
-      >('xlsx_get_sheet');
+      final func = _lib
+          .lookupFunction<
+            Pointer<Void> Function(Pointer<Void>, Pointer<Utf8>),
+            Pointer<Void> Function(Pointer<Void>, Pointer<Utf8>)
+          >('xlsx_get_sheet');
 
       final cName = name.toNativeUtf8();
       try {
@@ -106,10 +110,11 @@ class XlsxWorkbook {
 
   void close() {
     try {
-      final func = _lib.lookupFunction<
-        Void Function(Pointer<Void>),
-        void Function(Pointer<Void>)
-      >('xlsx_close');
+      final func = _lib
+          .lookupFunction<
+            Void Function(Pointer<Void>),
+            void Function(Pointer<Void>)
+          >('xlsx_close');
       func(_handle);
     } catch (e) {
       print('Error closing workbook: $e');
@@ -126,10 +131,11 @@ class XlsxSheet {
 
   int get rowCount {
     try {
-      final func = _lib.lookupFunction<
-        Uint32 Function(Pointer<Void>),
-        int Function(Pointer<Void>)
-      >('xlsx_row_count');
+      final func = _lib
+          .lookupFunction<
+            Uint32 Function(Pointer<Void>),
+            int Function(Pointer<Void>)
+          >('xlsx_row_count');
       return func(_handle);
     } catch (e) {
       print('Error getting row count: $e');
@@ -139,10 +145,11 @@ class XlsxSheet {
 
   int get colCount {
     try {
-      final func = _lib.lookupFunction<
-        Uint32 Function(Pointer<Void>),
-        int Function(Pointer<Void>)
-      >('xlsx_col_count');
+      final func = _lib
+          .lookupFunction<
+            Uint32 Function(Pointer<Void>),
+            int Function(Pointer<Void>)
+          >('xlsx_col_count');
       return func(_handle);
     } catch (e) {
       print('Error getting column count: $e');
@@ -152,23 +159,25 @@ class XlsxSheet {
 
   String? getCellValue(int row, int col) {
     try {
-      final func = _lib.lookupFunction<
-        Pointer<Utf8> Function(Pointer<Void>, Uint32, Uint32),
-        Pointer<Utf8> Function(Pointer<Void>, int, int)
-      >('xlsx_cell_value');
+      final func = _lib
+          .lookupFunction<
+            Pointer<Utf8> Function(Pointer<Void>, Uint32, Uint32),
+            Pointer<Utf8> Function(Pointer<Void>, int, int)
+          >('xlsx_cell_value');
 
       final result = func(_handle, row, col);
       if (result == nullptr) return null;
-      
+
       final value = result.toDartString();
-      
+
       // Free the returned string
-      final freeFunc = _lib.lookupFunction<
-        Void Function(Pointer<Utf8>),
-        void Function(Pointer<Utf8>)
-      >('xlsx_free_string');
+      final freeFunc = _lib
+          .lookupFunction<
+            Void Function(Pointer<Utf8>),
+            void Function(Pointer<Utf8>)
+          >('xlsx_free_string');
       freeFunc(result);
-      
+
       return value;
     } catch (e) {
       print('Error getting cell value: $e');
@@ -210,7 +219,7 @@ class XlsxSheet {
   }
 }
 
-/// High-level XLSX reader using ky-of-xlsx
+/// High-level XLSX reader using parser-xlsx
 class KyoXlsxReader {
   /// Read XLSX file and return workbook data
   static Future<Map<String, dynamic>> readWorkbook(String path) async {
@@ -231,7 +240,7 @@ class KyoXlsxReader {
         if (sheet == null) continue;
 
         final cells = <String, dynamic>{};
-        
+
         // Stream cells for memory efficiency
         await for (final rowData in sheet.streamCells()) {
           cells.addAll(rowData);
@@ -272,7 +281,7 @@ class KyoXlsxReader {
       }
 
       final cells = <String, dynamic>{};
-      
+
       await for (final rowData in sheet.streamCells()) {
         cells.addAll(rowData);
       }

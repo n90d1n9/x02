@@ -125,7 +125,7 @@ File → Export → DOCX/PDF/TXT → Save to documents → Share option
 │  (Import, Export, Persistence, AI)      │
 ├─────────────────────────────────────────┤
 │    Optional: Rust FFI Layer             │
-│  (docs_engine, ky-of-docx parser)       │
+│  (docx_reader, parser-docx parser)       │
 └─────────────────────────────────────────┘
 ```
 

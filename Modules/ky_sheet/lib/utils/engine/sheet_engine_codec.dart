@@ -8,8 +8,8 @@ import '../../model/workbook_sheet.dart';
 class SheetEngineCodec {
   const SheetEngineCodec._();
 
-  static const type = 'waraq_sheet_engine_workbook';
-  static const engine = 'sheet_engine';
+  static const type = 'waraq_xlsx_reader_workbook';
+  static const engine = 'xlsx_reader';
 
   static bool isSheetEngineJson(Map<String, dynamic> json) {
     if (json['type'] == type || json['engine'] == engine) return true;

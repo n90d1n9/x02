@@ -20,14 +20,14 @@ This document describes the architecture and recent improvements to the **ky_sli
 └──────────────────────┬──────────────────────────────────────┘
                        │ FFI Bridge
 ┌──────────────────────▼──────────────────────────────────────┐
-│              slide_engine_ffi (Rust FFI)                     │
+│              pptx_reader_ffi (Rust FFI)                     │
 ├─────────────────────────────────────────────────────────────┤
 │  • import_pptx_from_bytes() - NOW FULLY IMPLEMENTED         │
 │  • add_shape(), remove_shape(), move_shape()                │
 │  • undo(), redo()                                           │
 │  • serialize/deserialize presentations                      │
 │                                                              │
-│  IMPROVED: Full ky-of-pptx parser integration               │
+│  IMPROVED: Full parser-pptx parser integration               │
 │  - Shape geometry conversion (20+ types)                    │
 │  - Text formatting preservation                             │
 │  - Image extraction with base64 encoding                    │
@@ -36,7 +36,7 @@ This document describes the architecture and recent improvements to the **ky_sli
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│              slide_engine (Rust Core)                        │
+│              pptx_reader (Rust Core)                        │
 │                     [Engine Layer]                           │
 ├─────────────────────────────────────────────────────────────┤
 │  • Scene Graph & Z-ordering                                 │
@@ -47,7 +47,7 @@ This document describes the architecture and recent improvements to the **ky_sli
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│           ky-of-pptx (Parser - Rust)                         │
+│           parser-pptx (Parser - Rust)                         │
 │                   [Parser Layer]                             │
 ├─────────────────────────────────────────────────────────────┤
 │  • PPTX ZIP extraction                                      │
@@ -61,10 +61,10 @@ This document describes the architecture and recent improvements to the **ky_sli
 ## Recent Improvements
 
 ### 1. Enhanced PPTX Import via FFI Bridge
-**File:** `Plugins/Engine/slide_engine_ffi/src/lib.rs`
+**File:** `Plugins/Engine/pptx_reader_ffi/src/lib.rs`
 
 #### Key Features:
-- **Full ky-of-pptx Integration**: Uses the production-ready PPTX parser library instead of custom XML parsing
+- **Full parser-pptx Integration**: Uses the production-ready PPTX parser library instead of custom XML parsing
 - **Shape Type Conversion**: Supports 20+ shape types including:
   - Basic: Rectangle, Ellipse, Line, TextBox
   - Geometric: Triangle, Diamond, Pentagon, Hexagon, Octagon
@@ -98,7 +98,7 @@ This document describes the architecture and recent improvements to the **ky_sli
 
 #### Code Example:
 ```rust
-/// Import PPTX from bytes using the ky-of-pptx parser library
+/// Import PPTX from bytes using the parser-pptx parser library
 fn import_pptx_bytes(bytes: &[u8]) -> Result<Presentation, String> {
     let reader = PptxReader::from_bytes(bytes)?;
     let pptx_presentation = reader.extract()?;
@@ -213,7 +213,7 @@ Plugins/
 ├── ky_slide/                          # Flutter/Dart Presentation Layer
 │   ├── lib/
 │   │   ├── services/
-│   │   │   ├── slide_engine_service.dart       # FFI bridge to Rust
+│   │   │   ├── pptx_reader_service.dart       # FFI bridge to Rust
 │   │   │   ├── animation_timeline_service.dart # NEW: Animation management
 │   │   │   └── presentation_io/
 │   │   │       ├── pptx_import_service.dart    # Dart-side PPTX import
@@ -224,11 +224,11 @@ Plugins/
 │   └── pubspec.yaml
 │
 ├── Engine/
-│   ├── slide_engine_ffi/              # Rust FFI Bridge
+│   ├── pptx_reader_ffi/              # Rust FFI Bridge
 │   │   ├── Cargo.toml                 # Dependencies include ky_of_pptx
 │   │   └── src/lib.rs                 # IMPROVED: Full PPTX parsing
 │   │
-│   └── slide_engine/                  # Rust Core Engine
+│   └── pptx_reader/                  # Rust Core Engine
 │       ├── Cargo.toml
 │       └── src/
 │           ├── lib.rs
@@ -246,7 +246,7 @@ Plugins/
     │   └── ky-of-table/               # Table schemas
     │
     └── Core/
-        └── ky-of-pptx/                # PPTX Parser
+        └── parser-pptx/                # PPTX Parser
             ├── Cargo.toml
             └── src/
                 ├── lib.rs             # PptxReader API
@@ -271,7 +271,7 @@ Rust: PptxReader::from_bytes(bytes)
         ↓
 Rust: reader.extract() → ky_of_pptx::Presentation
         ↓
-Rust: Convert to slide_engine::Presentation
+Rust: Convert to pptx_reader::Presentation
   - Iterate slides
   - Convert shapes (geometry, text, images, strokes)
   - Convert colors (RGB, Theme)
@@ -300,13 +300,13 @@ cargo --version
 
 ### Build FFI Library
 ```bash
-cd Plugins/Engine/slide_engine_ffi
+cd Plugins/Engine/pptx_reader_ffi
 cargo build --release
 
 # Output locations:
-# macOS: target/release/libslide_engine_ffi.dylib
-# Linux: target/release/libslide_engine_ffi.so
-# Windows: target/release/slide_engine_ffi.dll
+# macOS: target/release/libpptx_reader_ffi.dylib
+# Linux: target/release/libpptx_reader_ffi.so
+# Windows: target/release/pptx_reader_ffi.dll
 ```
 
 ### Run Flutter App
@@ -346,7 +346,7 @@ flutter run -d windows
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| PPTX Import | ✅ Complete | Via ky-of-pptx parser |
+| PPTX Import | ✅ Complete | Via parser-pptx parser |
 | PPTX Export | 🟡 Partial | Dart-side implementation exists |
 | Shape Types | ✅ Complete | 20+ types supported |
 | Text Formatting | ✅ Complete | Font, size, color, bold/italic/underline |
@@ -381,7 +381,7 @@ flutter run -d windows
 ## Conclusion
 
 The ky_slide presentation layer now has:
-- ✅ Production-ready PPTX import via ky-of-pptx integration
+- ✅ Production-ready PPTX import via parser-pptx integration
 - ✅ Comprehensive animation timeline system matching PowerPoint
 - ✅ Clean separation between UI (Dart) and engine (Rust)
 - ✅ Shared schema library for cross-product compatibility

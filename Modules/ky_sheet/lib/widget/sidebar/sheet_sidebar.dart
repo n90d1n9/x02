@@ -8,7 +8,7 @@ import '../cell/sheet_cell_inspector_panel.dart';
 import '../data/sheet_data_cleanup_panel.dart';
 import '../data/sheet_data_insights_panel.dart';
 import '../data/sheet_data_validation_panel.dart';
-import '../engine/sheet_engine_operation_panel.dart';
+import '../engine/xlsx_reader_operation_panel.dart';
 import '../sheet_find_replace_panel.dart';
 import '../formula/sheet_formula_audit_panel.dart';
 import '../formula/sheet_formula_health_panel.dart';

@@ -1,6 +1,6 @@
 import '../../model/cell/cell_address.dart';
 import '../../model/cell/cell_data.dart';
-import 'sheet_engine_codec.dart';
+import 'xlsx_reader_codec.dart';
 
 class SheetEngineOperationReplayResult {
   const SheetEngineOperationReplayResult({
