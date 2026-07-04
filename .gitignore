@@ -20,6 +20,11 @@ vendor/
 .env.local
 *.env.*
 
+**/.dart_tool/*
+
+.flutter-plugins-dependencies
+**/pubspec.lock
+
 # Coverage
 coverage/
 htmlcov/
