@@ -11,6 +11,8 @@ class DocxFindReplaceController extends ChangeNotifier {
   int _currentMatchIndex = -1;
   bool _matchCase = false;
   bool _wholeWord = false;
+  bool _useRegex = false;
+  RegExp? _cachedRegex;
 
   DocxFindReplaceController({required this.editorController}) {
     replaceTextController.addListener(_notifyReplacementPreviewChanged);
@@ -22,12 +24,20 @@ class DocxFindReplaceController extends ChangeNotifier {
   bool get hasQuery => findTextController.text.isNotEmpty;
   bool get matchCase => _matchCase;
   bool get wholeWord => _wholeWord;
+  bool get useRegex => _useRegex;
   int get matchCount => _matches.length;
+  bool get isValidRegex => _cachedRegex != null || !_useRegex;
 
   String get matchLabel {
     if (!hasQuery) return 'Ready';
     if (!hasMatches) return 'No matches';
     return '${_currentMatchIndex + 1} of ${_matches.length}';
+  }
+
+  String get regexError {
+    if (!_useRegex) return '';
+    if (_cachedRegex != null) return '';
+    return 'Invalid regular expression';
   }
 
   void performSearch(String query) {
@@ -53,6 +63,13 @@ class DocxFindReplaceController extends ChangeNotifier {
     _runSearch();
   }
 
+  void setUseRegex(bool value) {
+    if (_useRegex == value) return;
+    _useRegex = value;
+    _cachedRegex = null; // Clear cached regex when toggling
+    _runSearch();
+  }
+
   void clearSearch() {
     if (!hasQuery && !hasMatches) return;
     findTextController.clear();
@@ -67,6 +84,42 @@ class DocxFindReplaceController extends ChangeNotifier {
     }
 
     final text = editorController.document.toPlainText();
+    
+    // Handle regex search
+    if (_useRegex) {
+      try {
+        _cachedRegex = RegExp(
+          query,
+          caseSensitive: _matchCase,
+          multiLine: true,
+        );
+      } catch (e) {
+        // Invalid regex - clear matches and notify error state
+        _cachedRegex = null;
+        _clearMatches();
+        notifyListeners();
+        return;
+      }
+      
+      final matches = <int>[];
+      for (final match in _cachedRegex!.allMatches(text)) {
+        if (!_wholeWord || _isWholeWordMatch(text, match.start, match.group(0)!.length)) {
+          matches.add(match.start);
+        }
+      }
+      
+      _matches = matches;
+      _currentMatchIndex = matches.isEmpty ? -1 : 0;
+      notifyListeners();
+      
+      if (matches.isNotEmpty) {
+        final firstMatch = _cachedRegex!.firstMatch(text)!;
+        _highlightMatch(firstMatch.start, firstMatch.group(0)!.length);
+      }
+      return;
+    }
+    
+    // Standard text search
     final searchableText = _matchCase ? text : text.toLowerCase();
     final searchableQuery = _matchCase ? query : query.toLowerCase();
     final matches = <int>[];
@@ -115,10 +168,20 @@ class DocxFindReplaceController extends ChangeNotifier {
 
     final offset = _matches[_currentMatchIndex];
     final replaceText = replaceTextController.text;
+    
+    // Calculate match length based on search mode
+    int matchLength;
+    if (_useRegex && _cachedRegex != null) {
+      final text = editorController.document.toPlainText();
+      final regexMatch = _cachedRegex!.firstMatch(text.substring(offset));
+      matchLength = regexMatch?.group(0)?.length ?? findTextController.text.length;
+    } else {
+      matchLength = findTextController.text.length;
+    }
 
     editorController.replaceText(
       offset,
-      findTextController.text.length,
+      matchLength,
       replaceText,
       TextSelection.collapsed(offset: offset + replaceText.length),
     );
@@ -131,13 +194,22 @@ class DocxFindReplaceController extends ChangeNotifier {
     if (editorController.readOnly || !hasMatches) return 0;
 
     final count = _matches.length;
-    final findText = findTextController.text;
     final replaceText = replaceTextController.text;
     final sortedMatches = List<int>.from(_matches)
       ..sort((a, b) => b.compareTo(a));
 
     for (final offset in sortedMatches) {
-      editorController.replaceText(offset, findText.length, replaceText, null);
+      // Calculate match length based on search mode
+      int matchLength;
+      if (_useRegex && _cachedRegex != null) {
+        final text = editorController.document.toPlainText();
+        final regexMatch = _cachedRegex!.firstMatch(text.substring(offset));
+        matchLength = regexMatch?.group(0)?.length ?? findTextController.text.length;
+      } else {
+        matchLength = findTextController.text.length;
+      }
+      
+      editorController.replaceText(offset, matchLength, replaceText, null);
     }
 
     _clearMatches();
@@ -145,10 +217,19 @@ class DocxFindReplaceController extends ChangeNotifier {
   }
 
   void _highlightCurrentMatch() {
-    _highlightMatch(
-      _matches[_currentMatchIndex],
-      findTextController.text.length,
-    );
+    if (_currentMatchIndex < 0 || _currentMatchIndex >= _matches.length) return;
+    
+    int matchLength;
+    if (_useRegex && _cachedRegex != null) {
+      final text = editorController.document.toPlainText();
+      final offset = _matches[_currentMatchIndex];
+      final regexMatch = _cachedRegex!.firstMatch(text.substring(offset));
+      matchLength = regexMatch?.group(0)?.length ?? 0;
+    } else {
+      matchLength = findTextController.text.length;
+    }
+    
+    _highlightMatch(_matches[_currentMatchIndex], matchLength);
   }
 
   void _highlightMatch(int offset, int length) {

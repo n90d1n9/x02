@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-import '../model/cell/cell_address.dart';
-import '../model/cell/cell_selection.dart';
-=======
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
 import '../model/sheet_pivot_table.dart';
 import '../service/pivot_table_manager.dart';
 import '../state/toolbar_provider.dart';
@@ -44,12 +39,7 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
       text: widget.existingPivotTable?.name ?? 'PivotTable1',
     );
     _availableColumns = _manager.getAvailableColumns(widget.sourceSelection);
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-    _pivotTable =
-        widget.existingPivotTable ??
-=======
     _pivotTable = widget.existingPivotTable ??
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
         _manager.createPivotTable(
           id: 'pivot_${DateTime.now().millisecondsSinceEpoch}',
           name: 'PivotTable1',
@@ -150,28 +140,18 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-          Text('Fields', style: Theme.of(context).textTheme.titleSmall),
-=======
           Text(
             'Fields',
             style: Theme.of(context).textTheme.titleSmall,
           ),
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
               itemCount: _availableColumns.length,
               itemBuilder: (context, index) {
                 final column = _availableColumns[index];
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-                final isInPivot = _pivotTable.fields.any(
-                  (f) => f.sourceColumn == column,
-                );
-=======
                 final isInPivot = _pivotTable.fields
                     .any((f) => f.sourceColumn == column);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
 
                 return Draggable<String>(
                   data: column,
@@ -261,11 +241,7 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
               Expanded(
                 flex: 2,
                 child: _buildAreaDropZone(
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-                  area: PivotArea.data,
-=======
                   area: PivotArea.values,
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
                   title: 'Values',
                   fields: _pivotTable.valueFields,
                   showAggregation: true,
@@ -291,13 +267,9 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
           final field = PivotField(
             sourceColumn: column,
             area: area,
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-            aggregation:             area == PivotArea.data ? PivotAggregation.sum : null,          );
-=======
             aggregation:
                 area == PivotArea.values ? PivotAggregation.sum : null,
           );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
           _pivotTable = _manager.addField(_pivotTable, field);
         });
       },
@@ -316,14 +288,10 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
                 children: [
                   Icon(area.icon, size: 18, color: Colors.grey[700]),
                   const SizedBox(width: 6),
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-                  Text(title, style: Theme.of(context).textTheme.titleSmall),
-=======
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
                 ],
               ),
               const SizedBox(height: 8),
@@ -371,14 +339,8 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
                               icon: const Icon(Icons.calculate, size: 18),
                               onSelected: (agg) {
                                 setState(() {
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-                                  final updated = field.copyWith(
-                                    aggregation: agg,
-                                  );
-=======
                                   final updated =
                                       field.copyWith(aggregation: agg);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
                                   _pivotTable = _manager.updateField(
                                     _pivotTable,
                                     index,
@@ -395,15 +357,8 @@ class _PivotTableDialogState extends State<PivotTableDialog> {
                               ],
                             ),
                           IconButton(
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/pivot_table_dialog.dart
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              size: 18,
-                            ),
-=======
                             icon: const Icon(Icons.remove_circle_outline,
                                 size: 18),
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/pivot_table_dialog.dart
                             onPressed: () {
                               setState(() {
                                 _pivotTable = _manager.removeField(

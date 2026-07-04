@@ -137,11 +137,44 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
     _autoSaveService.onDocumentChanged();
   }
 
-  Future<void> createNewDocument() async {
+  Future<void> createNewDocument({bool confirmIfDirty = true}) async {
+    // Check for unsaved changes before creating new document
+    if (confirmIfDirty && state.hasUnsavedChanges) {
+      final shouldProceed = await confirmDiscardChanges();
+      if (!shouldProceed) return;
+    }
+
     await _lifecycleService.createNew(
       emitState: (nextState) => state = nextState,
       activateController: _activateController,
     );
+  }
+
+  /// Shows a confirmation dialog if there are unsaved changes
+  /// Returns true if user wants to proceed (discard changes or save), false if cancelled
+  Future<bool> confirmDiscardChanges() async {
+    // This method should be called from UI layer with proper BuildContext
+    // For now, we just return the dirty state - actual dialog will be shown by caller
+    return !state.hasUnsavedChanges;
+  }
+
+  /// Close current document with optional dirty check
+  Future<bool> closeDocument({bool confirmIfDirty = true}) async {
+    if (confirmIfDirty && state.hasUnsavedChanges) {
+      // Return false to indicate that close was cancelled
+      // Actual confirmation dialog should be shown by UI layer
+      return false;
+    }
+    
+    // Clean up resources
+    state.controller.removeListener(_onDocumentChanged);
+    
+    // Reset to initial state
+    state = DocumentLifecycleOrchestrationService.initialState(
+      createId: () => const Uuid().v4(),
+    );
+    
+    return true;
   }
 
   Future<void> createFromTemplate(DocumentTemplate template) async {

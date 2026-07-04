@@ -25,11 +25,7 @@ dependencies:
   ky_office_core:
     path: ../ky_office_core
   path_provider: ^2.1.5
-<<<<<<< HEAD:Modules/ky_sheet/pubspec.yaml
-  tenun: ^0.1.0
-=======
   tenun: ^0.3.0
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/pubspec.yaml
 
 dev_dependencies:
   flutter_test:

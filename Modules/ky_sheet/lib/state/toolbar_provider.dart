@@ -836,25 +836,15 @@ class ToolbarController {
     String? operand,
   }) {
     final rule = ConditionalFormatRule(
-<<<<<<< HEAD:Modules/ky_sheet/lib/state/toolbar_provider.dart
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      selection: selection,
-=======
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/toolbar_provider.dart
       condition: condition,
       backgroundColor: backgroundColor ?? Colors.red.shade100,
       textColor: textColor ?? Colors.black87,
       operand: operand ?? '0',
-<<<<<<< HEAD:Modules/ky_sheet/lib/state/toolbar_provider.dart
-    );
-    ref.read(spreadsheetProvider.notifier).addConditionalFormatRule(rule);
-=======
       range: selection.toRange(),
     );
     ref
         .read(spreadsheetProvider.notifier)
         .addConditionalFormatRule(rule);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/toolbar_provider.dart
   }
 
   /// Clear all conditional formats from selected cells
@@ -875,13 +865,9 @@ class ToolbarController {
       gradient: gradient,
       range: selection.toRange(),
     );
-<<<<<<< HEAD:Modules/ky_sheet/lib/state/toolbar_provider.dart
-    ref.read(spreadsheetProvider.notifier).addConditionalFormatRule(rule);
-=======
     ref
         .read(spreadsheetProvider.notifier)
         .addConditionalFormatRule(rule);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/toolbar_provider.dart
   }
 
   /// Apply color scale conditional format
@@ -893,13 +879,9 @@ class ToolbarController {
       colors: colors,
       range: selection.toRange(),
     );
-<<<<<<< HEAD:Modules/ky_sheet/lib/state/toolbar_provider.dart
-    ref.read(spreadsheetProvider.notifier).addConditionalFormatRule(rule);
-=======
     ref
         .read(spreadsheetProvider.notifier)
         .addConditionalFormatRule(rule);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/toolbar_provider.dart
   }
 
   /// Apply icon set conditional format
@@ -911,13 +893,9 @@ class ToolbarController {
       iconSet: iconSet,
       range: selection.toRange(),
     );
-<<<<<<< HEAD:Modules/ky_sheet/lib/state/toolbar_provider.dart
-    ref.read(spreadsheetProvider.notifier).addConditionalFormatRule(rule);
-=======
     ref
         .read(spreadsheetProvider.notifier)
         .addConditionalFormatRule(rule);
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/toolbar_provider.dart
   }
 
   ////---------

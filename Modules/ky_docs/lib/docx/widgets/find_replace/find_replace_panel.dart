@@ -338,6 +338,8 @@ class _FindOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Wrap(
       spacing: 8,
       children: [
@@ -363,6 +365,46 @@ class _FindOptions extends StatelessWidget {
             onSelected: controller.setWholeWord,
           ),
         ),
+        Tooltip(
+          message: 'Use regular expression',
+          child: FilterChip(
+            key: const ValueKey('docx-find-replace-regex'),
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.regex,
+                  size: 16,
+                  color: controller.useRegex 
+                    ? colorScheme.primary 
+                    : Colors.grey.shade600,
+                ),
+                const SizedBox(width: 4),
+                const Text('.*'),
+              ],
+            ),
+            selected: controller.useRegex,
+            showCheckmark: false,
+            visualDensity: VisualDensity.compact,
+            onSelected: controller.setUseRegex,
+          ),
+        ),
+        if (!controller.isValidRegex)
+          Tooltip(
+            message: controller.regexError,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 16,
+                color: colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -16,6 +16,7 @@ class DocumentFileMenu extends ConsumerStatefulWidget {
   final VoidCallback? onPrint;
   final VoidCallback? onShare;
   final VoidCallback? onClose;
+  final Future<bool> Function()? onConfirmClose;
 
   const DocumentFileMenu({
     super.key,
@@ -28,6 +29,7 @@ class DocumentFileMenu extends ConsumerStatefulWidget {
     this.onPrint,
     this.onShare,
     this.onClose,
+    this.onConfirmClose,
   });
 
   @override
@@ -283,10 +285,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
           icon: Icons.close,
           label: 'Close',
           subtitle: 'Close current document',
-          onTap: () {
-            _removeOverlay();
-            widget.onClose?.call();
-          },
+          onTap: _handleClose,
         ),
       ],
     );
@@ -407,6 +406,66 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleClose() async {
+    _removeOverlay();
+
+    // Check if we need to confirm close due to unsaved changes
+    if (widget.onConfirmClose != null) {
+      final shouldClose = await widget.onConfirmClose!();
+      if (!shouldClose) return;
+    }
+
+    // Also show a confirmation dialog for better UX
+    if (mounted) {
+      final docState = ref.read(documentProvider);
+      if (docState.hasUnsavedChanges) {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber, color: Colors.amber),
+                SizedBox(width: 8),
+                Text('Unsaved Changes'),
+              ],
+            ),
+            content: const Text(
+              'You have unsaved changes. Do you want to save before closing?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Discard Changes'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, null),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.save),
+                label: const Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed == null) return; // Cancelled
+        if (confirmed) {
+          // User wants to save first
+          widget.onSave?.call();
+        }
+        // If false, proceed with closing without saving
+      }
+    }
+
+    widget.onClose?.call();
   }
 
   @override

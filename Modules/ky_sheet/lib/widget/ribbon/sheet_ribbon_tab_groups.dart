@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/ribbon/sheet_ribbon_tab_groups.dart
-import '../../model/cell/cell_selection.dart';
-import '../../model/sheet_table.dart';
-import '../../state/sheet_sidebar_provider.dart';
-import '../../state/toolbar_provider.dart';
-=======
 import '../model/cell/cell_selection.dart';
 import '../model/sheet_table.dart';
 import '../state/sheet_sidebar_provider.dart';
 import '../state/toolbar_provider.dart';
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_ribbon_tab_groups.dart
 import 'sheet_ribbon_conditional_formatting_group.dart';
 import 'sheet_ribbon_data_group.dart';
 import 'sheet_ribbon_formula_group.dart';
