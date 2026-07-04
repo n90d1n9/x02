@@ -105,7 +105,7 @@ Multi-user undo/redo support:
 ### Basic Setup
 
 ```dart
-import 'package:ky_sheet/src/collaboration/ky_sheet_collab.dart';
+import 'package:ky_sheet/features/collaboration/ky_sheet_collab.dart';
 
 // Create a new document
 final document = DocumentCRDT(documentId: 'doc_123');

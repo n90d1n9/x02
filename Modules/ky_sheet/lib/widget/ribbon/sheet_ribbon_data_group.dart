@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/ribbon/sheet_ribbon_data_group.dart
 import '../../model/cell/cell_selection.dart';
 import '../../model/sheet_pivot_table.dart';
 import '../../model/sheet_table.dart';
 import '../../state/sheet_sidebar_provider.dart';
 import '../../state/toolbar_provider.dart';
 import '../pivot_table_dialog.dart';
-=======
-import '../model/cell/cell_selection.dart';
-import '../model/sheet_pivot_table.dart';
-import '../model/sheet_table.dart';
-import '../state/sheet_sidebar_provider.dart';
-import '../state/toolbar_provider.dart';
-import 'pivot_table_dialog.dart';
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_ribbon_data_group.dart
 import 'sheet_ribbon_command_row.dart';
 import 'sheet_ribbon_menu_button.dart';
 import 'sheet_ribbon_validation_dialogs.dart';
@@ -198,15 +189,8 @@ class SheetRibbonDataGroup extends StatelessWidget {
   void _showPivotTableDialog(BuildContext context, CellSelection selection) {
     showDialog<SheetPivotTable>(
       context: context,
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/ribbon/sheet_ribbon_data_group.dart
       builder: (context) =>
           PivotTableDialog(controller: controller, sourceSelection: selection),
-=======
-      builder: (context) => PivotTableDialog(
-        controller: controller,
-        sourceSelection: selection,
-      ),
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_ribbon_data_group.dart
     ).then((pivotTable) {
       if (pivotTable != null) {
         // Here you would integrate with the sheet engine to render the pivot table

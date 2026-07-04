@@ -15,7 +15,7 @@ class FileMenu extends StatelessWidget {
   final VoidCallback onClose;
 
   const FileMenu({
-    Key? key,
+    super.key,
     required this.fileService,
     required this.onNew,
     this.onSave,
@@ -24,15 +24,12 @@ class FileMenu extends StatelessWidget {
     this.onExport,
     this.onImport,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Text(
-        'File',
-        style: TextStyle(fontWeight: FontWeight.w500),
-      ),
+      icon: const Text('File', style: TextStyle(fontWeight: FontWeight.w500)),
       offset: const Offset(0, 40),
       onSelected: (value) => _handleSelection(context, value),
       itemBuilder: (context) => [
@@ -77,11 +74,7 @@ class FileMenu extends StatelessWidget {
           subItems: ['CSV', 'Excel'],
         ),
         const MenuSeparator(),
-        _buildMenuItem(
-          icon: Icons.close,
-          label: 'Close',
-          value: 'close',
-        ),
+        _buildMenuItem(icon: Icons.close, label: 'Close', value: 'close'),
       ],
     );
   }
@@ -89,8 +82,12 @@ class FileMenu extends StatelessWidget {
   void _handleSelection(BuildContext context, String value) async {
     switch (value) {
       case 'new':
-        _showConfirmDialog(context, 'New Workbook', 
-          'Any unsaved changes will be lost.', onNew);
+        _showConfirmDialog(
+          context,
+          'New Workbook',
+          'Any unsaved changes will be lost.',
+          onNew,
+        );
         break;
       case 'open':
         if (onOpen != null) await onOpen!();
@@ -151,7 +148,12 @@ class FileMenu extends StatelessWidget {
     );
   }
 
-  void _showConfirmDialog(BuildContext context, String title, String message, VoidCallback onConfirm) {
+  void _showConfirmDialog(
+    BuildContext context,
+    String title,
+    String message,
+    VoidCallback onConfirm,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -183,7 +185,10 @@ class FileMenu extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Export As', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Export As',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.table_chart),
@@ -218,7 +223,10 @@ class FileMenu extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Import From', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Import From',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.attach_file),

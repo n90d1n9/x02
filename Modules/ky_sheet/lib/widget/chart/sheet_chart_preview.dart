@@ -2,15 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD:Modules/ky_sheet/lib/widget/chart/sheet_chart_preview.dart
 import '../../model/sheet_chart.dart';
 import '../../theme/ky_sheet_theme.dart';
-// import 'tenun_chart_widget.dart'; // TODO: tenun library dependency conflicts
-=======
-import '../model/sheet_chart.dart';
-import '../theme/ky_sheet_theme.dart';
 import 'tenun_chart_widget.dart';
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_chart_preview.dart
+// import 'tenun_chart_widget.dart'; // TODO: tenun library dependency conflicts
 
 /// Chart preview widget with support for both native Canvas rendering
 /// and advanced Tenun-powered charts.

@@ -8,7 +8,6 @@ export 'model/cell/cell_style.dart';
 export 'model/cell/cell_validation.dart';
 export 'model/column_config.dart';
 export 'model/conditional_format_rule.dart';
-// export 'model/conditional_formatting_rule.dart'; // Duplicate exports
 export 'model/number_format.dart';
 export 'model/row_config.dart';
 export 'model/sheet_cell_context_menu_state.dart';
@@ -41,13 +40,8 @@ export 'model/sheet_view_state.dart';
 export 'model/undo_redo_action.dart';
 export 'model/workbook_sheet.dart';
 export 'office_product.dart';
-export 'screen/spreadsheet_screen.dart';
 export 'service/conditional_formatting_manager.dart';
-export 'service/kyo_xlsx_reader.dart';
-export 'service/pivot_table_manager.dart';
 export 'service/sheet_formula_engine.dart';
-// export 'service/sheet_formula_functions.dart'; // Part file, cannot export
-// export 'service/sheet_formula_parser.dart';    // Part file, cannot export
 export 'state/sheet_chart_provider.dart';
 export 'state/sheet_command_palette_provider.dart';
 export 'state/sheet_active_table_provider.dart';
@@ -58,7 +52,6 @@ export 'state/sheet_formula_health_filter_provider.dart';
 export 'state/sheet_formula_health_search_provider.dart';
 export 'state/sheet_formula_health_sort_provider.dart';
 export 'state/sheet_formula_preview_provider.dart';
-export 'state/xlsx_reader_operation_provider.dart';
 export 'state/sheet_navigation_provider.dart';
 export 'state/sheet_named_range_provider.dart';
 export 'state/sheet_recent_sheet_provider.dart';

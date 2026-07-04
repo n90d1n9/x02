@@ -1,9 +1,5 @@
 /// Conditional Formatting Rule Models
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
 ///
-=======
-/// 
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 /// Defines the data structures for conditional formatting rules similar to Excel/GSheet.
 /// Supports various rule types: cell value, formula, top/bottom, data bars, color scales, icon sets.
 
@@ -12,7 +8,6 @@ import 'package:flutter/material.dart';
 
 /// Types of conditional formatting rules
 enum ConditionalFormattingRuleType {
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   cellValue, // Based on cell value comparison
   formula, // Based on custom formula evaluation
   topBottom, // Top/Bottom N items or percentage
@@ -23,18 +18,6 @@ enum ConditionalFormattingRuleType {
   textContains, // Text contains specific string
   dateOccurring, // Dates occurring in specific period
   blankErrors, // Cells that are blank or contain errors
-=======
-  cellValue,        // Based on cell value comparison
-  formula,          // Based on custom formula evaluation
-  topBottom,        // Top/Bottom N items or percentage
-  dataBar,          // Gradient or solid fill data bars
-  colorScale,       // 2 or 3 color gradient scale
-  iconSet,          // Directional arrows, traffic lights, etc.
-  duplicateValues,  // Highlight duplicate or unique values
-  textContains,     // Text contains specific string
-  dateOccurring,    // Dates occurring in specific period
-  blankErrors,      // Cells that are blank or contain errors
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 }
 
 /// Comparison operators for cell value rules
@@ -50,7 +33,6 @@ enum ComparisonOperator {
 }
 
 /// Position for top/bottom rules
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
 enum TopBottomPosition { top, bottom }
 
 /// Type for top/bottom rules (items or percentage)
@@ -58,24 +40,6 @@ enum TopBottomType { items, percent }
 
 /// Data bar direction
 enum DataBarDirection { leftToRight, rightToLeft }
-=======
-enum TopBottomPosition {
-  top,
-  bottom,
-}
-
-/// Type for top/bottom rules (items or percentage)
-enum TopBottomType {
-  items,
-  percent,
-}
-
-/// Data bar direction
-enum DataBarDirection {
-  leftToRight,
-  rightToLeft,
-}
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
 /// Icon set types
 enum IconSetType {
@@ -98,11 +62,7 @@ enum IconSetType {
 abstract class ConditionalFormattingRule {
   final String id;
   final ConditionalFormattingRuleType type;
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   final bool? stopIfTrue; // If true, stop processing further rules
-=======
-  final String? stopIfTrue; // If true, stop processing further rules
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
   final Color? fillColor;
   final Color? fontColor;
   final FontWeight? fontWeight;
@@ -174,12 +134,8 @@ class EvaluationContext {
   final List<dynamic>? rangeValues; // All values in the formatted range
   final int? rank; // Rank of current value in range
   final int? totalCount; // Total count of values in range
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   final Function(String address)?
   getCellValue; // Function to get other cell values
-=======
-  final Function(String address)? getCellValue; // Function to get other cell values
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   EvaluationContext({
     required this.cellValue,
@@ -257,7 +213,6 @@ class CellValueRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.cellValue,
          fillColor: fillColor,
@@ -265,15 +220,6 @@ class CellValueRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.cellValue,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -375,7 +321,6 @@ class FormulaRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.formula,
          fillColor: fillColor,
@@ -383,15 +328,6 @@ class FormulaRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.formula,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -399,7 +335,6 @@ class FormulaRule extends ConditionalFormattingRule {
     // This is a placeholder - actual implementation would call the formula engine
     try {
       // Remove leading '=' if present
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
       final cleanFormula = formula.startsWith('=')
           ? formula.substring(1)
           : formula;
@@ -408,14 +343,6 @@ class FormulaRule extends ConditionalFormattingRule {
       // For now, return false as placeholder
       // In production: return context.formulaEngine.evaluate(cleanFormula, context.cellAddress);
 
-=======
-      final cleanFormula = formula.startsWith('=') ? formula.substring(1) : formula;
-      
-      // TODO: Integrate with sheet_engine formula evaluator
-      // For now, return false as placeholder
-      // In production: return context.formulaEngine.evaluate(cleanFormula, context.cellAddress);
-      
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
       return false;
     } catch (e) {
       return false;
@@ -479,7 +406,6 @@ class TopBottomRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.topBottom,
          fillColor: fillColor,
@@ -487,15 +413,6 @@ class TopBottomRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.topBottom,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -583,19 +500,11 @@ class DataBarRule extends ConditionalFormattingRule {
     Color? fillColor,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.dataBar,
          fillColor: fillColor,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.dataBar,
-          fillColor: fillColor,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -648,24 +557,12 @@ class DataBarRule extends ConditionalFormattingRule {
 class ColorScaleRule extends ConditionalFormattingRule {
   final List<ColorScalePoint> points;
 
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   ColorScaleRule({required String id, required this.points, bool? stopIfTrue})
     : super(
         id: id,
         type: ConditionalFormattingRuleType.colorScale,
         stopIfTrue: stopIfTrue,
       );
-=======
-  ColorScaleRule({
-    required String id,
-    required this.points,
-    bool? stopIfTrue,
-  }) : super(
-          id: id,
-          type: ConditionalFormattingRuleType.colorScale,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -702,12 +599,8 @@ class ColorScaleRule extends ConditionalFormattingRule {
 /// Point in a color scale
 class ColorScalePoint {
   final int index; // 0, 1, or 2
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   final String
   type; // min, max, percentile, number, percent, formula, percentil
-=======
-  final String type; // min, max, percentile, number, percent, formula, percentil
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
   final dynamic value;
   final Color color;
 
@@ -752,17 +645,10 @@ class IconSetRule extends ConditionalFormattingRule {
     required this.points,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.iconSet,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.iconSet,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -820,16 +706,7 @@ class IconSetPoint {
   });
 
   Map<String, dynamic> toJson() {
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
     return {'index': index, 'type': type, 'value': value, 'operator': operator};
-=======
-    return {
-      'index': index,
-      'type': type,
-      'value': value,
-      'operator': operator,
-    };
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
   }
 
   factory IconSetPoint.fromJson(Map<String, dynamic> json) {
@@ -854,7 +731,6 @@ class DuplicateValueRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.duplicateValues,
          fillColor: fillColor,
@@ -862,15 +738,6 @@ class DuplicateValueRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.duplicateValues,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -936,7 +803,6 @@ class TextContainsRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.textContains,
          fillColor: fillColor,
@@ -944,26 +810,12 @@ class TextContainsRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.textContains,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
     if (cellValue == null) return false;
 
     final cellStr = cellValue.toString();
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
-
-=======
-    
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
     if (caseSensitive) {
       return cellStr.contains(text);
     } else {
@@ -1016,12 +868,8 @@ class TextContainsRule extends ConditionalFormattingRule {
 
 /// Rule for dates occurring in specific period
 class DateOccurringRule extends ConditionalFormattingRule {
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
   final String
   period; // today, yesterday, tomorrow, last7Days, thisMonth, lastMonth, nextMonth, thisWeek, lastWeek, nextWeek, thisYear, lastYear, nextYear
-=======
-  final String period; // today, yesterday, tomorrow, last7Days, thisMonth, lastMonth, nextMonth, thisWeek, lastWeek, nextWeek, thisYear, lastYear, nextYear
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   DateOccurringRule({
     required String id,
@@ -1031,7 +879,6 @@ class DateOccurringRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.dateOccurring,
          fillColor: fillColor,
@@ -1039,15 +886,6 @@ class DateOccurringRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.dateOccurring,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {
@@ -1155,7 +993,6 @@ class BlankErrorRule extends ConditionalFormattingRule {
     FontWeight? fontWeight,
     bool? stopIfTrue,
   }) : super(
-<<<<<<< HEAD:Modules/ky_sheet/lib/model/conditional_formatting_rule.dart
          id: id,
          type: ConditionalFormattingRuleType.blankErrors,
          fillColor: fillColor,
@@ -1163,15 +1000,6 @@ class BlankErrorRule extends ConditionalFormattingRule {
          fontWeight: fontWeight,
          stopIfTrue: stopIfTrue,
        );
-=======
-          id: id,
-          type: ConditionalFormattingRuleType.blankErrors,
-          fillColor: fillColor,
-          fontColor: fontColor,
-          fontWeight: fontWeight,
-          stopIfTrue: stopIfTrue,
-        );
->>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/conditional_formatting_rule.dart
 
   @override
   bool evaluate(dynamic cellValue, EvaluationContext context) {

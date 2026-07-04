@@ -9,7 +9,7 @@ class CellCRDT {
   final String cellId;
   
   /// The current value of the cell
-  CellValue? _value;
+   ? _value;
   
   /// Vector clock for conflict resolution
   final Map<String, int> _vectorClock = {};

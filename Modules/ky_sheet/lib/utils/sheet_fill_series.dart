@@ -1,8 +1,8 @@
+import '../core/engines/smart_fill_engine.dart';
 import '../model/cell/cell_address.dart';
 import '../model/cell/cell_data.dart';
 import '../model/cell/cell_selection.dart';
 import 'formula/sheet_formula_reference.dart';
-import '../core/smart_fill_engine.dart';
 
 class SheetFillSeries {
   const SheetFillSeries._();

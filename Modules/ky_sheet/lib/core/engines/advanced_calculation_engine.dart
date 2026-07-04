@@ -2,15 +2,9 @@ import 'dart:math' as math;
 
 import '../../model/cell/cell_address.dart';
 import '../../model/cell/cell_data.dart';
-import '../../model/cell/cell_style.dart';
+
 import '../../model/sheet_named_range.dart';
 import '../../model/workbook_sheet.dart';
-import '../advanced_formula_engine.dart';
-import '../smart_fill_engine.dart';
-import '../data_validation_engine.dart';
-import '../conditional_formatting_engine.dart';
-import '../pivot_table_engine.dart';
-import '../chart_engine.dart';
 
 /// Advanced spreadsheet calculation engine supporting:
 /// - Array formulas (dynamic arrays)
@@ -52,20 +46,26 @@ class AdvancedCalculationEngine {
     try {
       // Parse and detect advanced features
       final ast = _parseFormula(source);
-      
+
       // Check for LET, LAMBDA, dynamic array functions
       if (_hasLetFunction(ast)) {
         return _evaluateWithLet(ast, currentCell, sheet, cells, namedRanges);
       }
-      
+
       if (_hasLambdaFunction(ast)) {
         return _evaluateWithLambda(ast, currentCell, sheet, cells, namedRanges);
       }
-      
+
       if (isArrayFormula || _isDynamicArrayFunction(ast)) {
-        return _evaluateArrayFormula(ast, currentCell, sheet, cells, namedRanges);
+        return _evaluateArrayFormula(
+          ast,
+          currentCell,
+          sheet,
+          cells,
+          namedRanges,
+        );
       }
-      
+
       // Standard evaluation with dependency tracking
       return _evaluateWithDependencies(
         source,
@@ -82,12 +82,12 @@ class AdvancedCalculationEngine {
   /// Build dependency graph for all cells in sheet
   void buildDependencyGraph(WorkbookSheet sheet) {
     _dependencies.clear();
-    
+
     for (var row = 0; row < sheet.rowCount; row++) {
       for (var col = 0; col < sheet.columnCount; col++) {
         final address = CellAddress(row, col);
         final cell = sheet.getCell(address);
-        
+
         if (cell?.formula != null && cell!.formula!.isNotEmpty) {
           final refs = _extractReferences(cell.formula!);
           _dependencies[address.toString()] = CellDependency(
@@ -96,7 +96,7 @@ class AdvancedCalculationEngine {
             precedents: refs,
             dependents: [],
           );
-          
+
           // Register this cell as dependent of its precedents
           for (final ref in refs) {
             _dependencies.putIfAbsent(
@@ -124,7 +124,7 @@ class AdvancedCalculationEngine {
     while (queue.isNotEmpty) {
       final current = queue.removeAt(0);
       final key = current.toString();
-      
+
       if (visited.contains(key)) continue;
       visited.add(key);
 
@@ -132,7 +132,7 @@ class AdvancedCalculationEngine {
       if (dep != null && dep.formula.isNotEmpty) {
         affected.add(current);
         _cachedResults.remove(key);
-        
+
         // Add all dependents to queue
         queue.addAll(dep.dependents);
       }
@@ -164,21 +164,21 @@ class AdvancedCalculationEngine {
         }
         return;
       }
-      
+
       if (visited.contains(key)) return;
 
       visiting.add(key);
       final dep = _dependencies[key];
       if (dep != null) {
         path.add(dep.address);
-        
+
         for (final precedent in dep.precedents) {
           dfs(precedent.toString());
         }
-        
+
         path.removeLast();
       }
-      
+
       visiting.remove(key);
       visited.add(key);
     }
@@ -200,7 +200,7 @@ class AdvancedCalculationEngine {
     List<SheetNamedRange> namedRanges,
   ) {
     final key = currentCell.toString();
-    
+
     // Check cache
     if (_cachedResults.containsKey(key)) {
       return _cachedResults[key] as String;
@@ -238,11 +238,7 @@ class AdvancedCalculationEngine {
 
   ASTNode _parseFormula(String formula) {
     // Simplified AST parsing - would use full parser in production
-    return ASTNode(
-      type: ASTNodeType.expression,
-      value: formula,
-      children: [],
-    );
+    return ASTNode(type: ASTNodeType.expression, value: formula, children: []);
   }
 
   bool _hasLetFunction(ASTNode ast) {
@@ -255,12 +251,27 @@ class AdvancedCalculationEngine {
 
   bool _isDynamicArrayFunction(ASTNode ast) {
     const dynamicFunctions = [
-      'FILTER', 'SORT', 'UNIQUE', 'SEQUENCE',
-      'XLOOKUP', 'XMATCH', 'RANDARRAY', 'SORTBY',
-      'TAKE', 'DROP', 'VSTACK', 'HSTACK', 'TOCOL', 'TOROW',
-      'WRAPROWS', 'WRAPCOLS', 'EXPAND', 'CHOOSECOLS', 'CHOOSEROWS',
+      'FILTER',
+      'SORT',
+      'UNIQUE',
+      'SEQUENCE',
+      'XLOOKUP',
+      'XMATCH',
+      'RANDARRAY',
+      'SORTBY',
+      'TAKE',
+      'DROP',
+      'VSTACK',
+      'HSTACK',
+      'TOCOL',
+      'TOROW',
+      'WRAPROWS',
+      'WRAPCOLS',
+      'EXPAND',
+      'CHOOSECOLS',
+      'CHOOSEROWS',
     ];
-    
+
     final upper = ast.value.toString().toUpperCase();
     return dynamicFunctions.any((f) => upper.startsWith('$f('));
   }
@@ -300,11 +311,11 @@ class AdvancedCalculationEngine {
 
   List<CellAddress> _extractReferences(String formula) {
     final refs = <CellAddress>[];
-    
+
     // Match cell references like A1, $B$5, C10:D20
     final cellRefRegex = RegExp(r'\$?[A-Za-z]+\$?\d+');
     final matches = cellRefRegex.allMatches(formula);
-    
+
     for (final match in matches) {
       try {
         refs.add(_parseCellReference(match.group(0)!));
@@ -312,7 +323,7 @@ class AdvancedCalculationEngine {
         // Skip invalid references
       }
     }
-    
+
     return refs;
   }
 
@@ -328,10 +339,7 @@ class AdvancedCalculationEngine {
       column = column * 26 + (columnLabel.codeUnitAt(i) - 64);
     }
 
-    return CellAddress(
-      int.parse(match.group(2)!) - 1,
-      column - 1,
-    );
+    return CellAddress(int.parse(match.group(2)!) - 1, column - 1);
   }
 }
 
@@ -364,11 +372,7 @@ enum ASTNodeType {
 
 /// Abstract Syntax Tree node
 class ASTNode {
-  ASTNode({
-    required this.type,
-    this.value,
-    this.children = const [],
-  });
+  ASTNode({required this.type, this.value, this.children = const []});
 
   final ASTNodeType type;
   final dynamic value;
