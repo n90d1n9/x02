@@ -2,9 +2,15 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/chart/sheet_chart_preview.dart
 import '../../model/sheet_chart.dart';
 import '../../theme/ky_sheet_theme.dart';
 // import 'tenun_chart_widget.dart'; // TODO: tenun library dependency conflicts
+=======
+import '../model/sheet_chart.dart';
+import '../theme/ky_sheet_theme.dart';
+import 'tenun_chart_widget.dart';
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_chart_preview.dart
 
 /// Chart preview widget with support for both native Canvas rendering
 /// and advanced Tenun-powered charts.
@@ -24,7 +30,20 @@ class SheetChartPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!data.hasData) return const _EmptyChartPreview();
+    if (!data.hasData) return const _EmptyChartPreview(height: 190);
+
+    if (useAdvancedRendering) {
+      return SizedBox(
+        height: height,
+        child: TenunChartWidget(
+          data: data,
+          type: type,
+          showLegend: true,
+          showTitle: false,
+          animate: true,
+        ),
+      );
+    }
 
     if (useAdvancedRendering) {
       // TODO: Tenun chart widget disabled due to dependency conflicts

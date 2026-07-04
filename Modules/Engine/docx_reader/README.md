@@ -3,6 +3,20 @@
 A comprehensive, ergonomic Rust library for **reading and extracting content** from `.docx` (Word) files.
 
 ---
+```mermaid
+graph TD
+    A[Sample/sample01.docx] -->|File Bytes| B(Rust docx_reader)
+    B -->|FFI | C[Dart docx_reader_ffi]
+    C -->|Raw Models| D[NativeDocumentAdapter]
+    D -->|office_core Models| E[DocumentEngine]
+    E -->|State Stream| F[DocumentNotifier]
+    F -->|UI State| G[DocumentCanvas Widget]
+    G -->|Render| H[Flutter Screen]
+    
+    I[office_common] -.->|Primitives| D
+    J[office_multimedia] -.->|Images| D
+    K[office_chart] -.->|Charts| D
+```
 
 ## Features
 

@@ -16,12 +16,20 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.3.1
   intl: ^0.20.2
+  ky_of_xlsx:
+    path: ../../Parser/Core/ky-of-xlsx
+  ky_of_chart:
+    path: ../../Parser/Common/ky-of-chart
   ky_office:
     path: ../ky_office
   ky_office_core:
     path: ../ky_office_core
   path_provider: ^2.1.5
+<<<<<<< HEAD:Modules/ky_sheet/pubspec.yaml
   tenun: ^0.1.0
+=======
+  tenun: ^0.3.0
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/pubspec.yaml
 
 dev_dependencies:
   flutter_test:

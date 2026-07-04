@@ -1,4 +1,5 @@
 ```
+<<<<<<< HEAD
 # Dependency directories
 node_modules/
 pubspec.lock
@@ -129,4 +130,47 @@ Cargo.lock
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+=======
+# Dart/Flutter specific
+.dart_tool/
+.packages
+pubspec.lock
+*.dart.js
+*.part.js
+*.g.part
+*.freezed.dart
+*.g.dart
+
+# Build outputs
+build/
+bin/
+
+# Dependencies
+.pub/
+vendor/
+
+# Logs
+*.log
+**/logs
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.#*
+
+# Environment variables
+.env
+.env.local
+*.env
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1
 ```

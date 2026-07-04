@@ -586,12 +586,20 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
     }
   }
 
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
   /// Import Excel using high-performance parser-xlsx parser (preferred for large files)
+=======
+  /// Import Excel using high-performance ky-of-xlsx parser (preferred for large files)
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
   Future<void> importFromExcelBytesKyo(String filePath) async {
     try {
       final workbookData = await KyoXlsxReader.readWorkbook(filePath);
       final sheets = workbookData['sheets'] as List<dynamic>;
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
 
+=======
+      
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
       if (sheets.isEmpty) {
         throw Exception('No sheets found in workbook');
       }
@@ -603,26 +611,42 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
       for (final entry in cells.entries) {
         final address = entry.key;
         final value = entry.value.toString();
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
 
+=======
+        
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
         if (value.isNotEmpty) {
           final colLetter = address.replaceAll(RegExp(r'\d+'), '');
           final rowNum = int.parse(address.replaceAll(RegExp(r'[A-Z]+'), ''));
           final col = _columnLetterToIndex(colLetter);
           final row = rowNum - 1;
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
 
+=======
+          
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
           newState[CellAddress(row, col)] = CellData(value: value);
         }
       }
 
       _replaceAllState(
         newState,
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
         'Import Excel (parser-xlsx)',
+=======
+        'Import Excel (ky-of-xlsx)',
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
         recordSheetEngineOperations: false,
       );
       _clearSheetEngineOperations();
       _clearSheetMetadata();
     } catch (e) {
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
       throw Exception('Failed to import Excel with parser-xlsx: $e');
+=======
+      throw Exception('Failed to import Excel with ky-of-xlsx: $e');
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
     }
   }
 
@@ -1501,6 +1525,7 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
   /// Add a conditional format rule
   void addConditionalFormatRule(ConditionalFormatRule rule) {
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
     final refLocal = _ref;
     if (refLocal == null) return;
     final currentRules = List<ConditionalFormatRule>.from(
@@ -1508,10 +1533,18 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
     );
     currentRules.add(rule);
     refLocal.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+=======
+    final currentRules = List<ConditionalFormatRule>.from(
+      ref.read(conditionalFormatRulesProvider),
+    );
+    currentRules.add(rule);
+    ref.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
   }
 
   /// Remove conditional format rules matching the given range
   void removeConditionalFormatRules(Range range) {
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
     final refLocal = _ref;
     if (refLocal == null) return;
     final currentRules = List<ConditionalFormatRule>.from(
@@ -1519,12 +1552,23 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
     );
     currentRules.removeWhere((rule) => rule.toRange() == range);
     refLocal.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+=======
+    final currentRules = List<ConditionalFormatRule>.from(
+      ref.read(conditionalFormatRulesProvider),
+    );
+    currentRules.removeWhere((rule) => rule.toRange() == range);
+    ref.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
   }
 
   /// Clear all conditional format rules
   void clearAllConditionalFormatRules() {
+<<<<<<< HEAD:Modules/ky_sheet/lib/state/spreadsheet_provider.dart
     final refLocal = _ref;
     if (refLocal == null) return;
     refLocal.read(conditionalFormatRulesProvider.notifier).state = [];
+=======
+    ref.read(conditionalFormatRulesProvider.notifier).state = [];
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/state/spreadsheet_provider.dart
   }
 }

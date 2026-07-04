@@ -47,7 +47,16 @@ class SheetFileMenu extends ConsumerWidget {
           shortcut: 'Ctrl+O',
         ),
         const PopupMenuDivider(),
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
         _buildMenuItem(Icons.save, 'Save', 'save', shortcut: 'Ctrl+S'),
+=======
+        _buildMenuItem(
+          Icons.save,
+          'Save',
+          'save',
+          shortcut: 'Ctrl+S',
+        ),
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
         _buildMenuItem(
           Icons.save_as,
           'Save As...',
@@ -73,6 +82,7 @@ class SheetFileMenu extends ConsumerWidget {
             _buildSubMenuItem('Excel Workbook (.xlsx)', 'export_xlsx'),
             _buildSubMenuItem('CSV File (.csv)', 'export_csv'),
             _buildSubMenuItem('JSON Workbook (.json)', 'export_json'),
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
             _buildSubMenuItem(
               'Sheet Engine JSON (.sheet-engine.json)',
               'export_xlsx_reader',
@@ -85,6 +95,34 @@ class SheetFileMenu extends ConsumerWidget {
         const PopupMenuDivider(),
         _buildMenuItem(Icons.info_outline, 'Workbook Info', 'info'),
         _buildMenuItem(Icons.settings, 'Options', 'options'),
+=======
+            _buildSubMenuItem('Sheet Engine JSON (.sheet-engine.json)', 'export_sheet_engine'),
+          ],
+        ),
+        const PopupMenuDivider(),
+        _buildMenuItem(
+          Icons.print,
+          'Print...',
+          'print',
+          shortcut: 'Ctrl+P',
+        ),
+        _buildMenuItem(
+          Icons.share,
+          'Share',
+          'share',
+        ),
+        const PopupMenuDivider(),
+        _buildMenuItem(
+          Icons.info_outline,
+          'Workbook Info',
+          'info',
+        ),
+        _buildMenuItem(
+          Icons.settings,
+          'Options',
+          'options',
+        ),
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
       ],
     );
   }
@@ -112,7 +150,14 @@ class SheetFileMenu extends ConsumerWidget {
               padding: EdgeInsets.only(left: 16),
               child: Text(
                 shortcut,
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
                 style: TextStyle(color: KySheetColors.mutedText, fontSize: 12),
+=======
+                style: TextStyle(
+                  color: KySheetColors.mutedText,
+                  fontSize: 12,
+                ),
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
               ),
             ),
           if (submenu != null) ...[
@@ -159,7 +204,11 @@ class SheetFileMenu extends ConsumerWidget {
       case 'export_xlsx':
       case 'export_csv':
       case 'export_json':
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
       case 'export_xlsx_reader':
+=======
+      case 'export_sheet_engine':
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
         await _exportFile(context, ref, value.replaceFirst('export_', ''));
         break;
       case 'print':
@@ -220,7 +269,11 @@ class SheetFileMenu extends ConsumerWidget {
         final extension = result.files.single.extension?.toLowerCase();
 
         if (extension == 'xlsx' || extension == 'xls') {
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
           // Use high-performance parser-xlsx parser for large files
+=======
+          // Use high-performance ky-of-xlsx parser for large files
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
           // Falls back to package:excel if FFI library not available
           try {
             await ref
@@ -228,7 +281,11 @@ class SheetFileMenu extends ConsumerWidget {
                 .importFromExcelBytesKyo(file.path);
             _showSnackBar(
               context,
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
               'Excel file opened successfully (parser-xlsx)',
+=======
+              'Excel file opened successfully (ky-of-xlsx)',
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
             );
           } catch (e) {
             // Fallback to package:excel
@@ -274,7 +331,11 @@ class SheetFileMenu extends ConsumerWidget {
   Future<void> _saveAsFile(BuildContext context, WidgetRef ref) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
 
+=======
+      
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
       final fileName = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
@@ -301,10 +362,14 @@ class SheetFileMenu extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 // Get text from field - simplified for demo
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
                 Navigator.pop(
                   context,
                   'workbook_${DateTime.now().millisecondsSinceEpoch}.xlsx',
                 );
+=======
+                Navigator.pop(context, 'workbook_${DateTime.now().millisecondsSinceEpoch}.xlsx');
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
               },
               child: Text('Save'),
             ),
@@ -329,7 +394,11 @@ class SheetFileMenu extends ConsumerWidget {
     String filePath,
   ) async {
     final extension = filePath.split('.').last.toLowerCase();
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
 
+=======
+    
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
     if (extension == 'xlsx') {
       final excel = ref.read(spreadsheetProvider.notifier).exportToExcel();
       final bytes = excel.encode();
@@ -344,18 +413,26 @@ class SheetFileMenu extends ConsumerWidget {
       ref.read(workbookProvider.notifier).setCurrentFilePath(filePath);
       _showSnackBar(context, 'Saved to $filePath');
     } else if (extension == 'sheet-engine.json') {
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
       final data = ref
           .read(workbookProvider.notifier)
           .exportToSheetEngineJson();
+=======
+      final data = ref.read(workbookProvider.notifier).exportToSheetEngineJson();
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
       await File(filePath).writeAsString(jsonEncode(data));
       ref.read(workbookProvider.notifier).setCurrentFilePath(filePath);
       _showSnackBar(context, 'Saved to $filePath');
     } else {
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
       _showSnackBar(
         context,
         'Unsupported file format: $extension',
         isError: true,
       );
+=======
+      _showSnackBar(context, 'Unsupported file format: $extension', isError: true);
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
     }
   }
 
@@ -367,25 +444,41 @@ class SheetFileMenu extends ConsumerWidget {
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
         allowedExtensions: format == 'xlsx'
             ? ['xlsx', 'xls']
             : format == 'csv'
             ? ['csv']
             : ['json'],
+=======
+        allowedExtensions: format == 'xlsx' 
+            ? ['xlsx', 'xls'] 
+            : format == 'csv' 
+                ? ['csv'] 
+                : ['json'],
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
       );
 
       if (result != null && result.files.single.path != null) {
         final file = File(result.files.single.path!);
 
         if (format == 'xlsx') {
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
           // Use high-performance parser-xlsx parser for large files
+=======
+          // Use high-performance ky-of-xlsx parser for large files
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
           try {
             await ref
                 .read(spreadsheetProvider.notifier)
                 .importFromExcelBytesKyo(file.path);
             _showSnackBar(
               context,
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
               'Excel file imported successfully (parser-xlsx)',
+=======
+              'Excel file imported successfully (ky-of-xlsx)',
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
             );
           } catch (e) {
             // Fallback to package:excel
@@ -419,7 +512,13 @@ class SheetFileMenu extends ConsumerWidget {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
       final extension = format == 'xlsx_reader' ? 'sheet-engine.json' : format;
+=======
+      final extension = format == 'sheet_engine' 
+          ? 'sheet-engine.json' 
+          : format;
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
       final fileName = 'spreadsheet_$timestamp.$extension';
       final filePath = '${directory.path}/$fileName';
 
@@ -435,10 +534,15 @@ class SheetFileMenu extends ConsumerWidget {
       } else if (format == 'json') {
         final data = ref.read(workbookProvider.notifier).exportToJson();
         await File(filePath).writeAsString(jsonEncode(data));
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
       } else if (format == 'xlsx_reader') {
         final data = ref
             .read(workbookProvider.notifier)
             .exportToSheetEngineJson();
+=======
+      } else if (format == 'sheet_engine') {
+        final data = ref.read(workbookProvider.notifier).exportToSheetEngineJson();
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
         await File(filePath).writeAsString(jsonEncode(data));
       }
 
@@ -456,9 +560,15 @@ class SheetFileMenu extends ConsumerWidget {
     final workbook = ref.read(workbookProvider);
     final sheetCount = workbook.sheets.length;
     final totalCells = workbook.totalCellCount;
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
 
     if (!context.mounted) return;
 
+=======
+    
+    if (!context.mounted) return;
+    
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -491,7 +601,14 @@ class SheetFileMenu extends ConsumerWidget {
         children: [
           SizedBox(
             width: 120,
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
             child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+=======
+            child: Text(
+              label,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
           ),
           Expanded(child: Text(value)),
         ],
@@ -499,11 +616,15 @@ class SheetFileMenu extends ConsumerWidget {
     );
   }
 
+<<<<<<< HEAD:Modules/ky_sheet/lib/widget/sheet_file_menu.dart
   void _showSnackBar(
     BuildContext context,
     String message, {
     bool isError = false,
   }) {
+=======
+  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/widget/sheet_file_menu.dart
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

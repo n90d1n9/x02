@@ -92,10 +92,10 @@ class DataValidationEngine {
       return ValidationResult(valid: true);
     }
 
-    // TODO: Check ignore blank - need to store ignoreBlank setting per validation
-    // if (ignoreBlank && value.isEmpty) {
-    //   return ValidationResult(valid: true);
-    // }
+    // Check ignore blank
+    if (ignoreBlank && value.isEmpty) {
+      return ValidationResult(valid: true);
+    }
 
     final isValid = validation.validate(value);
     

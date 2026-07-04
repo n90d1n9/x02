@@ -1,0 +1,35 @@
+name: docx_reader_ffi
+description: Rust FFI bindings for high-performance DOCX/DOC parsing in Ky Office Engine.
+version: 1.0.0
+homepage: https://kyoffice.dev
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  ffi: ^2.1.0
+  path: ^1.8.3
+
+dev_dependencies:
+  ffigen: ^11.0.0
+  lints: ^3.0.0
+
+# FFI configuration
+ffigen:
+  name: DocxReaderFFI
+  description: Bindings to docx_reader Rust library
+  output: 'lib/docx_reader_ffi_bindings.dart'
+  headers:
+    entry-points:
+      - 'src/lib.rs'
+  compiler-opts:
+    - '-I/usr/include'
+  functions:
+    include:
+      - 'docx_.*'
+  structs:
+    include:
+      - 'DocxDocument'
+      - 'DocxBlock'
+      - 'DocxRun'
+      - 'DocxStyle'

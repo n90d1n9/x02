@@ -1,5 +1,10 @@
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
 import '../model/cell/cell_address.dart';
 import '../model/cell/cell_selection.dart';
+=======
+import 'package:flutter/material.dart';
+
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
 import '../model/sheet_pivot_table.dart';
 import '../state/toolbar_provider.dart';
 
@@ -27,12 +32,29 @@ class PivotTableManager {
   }
 
   /// Adds a field to the pivot table.
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
   SheetPivotTable addField(SheetPivotTable pivotTable, PivotField field) {
     return pivotTable.copyWith(fields: [...pivotTable.fields, field]);
   }
 
   /// Removes a field from the pivot table.
   SheetPivotTable removeField(SheetPivotTable pivotTable, int fieldIndex) {
+=======
+  SheetPivotTable addField(
+    SheetPivotTable pivotTable,
+    PivotField field,
+  ) {
+    return pivotTable.copyWith(
+      fields: [...pivotTable.fields, field],
+    );
+  }
+
+  /// Removes a field from the pivot table.
+  SheetPivotTable removeField(
+    SheetPivotTable pivotTable,
+    int fieldIndex,
+  ) {
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
     if (fieldIndex < 0 || fieldIndex >= pivotTable.fields.length) {
       return pivotTable;
     }
@@ -139,14 +161,28 @@ class PivotTableManager {
   }
 
   /// Aggregates a value based on the aggregation type.
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
   dynamic aggregateValue(List<dynamic> values, PivotAggregation aggregation) {
+=======
+  dynamic aggregateValue(
+    List<dynamic> values,
+    PivotAggregation aggregation,
+  ) {
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
     if (values.isEmpty) {
       return aggregation == PivotAggregation.count ? 0 : null;
     }
 
     switch (aggregation) {
       case PivotAggregation.sum:
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
         return values.fold<num>(0, (prev, val) => prev + (_toNum(val) ?? 0));
+=======
+        return values.fold<num>(
+          0,
+          (prev, val) => prev + (_toNum(val) ?? 0),
+        );
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
       case PivotAggregation.count:
         return values.where((v) => v != null && v.toString().isNotEmpty).length;
       case PivotAggregation.average:
@@ -162,7 +198,14 @@ class PivotTableManager {
         if (nums.isEmpty) return null;
         return nums.reduce((a, b) => a > b ? a : b);
       case PivotAggregation.product:
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
         return values.fold<num>(1, (prev, val) => prev * (_toNum(val) ?? 1));
+=======
+        return values.fold<num>(
+          1,
+          (prev, val) => prev * (_toNum(val) ?? 1),
+        );
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
       case PivotAggregation.countNumbers:
         return values.where((v) => _toNum(v) != null).length;
       case PivotAggregation.distinctCount:
@@ -189,11 +232,17 @@ class PivotTableManager {
     // This would need access to the actual sheet data
     // For now, returns placeholder column names
     final columns = <String>[];
+<<<<<<< HEAD:Modules/ky_sheet/lib/service/pivot_table_manager.dart
     for (
       var col = sourceSelection.minCol;
       col <= sourceSelection.maxCol;
       col++
     ) {
+=======
+    for (var col = sourceSelection.minCol;
+        col <= sourceSelection.maxCol;
+        col++) {
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/service/pivot_table_manager.dart
       columns.add(_columnIndexToName(col));
     }
     return columns;

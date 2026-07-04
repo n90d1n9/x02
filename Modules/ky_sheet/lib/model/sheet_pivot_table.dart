@@ -1,5 +1,8 @@
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
 import 'package:flutter/material.dart';
 
+=======
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
 import 'cell/cell_address.dart';
 import 'cell/cell_selection.dart';
 import 'sheet_table.dart';
@@ -49,7 +52,11 @@ extension PivotAggregationLabel on PivotAggregation {
 enum PivotArea {
   rows,
   columns,
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
   data, // Renamed from 'values' since 'values' is a reserved name in enums
+=======
+  values,
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
   filters,
 }
 
@@ -59,7 +66,11 @@ extension PivotAreaLabel on PivotArea {
     return switch (this) {
       PivotArea.rows => 'Rows',
       PivotArea.columns => 'Columns',
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
       PivotArea.data => 'Values',
+=======
+      PivotArea.values => 'Values',
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
       PivotArea.filters => 'Filters',
     };
   }
@@ -68,7 +79,11 @@ extension PivotAreaLabel on PivotArea {
     return switch (this) {
       PivotArea.rows => Icons.view_list,
       PivotArea.columns => Icons.view_column,
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
       PivotArea.data => Icons.bar_chart,
+=======
+      PivotArea.values => Icons.bar_chart,
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
       PivotArea.filters => Icons.filter_list,
     };
   }
@@ -223,7 +238,11 @@ class SheetPivotTable {
   List<PivotField> get columnFields => getFieldsByArea(PivotArea.columns);
 
   /// Gets value fields.
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
   List<PivotField> get valueFields => getFieldsByArea(PivotArea.data);
+=======
+  List<PivotField> get valueFields => getFieldsByArea(PivotArea.values);
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
 
   /// Gets filter fields.
   List<PivotField> get filterFields => getFieldsByArea(PivotArea.filters);
@@ -298,9 +317,15 @@ class SheetPivotTable {
     final fieldsJson = json['fields'];
     final fields = fieldsJson is List
         ? fieldsJson
+<<<<<<< HEAD:Modules/ky_sheet/lib/model/sheet_pivot_table.dart
               .whereType<Map>()
               .map((f) => PivotField.fromJson(Map<String, dynamic>.from(f)))
               .toList()
+=======
+            .whereType<Map>()
+            .map((f) => PivotField.fromJson(Map<String, dynamic>.from(f)))
+            .toList()
+>>>>>>> fdcc93050a737f18cc3ba965abd1229d5f2a24f1:Plugins/ky_sheet/lib/model/sheet_pivot_table.dart
         : <PivotField>[];
 
     return SheetPivotTable(
