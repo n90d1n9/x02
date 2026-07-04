@@ -1,6 +1,6 @@
 /// FFI bindings for the Rust document engine.
 ///
-/// This library provides Dart/Flutter integration with the docs_engine Rust crate,
+/// This library provides Dart/Flutter integration with the docx_reader Rust crate,
 /// enabling high-performance document operations similar to MS Word/Google Docs.
 library;
 
@@ -334,15 +334,15 @@ class DocumentEngine {
       if (libraryPath != null) {
         _lib = DynamicLibrary.open(libraryPath);
       } else if (Platform.isAndroid) {
-        _lib = DynamicLibrary.open('libdocs_engine_ffi.so');
+        _lib = DynamicLibrary.open('libdocx_reader_ffi.so');
       } else if (Platform.isIOS) {
         _lib = DynamicLibrary.process();
       } else if (Platform.isLinux) {
-        _lib = DynamicLibrary.open('libdocs_engine_ffi.so');
+        _lib = DynamicLibrary.open('libdocx_reader_ffi.so');
       } else if (Platform.isMacOS) {
-        _lib = DynamicLibrary.open('libdocs_engine_ffi.dylib');
+        _lib = DynamicLibrary.open('libdocx_reader_ffi.dylib');
       } else if (Platform.isWindows) {
-        _lib = DynamicLibrary.open('docs_engine_ffi.dll');
+        _lib = DynamicLibrary.open('docx_reader_ffi.dll');
       } else {
         throw UnsupportedError(
           'Platform not supported: ${Platform.operatingSystem}',
@@ -362,15 +362,15 @@ class DocumentEngine {
     if (_lib == null) return;
 
     _version = _lib!.lookupFunction<DocsEngineVersion, DocsEngineVersionDart>(
-      'docs_engine_version',
+      'docx_reader_version',
     );
     _freeString = _lib!
         .lookupFunction<DocsEngineFreeString, DocsEngineFreeStringDart>(
-          'docs_engine_free_string',
+          'docx_reader_free_string',
         );
     _freeDocument = _lib!
         .lookupFunction<DocsEngineFreeDocument, DocsEngineFreeDocumentDart>(
-          'docs_engine_free_document',
+          'docx_reader_free_document',
         );
     _createDocument = _lib!.lookupFunction<CreateDocument, CreateDocumentDart>(
       'create_document',
@@ -904,16 +904,99 @@ class DocumentEngine {
     return _pointerToString(jsonPtr);
   }
 
-  /// Import from DOCX using the Parser engine
+  // ============================================================================
+  // DOCX Import/Export Operations
+  // ============================================================================
+
+  /// Parse DOCX bytes and return document structure
+  Future<Map<String, dynamic>> parseDocxBytes(Uint8List bytes) async {
+    if (!_initialized || _lib == null) {
+      throw StateError('Native engine not initialized');
+    }
+
+    // TODO: Implement FFI call to Rust docx_parser
+    // This will call the Rust function: parse_docx_bytes(bytes_ptr, bytes_len)
+    // For now, return a placeholder structure
+    
+    return {
+      'title': 'Parsed Document',
+      'blocks': <Map<String, dynamic>>[],
+      'metadata': {
+        'title': 'Parsed Document',
+        'author': 'Unknown',
+        'word_count': 0,
+        'character_count': 0,
+        'page_count': 1,
+      },
+    };
+  }
+
+  /// Generate DOCX bytes from document
+  Future<Uint8List> generateDocxBytes(Document document) async {
+    if (!_initialized || _lib == null) {
+      throw StateError('Native engine not initialized');
+    }
+
+    // TODO: Implement FFI call to Rust docx_writer
+    // This will call the Rust function: write_docx_bytes(document_json)
+    // For now, throw unimplemented
+    
+    throw UnimplementedError(
+      'DOCX generation FFI not yet implemented in Rust',
+    );
+  }
+
+  /// Import from DOCX using the docx_reader engine
   Future<NativeDocumentHandle> importFromDocx(List<int> bytes) async {
-    // TODO: Integrate with ky-of-docx parser via FFI
-    throw UnimplementedError('DOCX import not yet implemented');
+    await initialize();
+    
+    if (isNativeEngineAvailable) {
+      // Use native parser
+      final result = await parseDocxBytes(Uint8List.fromList(bytes));
+      final doc = _convertParsedDocxToDocument(result);
+      return NativeDocumentHandle.inMemory(doc);
+    } else {
+      // Fallback parsing
+      final fallback = DocxParserService.instance;
+      final content = await fallback.parseDocx(Uint8List.fromList(bytes));
+      return NativeDocumentHandle.inMemory(_convertDocxContentToDocument(content));
+    }
   }
 
   /// Export document to DOCX
   Future<List<int>> exportToDocx(NativeDocumentHandle handle) async {
-    // TODO: Integrate with ky-of-docx writer via FFI
-    throw UnimplementedError('DOCX export not yet implemented');
+    await initialize();
+    
+    if (isNativeEngineAvailable) {
+      final bytes = await generateDocxBytes(handle.document);
+      return bytes.toList();
+    } else {
+      throw UnimplementedError(
+        'DOCX export requires native engine implementation',
+      );
+    }
+  }
+
+  /// Convert parsed DOCX result to Document model
+  Document _convertParsedDocxToDocument(Map<String, dynamic> result) {
+    final blocks = (result['blocks'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    return Document(
+      title: result['title'] as String? ?? 'Untitled',
+      blocks: blocks.map((b) => DocumentBlock.fromJson(b)).toList(),
+    );
+  }
+
+  /// Convert DocxContent to Document model
+  Document _convertDocxContentToDocument(dynamic content) {
+    // Handle both DocxContent and raw maps
+    if (content is Map<String, dynamic>) {
+      return _convertParsedDocxToDocument(content);
+    }
+    // Fallback for DocxContent class
+    return Document(
+      title: 'Imported Document',
+      blocks: [],
+    );
   }
 }
 

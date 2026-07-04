@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use docs_engine::{
+use docx_reader::{
     apply_document_edit, Block, BlockType, Document, DocumentEdit, DocumentEditOutcome,
     InlineStyle, TextSpan,
 };
@@ -36,12 +36,12 @@ fn read_c_string(ptr: *const c_char) -> Option<String> {
 // ============================================================================
 
 #[no_mangle]
-pub extern "C" fn docs_engine_version() -> *mut c_char {
-    string_to_raw("docs_engine v0.1.0")
+pub extern "C" fn docx_reader_version() -> *mut c_char {
+    string_to_raw("docx_reader v0.1.0")
 }
 
 #[no_mangle]
-pub extern "C" fn docs_engine_free_string(s: *mut c_char) {
+pub extern "C" fn docx_reader_free_string(s: *mut c_char) {
     if s.is_null() {
         return;
     }
@@ -51,7 +51,7 @@ pub extern "C" fn docs_engine_free_string(s: *mut c_char) {
 }
 
 #[no_mangle]
-pub extern "C" fn docs_engine_free_document(doc: *mut Document) {
+pub extern "C" fn docx_reader_free_document(doc: *mut Document) {
     if doc.is_null() {
         return;
     }
@@ -459,8 +459,8 @@ pub extern "C" fn set_document_title(
 
 // ============================================================================
 // Safety Notes:
-// - Callers must free returned strings with `docs_engine_free_string`
-// - Callers must free documents with `docs_engine_free_document`
+// - Callers must free returned strings with `docx_reader_free_string`
+// - Callers must free documents with `docx_reader_free_document`
 // - All pointers passed from Dart must remain valid for the duration of the call
 // ============================================================================
 
@@ -472,7 +472,7 @@ mod tests {
     fn take_string(ptr: *mut c_char) -> String {
         assert!(!ptr.is_null());
         let value = unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().to_owned();
-        docs_engine_free_string(ptr);
+        docx_reader_free_string(ptr);
         value
     }
 
@@ -488,7 +488,7 @@ mod tests {
         assert!(json.contains("\"title\":\"Test Document\""));
         assert!(json.contains("\"blocks\":[]"));
 
-        docs_engine_free_document(doc_ptr);
+        docx_reader_free_document(doc_ptr);
     }
 
     #[test]
@@ -508,7 +508,7 @@ mod tests {
         let json = take_string(json_ptr);
         assert!(json.contains("Hello World"));
 
-        docs_engine_free_document(doc_ptr);
+        docx_reader_free_document(doc_ptr);
     }
 
     #[test]
@@ -525,7 +525,7 @@ mod tests {
         let count = get_block_count(doc_ptr);
         assert_eq!(count, 2);
 
-        docs_engine_free_document(doc_ptr);
+        docx_reader_free_document(doc_ptr);
     }
 
     #[test]
@@ -550,7 +550,7 @@ mod tests {
         let block1_json = take_string(block1_json_ptr);
         assert!(block1_json.contains("ListItem(0)"));
 
-        docs_engine_free_document(doc_ptr);
+        docx_reader_free_document(doc_ptr);
     }
 
     #[test]
@@ -568,7 +568,7 @@ mod tests {
         let outcome_json = take_string(outcome_ptr);
         assert!(outcome_json.contains("\"changed_blocks\":[0]"));
 
-        docs_engine_free_document(doc_ptr);
+        docx_reader_free_document(doc_ptr);
     }
 
     #[test]
@@ -593,7 +593,7 @@ mod tests {
         let count = get_block_count(restored_doc_ptr);
         assert_eq!(count, 1);
 
-        docs_engine_free_document(doc_ptr);
-        docs_engine_free_document(restored_doc_ptr);
+        docx_reader_free_document(doc_ptr);
+        docx_reader_free_document(restored_doc_ptr);
     }
 }

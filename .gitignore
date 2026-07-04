@@ -1,56 +1,37 @@
 ```
-# Flutter/Dart specific
-.dart_tool/
-.build/
-.packages
-flutter_export_environment.sh
+# Rust/Cargo build artifacts
+target/
+Cargo.lock
 
 # Dependencies
-node_modules/
 vendor/
 
-# Logs
-*.log
-**/logs
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Environment variables
-.env
-.env.local
-.env.*
-!.env.example
-
-# IDE specific
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Build outputs
-build/
-dist/
-target/
+# Logs
+*.log
 
-# Python related (if any Python in project)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-venv/
-.venv/
+# Environment
 .env
+.env.local
+*.env.*
 
-# Temporary files
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Temp files
 *.tmp
-*.temp
-*~
+.DS_Store
+Thumbs.db
+
+# MyPy cache
+.mypy_cache/
+# PyTest cache
+.pytest_cache/
 ```
