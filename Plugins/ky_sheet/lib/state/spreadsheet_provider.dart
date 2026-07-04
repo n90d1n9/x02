@@ -18,6 +18,7 @@ import '../model/sheet_named_range.dart';
 import '../model/sheet_search_match.dart';
 import '../model/sheet_table.dart';
 import '../model/undo_redo_action.dart';
+import '../service/kyo_xlsx_reader.dart';
 import '../service/sheet_formula_engine.dart';
 import '../utils/sheet_engine_operation_diff.dart';
 import '../utils/sheet_engine_operation_replayer.dart';
@@ -569,6 +570,65 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
     );
     _clearSheetEngineOperations();
     _clearSheetMetadata();
+  }
+
+  /// Import Excel from bytes using package:excel (fallback method)
+  void importFromExcelBytes(List<int> bytes) {
+    try {
+      final excel = excel_lib.Excel.decodeBytes(bytes);
+      importFromExcel(excel);
+    } catch (e) {
+      throw Exception('Failed to parse Excel file: $e');
+    }
+  }
+
+  /// Import Excel using high-performance ky-of-xlsx parser (preferred for large files)
+  Future<void> importFromExcelBytesKyo(String filePath) async {
+    try {
+      final workbookData = await KyoXlsxReader.readWorkbook(filePath);
+      final sheets = workbookData['sheets'] as List<dynamic>;
+      
+      if (sheets.isEmpty) {
+        throw Exception('No sheets found in workbook');
+      }
+
+      final newState = <CellAddress, CellData>{};
+      final firstSheet = sheets.first as Map<String, dynamic>;
+      final cells = firstSheet['cells'] as Map<String, dynamic>;
+
+      for (final entry in cells.entries) {
+        final address = entry.key;
+        final value = entry.value.toString();
+        
+        if (value.isNotEmpty) {
+          final colLetter = address.replaceAll(RegExp(r'\d+'), '');
+          final rowNum = int.parse(address.replaceAll(RegExp(r'[A-Z]+'), ''));
+          final col = _columnLetterToIndex(colLetter);
+          final row = rowNum - 1;
+          
+          newState[CellAddress(row, col)] = CellData(value: value);
+        }
+      }
+
+      _replaceAllState(
+        newState,
+        'Import Excel (ky-of-xlsx)',
+        recordSheetEngineOperations: false,
+      );
+      _clearSheetEngineOperations();
+      _clearSheetMetadata();
+    } catch (e) {
+      throw Exception('Failed to import Excel with ky-of-xlsx: $e');
+    }
+  }
+
+  /// Convert column letter to index (A=0, B=1, ..., Z=25, AA=26, etc.)
+  int _columnLetterToIndex(String letters) {
+    int index = 0;
+    for (int i = 0; i < letters.length; i++) {
+      index = index * 26 + (letters.codeUnitAt(i) - 64);
+    }
+    return index - 1;
   }
 
   CellStyle _convertExcelStyle(excel_lib.Data cell) {
@@ -1431,5 +1491,30 @@ class SpreadsheetNotifier extends StateNotifier<Map<CellAddress, CellData>> {
 
     final result = a.toLowerCase().compareTo(b.toLowerCase());
     return ascending ? result : -result;
+  }
+
+  //---------- Conditional Formatting Operations ----------
+
+  /// Add a conditional format rule
+  void addConditionalFormatRule(ConditionalFormatRule rule) {
+    final currentRules = List<ConditionalFormatRule>.from(
+      ref.read(conditionalFormatRulesProvider),
+    );
+    currentRules.add(rule);
+    ref.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+  }
+
+  /// Remove conditional format rules matching the given range
+  void removeConditionalFormatRules(Range range) {
+    final currentRules = List<ConditionalFormatRule>.from(
+      ref.read(conditionalFormatRulesProvider),
+    );
+    currentRules.removeWhere((rule) => rule.toRange() == range);
+    ref.read(conditionalFormatRulesProvider.notifier).state = currentRules;
+  }
+
+  /// Clear all conditional format rules
+  void clearAllConditionalFormatRules() {
+    ref.read(conditionalFormatRulesProvider.notifier).state = [];
   }
 }

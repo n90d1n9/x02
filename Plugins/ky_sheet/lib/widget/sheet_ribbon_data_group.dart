@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../model/cell/cell_selection.dart';
+import '../model/sheet_pivot_table.dart';
 import '../model/sheet_table.dart';
 import '../state/sheet_sidebar_provider.dart';
 import '../state/toolbar_provider.dart';
+import 'pivot_table_dialog.dart';
 import 'sheet_ribbon_command_row.dart';
 import 'sheet_ribbon_menu_button.dart';
 import 'sheet_ribbon_validation_dialogs.dart';
@@ -46,6 +48,13 @@ class SheetRibbonDataGroup extends StatelessWidget {
               ? () => controller.formatAsTable(selection!)
               : null,
           tooltip: 'Format as Table',
+        ),
+        ToolButton(
+          icon: Icons.insert_chart_outlined,
+          onPressed: _hasSelection
+              ? () => _showPivotTableDialog(context, selection!)
+              : null,
+          tooltip: 'Insert Pivot Table',
         ),
         ToolButton(
           icon: Icons.table_chart_outlined,
@@ -175,5 +184,21 @@ class SheetRibbonDataGroup extends StatelessWidget {
     if (selected != null) {
       controller.sortSelection(selected, ascending: ascending);
     }
+  }
+
+  void _showPivotTableDialog(BuildContext context, CellSelection selection) {
+    showDialog<SheetPivotTable>(
+      context: context,
+      builder: (context) => PivotTableDialog(
+        controller: controller,
+        sourceSelection: selection,
+      ),
+    ).then((pivotTable) {
+      if (pivotTable != null) {
+        // Here you would integrate with the sheet engine to render the pivot table
+        // For now, we just notify that a pivot table was created
+        controller.notifyListeners();
+      }
+    });
   }
 }
