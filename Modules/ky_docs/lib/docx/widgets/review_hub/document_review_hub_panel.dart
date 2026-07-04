@@ -10,7 +10,7 @@ import '../document_review_panel.dart';
 import '../panel/document_panel_header.dart';
 import '../panel/document_panel_shell.dart';
 import '../panel/document_panel_tab_strip.dart';
-import '../track_changes/document_track_changes_panel.dart';
+import '../track_changes/document_revision_panel.dart';
 //import '../widgets/comment_panel.dart';
 import 'document_review_action_policy.dart';
 import 'document_side_panel.dart';
@@ -149,14 +149,8 @@ class DocumentReviewHubPanel extends StatelessWidget {
         showHeader: false,
         showFrame: false,
       ),
-      DocumentSidePanel.trackChanges => DocumentTrackChangesPanel(
-        changes: trackedChanges,
-        onProposeChange: onProposeChange,
-        onJumpToChange: onJumpToChange,
-        onAcceptChange: onAcceptChange,
-        onRejectChange: onRejectChange,
-        onDeleteChange: onDeleteChange,
-        actionPolicy: actionPolicy,
+      DocumentSidePanel.trackChanges => DocumentRevisionPanel(
+        onClose: null,
         showHeader: false,
         showFrame: false,
       ),

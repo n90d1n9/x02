@@ -13,6 +13,7 @@ import 'drawing_data.dart';
 import 'document_import_status.dart';
 import 'document_metadata.dart';
 import 'document_version.dart';
+import 'revision.dart';
 
 class DocumentState {
   final String title;
@@ -42,6 +43,8 @@ class DocumentState {
   final List<Footnote> footnotes;
 
   final List<DocumentChange> trackedChanges;
+  final RevisionManager revisionManager;
+  final bool isTrackChangesEnabled;
   final int currentPage;
   final int totalPages;
   final List<CollaborationUser> collaborators;
@@ -69,6 +72,8 @@ class DocumentState {
     this.footnotes = const [],
     this.comments = const [],
     this.trackedChanges = const [],
+    RevisionManager? revisionManager,
+    this.isTrackChangesEnabled = false,
     this.currentPage = 1,
     this.totalPages = 1,
     this.collaborators = const [],
@@ -84,6 +89,7 @@ class DocumentState {
     required this.documentId,
     required this.currentUserId,
   }) : currentTheme = currentTheme ?? DocumentTheme.predefinedThemes[0],
+       revisionManager = revisionManager ?? RevisionManager(),
        stats =
            stats ??
            DocumentStats(
@@ -115,6 +121,8 @@ class DocumentState {
     List<Footnote>? footnotes,
     List<Comment>? comments,
     List<DocumentChange>? trackedChanges,
+    RevisionManager? revisionManager,
+    bool? isTrackChangesEnabled,
     int? currentPage,
     int? totalPages,
     List<CollaborationUser>? collaborators,
@@ -150,6 +158,9 @@ class DocumentState {
       footnotes: footnotes ?? this.footnotes,
       comments: comments ?? this.comments,
       trackedChanges: trackedChanges ?? this.trackedChanges,
+      revisionManager: revisionManager ?? this.revisionManager,
+      isTrackChangesEnabled:
+          isTrackChangesEnabled ?? this.isTrackChangesEnabled,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       collaborators: collaborators ?? this.collaborators,

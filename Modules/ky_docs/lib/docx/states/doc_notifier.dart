@@ -20,6 +20,7 @@ import '../models/cloud_sync_service.dart';
 import '../models/collaboration_service.dart';
 import '../models/document_state.dart';
 import '../models/document_storage_service.dart';
+import '../models/revision.dart';
 import '../services/document_ai_orchestration_service.dart';
 import '../services/document_change_service.dart';
 import '../services/document_collaboration_orchestration_service.dart';
@@ -527,6 +528,49 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
         state.totalPages,
       ),
     );
+  }
+
+  // Track Changes operations
+  void toggleTrackChanges() {
+    final newValue = !state.isTrackChangesEnabled;
+    state.revisionManager.toggleTracking(newValue);
+    _markChanged(
+      (current) => current.copyWith(isTrackChangesEnabled: newValue),
+    );
+  }
+
+  void acceptRevision(String revisionId) {
+    state.revisionManager.acceptRevision(revisionId);
+    _markChanged((current) => current.copyWith());
+  }
+
+  void rejectRevision(String revisionId) {
+    state.revisionManager.rejectRevision(revisionId);
+    // In a full implementation, this would revert the change in the document
+    _markChanged((current) => current.copyWith());
+  }
+
+  void acceptAllRevisions() {
+    state.revisionManager.acceptAll();
+    _markChanged((current) => current.copyWith());
+  }
+
+  void rejectAllRevisions() {
+    state.revisionManager.rejectAll();
+    // In a full implementation, this would revert all rejected changes
+    _markChanged((current) => current.copyWith());
+  }
+
+  void clearResolvedRevisions() {
+    state.revisionManager.clearResolved();
+    _markChanged((current) => current.copyWith());
+  }
+
+  void addRevision(Revision revision) {
+    if (state.isTrackChangesEnabled) {
+      state.revisionManager.addRevision(revision);
+      _markChanged((current) => current.copyWith());
+    }
   }
 
   void _calculatePagination() {
