@@ -6,10 +6,10 @@ This guide demonstrates how to use the improved `ky_docs` package to import and 
 
 The `Plugins/ky_docs` package now includes:
 - **File Menu**: MS Word/Google Docs-style File menu with New, Open, Save, Save As, Import, Export, Print, Share options
-- **DOCX Import**: Full integration with the Rust `parser-docx` parser for high-fidelity DOCX import
+- **DOCX Import**: Full integration with the Rust `ky-of-docx` parser for high-fidelity DOCX import
 - **DOCX Export**: Complete DOCX export with formatting preservation
 - **PDF Export**: PDF export with advanced options
-- **Engine Integration**: Seamless integration with the Rust `docx_reader` for document operations
+- **Engine Integration**: Seamless integration with the Rust `docs_engine` for document operations
 
 ## Sample Files
 
@@ -42,7 +42,7 @@ class DocumentImportExample extends ConsumerWidget {
               label: Text('Import sample01.docx'),
               onPressed: () async {
                 final notifier = ref.read(documentProvider.notifier);
-                
+
                 // Import DOCX with preview dialog
                 await notifier.importFromDocx(
                   reviewImport: (preview) async {
@@ -54,7 +54,7 @@ class DocumentImportExample extends ConsumerWidget {
                     );
                   },
                 );
-                
+
                 // Navigate to editor after import
                 if (context.mounted) {
                   Navigator.push(
@@ -72,7 +72,7 @@ class DocumentImportExample extends ConsumerWidget {
               label: Text('Import sample02-complete.docx'),
               onPressed: () async {
                 final notifier = ref.read(documentProvider.notifier);
-                
+
                 await notifier.importFromDocx(
                   reviewImport: (preview) async {
                     if (!context.mounted) return false;
@@ -82,7 +82,7 @@ class DocumentImportExample extends ConsumerWidget {
                     );
                   },
                 );
-                
+
                 if (context.mounted) {
                   Navigator.push(
                     context,
@@ -115,7 +115,7 @@ class DocumentExportExample extends ConsumerWidget {
           PopupMenuButton<String>(
             onSelected: (value) async {
               final notifier = ref.read(documentProvider.notifier);
-              
+
               try {
                 String path;
                 if (value == 'docx') {
@@ -259,7 +259,7 @@ AppBar(
 ### Import Flow
 
 ```
-User clicks "Import" 
+User clicks "Import"
     ↓
 FilePicker picks file (sample01.docx or sample02-complete.docx)
     ↓
@@ -269,7 +269,7 @@ WaraqDocumentBridge creates import request
     ↓
 DocumentImportExtractor extracts content
     ├─→ Uses DocxService for basic text extraction
-    └─→ Uses parser-docx Rust parser for structured content (if available)
+    └─→ Uses ky-of-docx Rust parser for structured content (if available)
     ↓
 DocumentImportPreviewAnalyzer analyzes structure
     ↓
@@ -297,7 +297,7 @@ WaraqDocumentBridge creates export request
     ↓
 DocumentExportRenderer.renderDocx()
     ├─→ Uses DocxService for basic DOCX creation
-    └─→ Uses parser-docx Rust parser for advanced export (if available)
+    └─→ Uses ky-of-docx Rust parser for advanced export (if available)
     ↓
 Writes file to application documents directory
     ↓
@@ -316,16 +316,16 @@ void testSample01Import() async {
     docxService: DocxService(),
     pdfService: PdfService(),
   );
-  
+
   // Read sample file
   final samplePath = 'Sample/sample01.docx';
   final bytes = await File(samplePath).readAsBytes();
-  
+
   // Simulate import
   final imported = await importService.importFormat(
     DocumentImportFormat.docx,
   );
-  
+
   print('Imported title: ${imported?.title}');
   print('Text content: ${imported?.text}');
   print('Structure: ${imported?.structure}');
@@ -340,7 +340,7 @@ void testExportRoundTrip() async {
     docxService: DocxService(),
     pdfService: PdfService(),
   );
-  
+
   final metadata = DocumentMetadata(
     title: 'Test Document',
     author: 'Test User',
@@ -349,21 +349,21 @@ void testExportRoundTrip() async {
     wordCount: 100,
     characterCount: 500,
   );
-  
+
   final text = 'This is a test document.\n\nIt has multiple paragraphs.';
-  
+
   // Export to DOCX
   final path = await exportService.exportDocx(
     text: text,
-    metadata: metadata,
+    meta metadata,
   );
-  
+
   print('Exported to: $path');
-  
+
   // Re-import to verify
   final bytes = await File(path).readAsBytes();
   final extractedText = await DocxService().extractTextFromDocx(bytes);
-  
+
   print('Re-imported text: $extractedText');
   assert(extractedText.contains('test document'));
 }
@@ -387,25 +387,25 @@ void testExportRoundTrip() async {
 
 1. **Build Rust FFI Library**:
    ```bash
-   cd Plugins/Engine/docx_reader_ffi
+   cd Plugins/Engine/docs_engine_ffi
    cargo build --release
    ```
 
 2. **Copy Native Libraries**:
-   - Android: `libdocx_reader_ffi.so` → `android/app/src/main/jniLibs/`
-   - iOS: `libdocx_reader_ffi.dylib` → `ios/`
-   - Linux: `libdocx_reader_ffi.so` → `linux/`
-   - macOS: `libdocx_reader_ffi.dylib` → `macos/`
-   - Windows: `docx_reader_ffi.dll` → `windows/`
+   - Android: `libdocs_engine_ffi.so` → `android/app/src/main/jniLibs/`
+   - iOS: `libdocs_engine_ffi.dylib` → `ios/`
+   - Linux: `libdocs_engine_ffi.so` → `linux/`
+   - macOS: `libdocs_engine_ffi.dylib` → `macos/`
+   - Windows: `docs_engine_ffi.dll` → `windows/`
 
 3. **Initialize Engine**:
    ```dart
    void main() async {
      WidgetsFlutterBinding.ensureInitialized();
-     
+
      // Initialize the native engine
      await DocumentEngine.instance.initialize();
-     
+
      runApp(MyApp());
    }
    ```

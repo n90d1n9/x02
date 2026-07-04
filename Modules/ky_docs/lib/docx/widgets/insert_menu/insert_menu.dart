@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ky_docs/ky_docs.dart';
 
-import '../../services/document_editor_commands.dart';
-
 /// Comprehensive Insert Menu widget similar to MS Word/Google Docs
 /// Provides access to insert images, tables, links, headers/footers, etc.
 class InsertMenu extends StatefulWidget {

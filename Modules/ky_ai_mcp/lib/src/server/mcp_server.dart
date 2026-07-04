@@ -1,5 +1,5 @@
 /// MCP Server Implementation
-/// 
+///
 /// JSON-RPC 2.0 server implementing the Model Context Protocol (MCP)
 /// for AI agent integration with Ky Office suite.
 
@@ -30,27 +30,29 @@ class MCPServer {
   void _registerHandlers() {
     // Initialize handler
     _peer.registerMethod('initialize', _handleInitialize);
-    
+
     // Tool handlers
     _peer.registerMethod('tools/list', _handleToolsList);
     _peer.registerMethod('tools/call', _handleToolsCall);
-    
+
     // Resource handlers
     _peer.registerMethod('resources/list', _handleResourcesList);
     _peer.registerMethod('resources/read', _handleResourcesRead);
-    
+
     // Prompt handlers
     _peer.registerMethod('prompts/list', _handlePromptsList);
     _peer.registerMethod('prompts/get', _handlePromptsGet);
-    
+
     // Notification handlers
     _peer.registerMethod('notifications/cancelled', _handleCancelled);
     _peer.registerMethod('notifications/progress', _handleProgress);
   }
 
-  Future<Map<String, dynamic>> _handleInitialize(Map<String, dynamic>? params) async {
+  Future<Map<String, dynamic>> _handleInitialize(
+    Map<String, dynamic>? params,
+  ) async {
     _initialized = true;
-    
+
     // Register all tools
     _tools.addAll([
       ...DocumentTools.getAll(),
@@ -60,10 +62,7 @@ class MCPServer {
     ]);
 
     // Register all resources
-    _resources.addAll([
-      DocumentResource(),
-      MetadataResource(),
-    ]);
+    _resources.addAll([DocumentResource(), MetadataResource()]);
 
     return {
       'protocolVersion': '2024-11-05',
@@ -72,20 +71,19 @@ class MCPServer {
         'resources': {'subscribe': true, 'listChanged': true},
         'prompts': {'listChanged': true},
       },
-      'serverInfo': {
-        'name': 'ky_ai_mcp',
-        'version': '1.0.0',
-      },
+      'serverInfo': {'name': 'ky_ai_mcp', 'version': '1.0.0'},
     };
   }
 
-  Future<Map<String, dynamic>> _handleToolsList(Map<String, dynamic>? params) async {
-    return {
-      'tools': _tools.map((t) => t.toJson()).toList(),
-    };
+  Future<Map<String, dynamic>> _handleToolsList(
+    Map<String, dynamic>? params,
+  ) async {
+    return {'tools': _tools.map((t) => t.toJson()).toList()};
   }
 
-  Future<Map<String, dynamic>> _handleToolsCall(Map<String, dynamic> params) async {
+  Future<Map<String, dynamic>> _handleToolsCall(
+    Map<String, dynamic> params,
+  ) async {
     final name = params['name'] as String;
     final arguments = params['arguments'] as Map<String, dynamic>?;
 
@@ -98,32 +96,28 @@ class MCPServer {
       final result = await tool.handler(arguments ?? {});
       return {
         'content': [
-          {
-            'type': 'text',
-            'text': json.encode(result),
-          },
+          {'type': 'text', 'text': json.encode(result)},
         ],
       };
     } catch (e) {
       return {
         'content': [
-          {
-            'type': 'text',
-            'text': 'Error: ${e.toString()}',
-          },
+          {'type': 'text', 'text': 'Error: ${e.toString()}'},
         ],
         'isError': true,
       };
     }
   }
 
-  Future<Map<String, dynamic>> _handleResourcesList(Map<String, dynamic>? params) async {
-    return {
-      'resources': _resources.map((r) => r.toJson()).toList(),
-    };
+  Future<Map<String, dynamic>> _handleResourcesList(
+    Map<String, dynamic>? params,
+  ) async {
+    return {'resources': _resources.map((r) => r.toJson()).toList()};
   }
 
-  Future<Map<String, dynamic>> _handleResourcesRead(Map<String, dynamic> params) async {
+  Future<Map<String, dynamic>> _handleResourcesRead(
+    Map<String, dynamic> params,
+  ) async {
     final uri = params['uri'] as String;
 
     final resource = _resources.firstWhere(
@@ -134,22 +128,20 @@ class MCPServer {
     final content = await resource.reader();
     return {
       'contents': [
-        {
-          'uri': uri,
-          'mimeType': resource.mimeType,
-          'text': content,
-        },
+        {'uri': uri, 'mimeType': resource.mimeType, 'text': content},
       ],
     };
   }
 
-  Future<Map<String, dynamic>> _handlePromptsList(Map<String, dynamic>? params) async {
-    return {
-      'prompts': _prompts.map((p) => p.toJson()).toList(),
-    };
+  Future<Map<String, dynamic>> _handlePromptsList(
+    Map<String, dynamic>? params,
+  ) async {
+    return {'prompts': _prompts.map((p) => p.toJson()).toList()};
   }
 
-  Future<Map<String, dynamic>> _handlePromptsGet(Map<String, dynamic> params) async {
+  Future<Map<String, dynamic>> _handlePromptsGet(
+    Map<String, dynamic> params,
+  ) async {
     final name = params['name'] as String;
     final arguments = params['arguments'] as Map<String, dynamic>?;
 
@@ -159,9 +151,7 @@ class MCPServer {
     );
 
     final messages = await prompt.handler(arguments ?? {});
-    return {
-      'messages': messages,
-    };
+    return {'messages': messages};
   }
 
   void _handleCancelled(Map<String, dynamic>? params) {

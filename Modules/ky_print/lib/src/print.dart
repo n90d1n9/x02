@@ -5,7 +5,7 @@ import 'models/print_job.dart';
 import 'models/print_page.dart';
 
 /// Main entry point for Ky Print functionality
-/// 
+///
 /// Provides a simple API for printing documents from ky_docs, ky_sheet, and ky_slide.
 class KyPrint {
   /// The print service instance

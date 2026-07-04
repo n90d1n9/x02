@@ -76,7 +76,7 @@ void _initializeAutoSave() {
 
 void _onDocumentChanged() {
   // ... existing change tracking ...
-  
+
   // NEW: Trigger auto-save debounce timer
   _autoSaveService.onDocumentChanged();
 }
@@ -157,7 +157,7 @@ class AutoSaveIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(autoSaveStatsProvider);
-    
+
     if (stats.isSaving) {
       return Row(
         children: [
@@ -171,11 +171,11 @@ class AutoSaveIndicator extends ConsumerWidget {
         ],
       );
     }
-    
+
     if (stats.lastSaveTime != null) {
       final elapsed = DateTime.now().difference(stats.lastSaveTime!);
       String timeAgo;
-      
+
       if (elapsed.inSeconds < 60) {
         timeAgo = '${elapsed.inSeconds}s ago';
       } else if (elapsed.inMinutes < 60) {
@@ -183,7 +183,7 @@ class AutoSaveIndicator extends ConsumerWidget {
       } else {
         timeAgo = '${elapsed.inHours}h ago';
       }
-      
+
       return Text(
         'Saved $timeAgo',
         style: TextStyle(
@@ -192,7 +192,7 @@ class AutoSaveIndicator extends ConsumerWidget {
         ),
       );
     }
-    
+
     return Text('Not saved yet', style: TextStyle(fontSize: 12));
   }
 }
@@ -205,7 +205,7 @@ Show a warning when user tries to close with unsaved changes:
 ```dart
 Future<bool> _onWillPop() async {
   final stats = ref.read(documentProvider.notifier).autoSaveService.getStats();
-  
+
   if (stats.hasUnsavedChanges) {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -224,10 +224,10 @@ Future<bool> _onWillPop() async {
         ],
       ),
     );
-    
+
     return confirmed ?? false;
   }
-  
+
   return true;
 }
 ```
@@ -245,9 +245,9 @@ void main() {
   test('AutoSaveService initializes correctly', () {
     final service = AutoSaveService();
     final notifier = MockDocumentNotifier();
-    
+
     service.initialize(notifier);
-    
+
     expect(service.isEnabled, isTrue);
     expect(service.isSaving, isFalse);
   });
@@ -255,30 +255,30 @@ void main() {
   test('AutoSaveService debounces rapid changes', () async {
     final service = AutoSaveService();
     final notifier = MockDocumentNotifier();
-    
+
     service.initialize(notifier, interval: Duration(milliseconds: 100));
-    
+
     // Simulate rapid edits
     for (int i = 0; i < 10; i++) {
       service.onDocumentChanged();
       await Future.delayed(Duration(milliseconds: 50));
     }
-    
+
     // Should only trigger one save after debouncing
     await Future.delayed(Duration(seconds: 3));
-    
+
     expect(notifier.saveCallCount, equals(1));
   });
 
   test('AutoSaveService tracks statistics', () async {
     final service = AutoSaveService();
     final notifier = MockDocumentNotifier();
-    
+
     service.initialize(notifier);
-    
+
     await service.forceSave();
     await service.forceSave();
-    
+
     final stats = service.getStats();
     expect(stats.saveCount, equals(2));
     expect(stats.lastSaveTime, isNotNull);
@@ -297,17 +297,17 @@ void main() {
 
   testWidgets('Auto-save works end-to-end', (tester) async {
     await tester.pumpWidget(MyApp());
-    
+
     // Type some text
     await tester.enterText(find.byType(Editor), 'Hello World');
     await tester.pump();
-    
+
     // Wait for debounce + save
     await tester.pumpAndSettle(Duration(seconds: 5));
-    
+
     // Verify save indicator appeared
     expect(find.text('Saved'), findsOneWidget);
-    
+
     // Verify file was saved (check mock storage)
     final savedDoc = MockStorage.getLastSavedDocument();
     expect(savedDoc.content, contains('Hello World'));

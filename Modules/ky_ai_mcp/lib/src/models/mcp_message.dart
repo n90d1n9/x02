@@ -1,5 +1,5 @@
 /// MCP Message Models
-/// 
+///
 /// JSON-RPC 2.0 message formats for MCP communication.
 
 import 'dart:convert';
@@ -12,7 +12,7 @@ abstract class MCPMessage {
   MCPMessage({this.jsonrpc = '2.0', this.id});
 
   Map<String, dynamic> toJson();
-  
+
   String encode() => json.encode(toJson());
 }
 
@@ -21,11 +21,7 @@ class MCPRequest extends MCPMessage {
   final String method;
   final Map<String, dynamic>? params;
 
-  MCPRequest({
-    required this.method,
-    this.params,
-    super.id,
-  });
+  MCPRequest({required this.method, this.params, super.id});
 
   @override
   Map<String, dynamic> toJson() {
@@ -51,11 +47,7 @@ class MCPResponse extends MCPMessage {
   final dynamic result;
   final MCPError? error;
 
-  MCPResponse({
-    this.result,
-    this.error,
-    super.id,
-  });
+  MCPResponse({this.result, this.error, super.id});
 
   @override
   Map<String, dynamic> toJson() {
@@ -74,18 +66,10 @@ class MCPError {
   final String message;
   final dynamic data;
 
-  MCPError({
-    required this.code,
-    required this.message,
-    this.data,
-  });
+  MCPError({required this.code, required this.message, this.data});
 
   Map<String, dynamic> toJson() {
-    return {
-      'code': code,
-      'message': message,
-      if (data != null) 'data': data,
-    };
+    return {'code': code, 'message': message, if (data != null) 'data': data};
   }
 
   static const int ParseError = -32700;
@@ -100,10 +84,7 @@ class MCPNotification extends MCPMessage {
   final String method;
   final Map<String, dynamic>? params;
 
-  MCPNotification({
-    required this.method,
-    this.params,
-  }) : super(id: null);
+  MCPNotification({required this.method, this.params}) : super(id: null);
 
   @override
   Map<String, dynamic> toJson() {

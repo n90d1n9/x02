@@ -1,5 +1,3 @@
-import 'package:ky_docs/compat/flutter_quill_compat.dart' as quill;
-
 import 'collaboration_user.dart';
 import 'comment.dart';
 import 'document_change.dart';
@@ -17,7 +15,6 @@ import 'document_metadata.dart';
 import 'document_version.dart';
 
 class DocumentState {
-  final quill.QuillController controller;
   final String title;
   final DateTime lastModified;
   final bool isSaved;
@@ -54,7 +51,6 @@ class DocumentState {
   final bool spellCheckEnabled;
   final DocumentImportStatus importStatus;
   DocumentState({
-    required this.controller,
     required this.metadata,
     this.hasUnsavedChanges = false,
     this.isLoading = false,
@@ -99,7 +95,6 @@ class DocumentState {
            );
 
   DocumentState copyWith({
-    quill.QuillController? controller,
     DocumentMetadata? metadata,
     bool? hasUnsavedChanges,
     bool? isLoading,
@@ -137,7 +132,6 @@ class DocumentState {
     String? currentUserId,
   }) {
     return DocumentState(
-      controller: controller ?? this.controller,
       metadata: metadata ?? this.metadata,
       hasUnsavedChanges: hasUnsavedChanges ?? this.hasUnsavedChanges,
       isLoading: isLoading ?? this.isLoading,

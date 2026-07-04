@@ -1,5 +1,5 @@
 /// Document Tools for MCP
-/// 
+///
 /// Tools for creating, editing, and managing documents in ky_docs.
 
 import 'dart:convert';
@@ -26,10 +26,7 @@ class DocumentTools {
       inputSchema: {
         'type': 'object',
         'properties': {
-          'title': {
-            'type': 'string',
-            'description': 'Document title',
-          },
+          'title': {'type': 'string', 'description': 'Document title'},
           'content': {
             'type': 'string',
             'description': 'Initial content (plain text or markdown)',
@@ -46,7 +43,7 @@ class DocumentTools {
         final title = arguments['title'] as String;
         final content = arguments['content'] as String?;
         final template = arguments['template'] as String?;
-        
+
         // TODO: Integrate with ky_docs DocumentEngine
         return {
           'success': true,
@@ -63,23 +60,27 @@ class DocumentTools {
   static MCPTool insertBlockTool() {
     return MCPTool(
       name: 'insert_block',
-      description: 'Insert a content block (paragraph, heading, list, etc.) into a document',
+      description:
+          'Insert a content block (paragraph, heading, list, etc.) into a document',
       inputSchema: {
         'type': 'object',
         'properties': {
-          'documentId': {
-            'type': 'string',
-            'description': 'Target document ID',
-          },
+          'documentId': {'type': 'string', 'description': 'Target document ID'},
           'blockType': {
             'type': 'string',
             'description': 'Type of block to insert',
-            'enum': ['paragraph', 'heading1', 'heading2', 'heading3', 'bullet_list', 'numbered_list', 'code_block', 'quote'],
+            'enum': [
+              'paragraph',
+              'heading1',
+              'heading2',
+              'heading3',
+              'bullet_list',
+              'numbered_list',
+              'code_block',
+              'quote',
+            ],
           },
-          'content': {
-            'type': 'string',
-            'description': 'Block content',
-          },
+          'content': {'type': 'string', 'description': 'Block content'},
           'position': {
             'type': 'integer',
             'description': 'Position to insert (0-based index)',
@@ -104,7 +105,7 @@ class DocumentTools {
         final content = arguments['content'] as String;
         final position = arguments['position'] as int?;
         final styles = arguments['styles'] as Map<String, dynamic>?;
-        
+
         // TODO: Integrate with ky_docs DocumentEngine
         return {
           'success': true,
@@ -125,10 +126,7 @@ class DocumentTools {
       inputSchema: {
         'type': 'object',
         'properties': {
-          'documentId': {
-            'type': 'string',
-            'description': 'Target document ID',
-          },
+          'documentId': {'type': 'string', 'description': 'Target document ID'},
           'blockIds': {
             'type': 'array',
             'items': {'type': 'string'},
@@ -159,7 +157,7 @@ class DocumentTools {
         final documentId = arguments['documentId'] as String;
         final blockIds = arguments['blockIds'] as List<dynamic>?;
         final styles = arguments['styles'] as Map<String, dynamic>;
-        
+
         // TODO: Integrate with ky_docs DocumentEngine
         return {
           'success': true,
@@ -179,14 +177,8 @@ class DocumentTools {
       inputSchema: {
         'type': 'object',
         'properties': {
-          'documentId': {
-            'type': 'string',
-            'description': 'Target document ID',
-          },
-          'findText': {
-            'type': 'string',
-            'description': 'Text to find',
-          },
+          'documentId': {'type': 'string', 'description': 'Target document ID'},
+          'findText': {'type': 'string', 'description': 'Text to find'},
           'replaceText': {
             'type': 'string',
             'description': 'Text to replace with',
@@ -213,7 +205,7 @@ class DocumentTools {
         final replaceAll = arguments['replaceAll'] as bool? ?? false;
         final caseSensitive = arguments['caseSensitive'] as bool? ?? false;
         final useRegex = arguments['useRegex'] as bool? ?? false;
-        
+
         // TODO: Integrate with ky_docs FindReplaceService
         return {
           'success': true,
@@ -242,10 +234,7 @@ class DocumentTools {
             'description': 'Export format',
             'enum': ['docx', 'pdf', 'txt', 'html', 'md'],
           },
-          'outputPath': {
-            'type': 'string',
-            'description': 'Output file path',
-          },
+          'outputPath': {'type': 'string', 'description': 'Output file path'},
         },
         'required': ['documentId', 'format'],
       },
@@ -253,7 +242,7 @@ class DocumentTools {
         final documentId = arguments['documentId'] as String;
         final format = arguments['format'] as String;
         final outputPath = arguments['outputPath'] as String?;
-        
+
         // TODO: Integrate with ky_docs ExportService
         return {
           'success': true,
@@ -274,16 +263,13 @@ class DocumentTools {
       inputSchema: {
         'type': 'object',
         'properties': {
-          'documentId': {
-            'type': 'string',
-            'description': 'Document ID',
-          },
+          'documentId': {'type': 'string', 'description': 'Document ID'},
         },
         'required': ['documentId'],
       },
       handler: (arguments) async {
         final documentId = arguments['documentId'] as String;
-        
+
         // TODO: Integrate with ky_docs DocumentPropertiesService
         return {
           'success': true,

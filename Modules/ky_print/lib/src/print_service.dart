@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -7,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'models/print_job.dart';
+import 'models/print_page.dart';
 
 /// Result of a print operation
 enum PrintStatus { success, cancelled, error }

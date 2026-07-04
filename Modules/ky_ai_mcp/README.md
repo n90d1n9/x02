@@ -81,10 +81,10 @@ void main() async {
 
   // Initialize MCP server
   final server = MCPServer(channel);
-  
+
   // Start listening for requests
   await server.start();
-  
+
   print('MCP Server started');
 }
 ```

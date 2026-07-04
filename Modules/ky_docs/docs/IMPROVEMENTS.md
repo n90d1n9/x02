@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the improvements made to `Plugins/ky_docs` to make it more similar to MS Word/Google Docs, with proper integration to the Rust-based `docx_reader` and `parser-docx` parser.
+This document outlines the improvements made to `Plugins/ky_docs` to make it more similar to MS Word/Google Docs, with proper integration to the Rust-based `docs_engine` and `ky-of-docx` parser.
 
 ## Key Improvements
 
@@ -18,7 +18,7 @@ Created a new engine module that serves as the bridge between Flutter UI and Rus
 - **FFI Ready**: Prepared for Rust FFI integration (currently uses JSON serialization)
 
 #### `docx_parser_service.dart`
-- **DocxParserService**: Integration with `parser-docx` Rust parser
+- **DocxParserService**: Integration with `ky-of-docx` Rust parser
 - **Import/Export**: Full DOCX file support
 - **Metadata Extraction**: Author, dates, word counts from DOCX
 - **Format Conversion**: Bridge between DOCX structure and Document model
@@ -50,7 +50,7 @@ Dart Engine Layer (DocumentEngine, DocxParserService)
         ↓
 Rust FFI Bindings
         ↓
-Rust Engine (docx_reader, parser-docx)
+Rust Engine (docs_engine, ky-of-docx)
 ```
 
 ### 4. Quill Replacement Strategy
@@ -78,7 +78,7 @@ Instead of the simple XML parsing in `docx_service.dart`, the new architecture u
 final textRegex = RegExp(r'<w:t[^>]*>([^<]*)</w:t>');
 ```
 
-**New Approach** (via `parser-docx`):
+**New Approach** (via `ky-of-docx`):
 ```dart
 final parser = DocxParserService.instance;
 final document = await parser.parseDocx(bytes);
@@ -118,7 +118,7 @@ Plugins/ky_docs/
 ## Next Steps
 
 ### Immediate (Phase 1)
-1. [ ] Generate FFI bindings for `docx_reader`
+1. [ ] Generate FFI bindings for `docs_engine`
    ```bash
    flutter pub run ffigen --config ffigen.yaml
    ```
@@ -126,11 +126,11 @@ Plugins/ky_docs/
 2. [ ] Create `ffigen.yaml` configuration:
    ```yaml
    name: DocsEngineFfi
-   description: FFI bindings for docx_reader
-   output: 'lib/engine/docx_reader_ffi.dart'
+   description: FFI bindings for docs_engine
+   output: 'lib/engine/docs_engine_ffi.dart'
    headers:
      entry-points:
-       - '../Engine/docx_reader/cbindgen.h'
+       - '../Engine/docs_engine/cbindgen.h'
    ```
 
 3. [ ] Implement FFI calls in `DocumentEngine`
@@ -146,7 +146,7 @@ Plugins/ky_docs/
 4. [ ] Build native `DocumentCanvas` widget
 5. [ ] Implement text layout engine
 6. [ ] Add selection and cursor handling
-7. [ ] Integrate with `parser-docx` for DOCX import/export
+7. [ ] Integrate with `ky-of-docx` for DOCX import/export
 
 ### Medium-term (Phase 3)
 8. [ ] Advanced formatting (tables, images)
@@ -159,8 +159,8 @@ Plugins/ky_docs/
 | Component | Before | After |
 |-----------|--------|-------|
 | Document Model | Quill Delta | Block-based (matches Rust) |
-| DOCX Support | Basic text only | Full fidelity via parser-docx |
-| Engine | None | Rust docx_reader via FFI |
+| DOCX Support | Basic text only | Full fidelity via ky-of-docx |
+| Engine | None | Rust docs_engine via FFI |
 | Performance | Dart-only | Rust-accelerated ops |
 | Architecture | Flat | Layered (GUI→Engine→Rust) |
 | Extensibility | Limited | Plugin-ready |

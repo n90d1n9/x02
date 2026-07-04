@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:ky_docs/compat/flutter_quill_compat.dart' as quill;
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'document_metadata.dart';
@@ -81,7 +80,6 @@ class DocumentStorageService {
           continue;
         }
         try {
-          // final delta = quill.Document.fromJson(jsonDecode(contentJson));
           final document = quill.Document.fromJson(jsonDecode(contentJson));
           // final document = quill.Document.fromDelta(delta);
           final plainText = document.toPlainText().toLowerCase();

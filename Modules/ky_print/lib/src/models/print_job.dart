@@ -62,8 +62,8 @@ class PrintJob {
     this.grayscale = false,
     this.pageRange,
     this.duplex = false,
-  }) : assert(scale > 0.0 && scale <= 1.0),
-       assert(copies > 0);
+  })  : assert(scale > 0.0 && scale <= 1.0),
+        assert(copies > 0);
 
   /// Get effective page size based on orientation and paper size
   Size getEffectivePageSize() {
@@ -107,11 +107,13 @@ class PrintJob {
   /// Get filtered pages based on page range
   List<PrintPage> getFilteredPages() {
     if (pageRange == null) return pages;
-    
+
     final start = pageRange!.start.clamp(1, pages.length);
     final end = pageRange!.end.clamp(1, pages.length);
-    
-    return pages.where((p) => p.pageNumber >= start && p.pageNumber <= end).toList();
+
+    return pages
+        .where((p) => p.pageNumber >= start && p.pageNumber <= end)
+        .toList();
   }
 
   /// Total number of pages to print

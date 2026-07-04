@@ -1,5 +1,5 @@
 /// Document Resource for MCP
-/// 
+///
 /// Provides AI agents access to document content and structure.
 
 import '../models/mcp_tool.dart';
@@ -7,13 +7,14 @@ import '../models/mcp_tool.dart';
 class DocumentResource implements MCPResource {
   @override
   final String uri = 'ky://document/current';
-  
+
   @override
   final String name = 'Current Document';
-  
+
   @override
-  final String description = 'Access to the current active document content and metadata';
-  
+  final String description =
+      'Access to the current active document content and metadata';
+
   @override
   final String mimeType = 'application/json';
 

@@ -47,73 +47,73 @@ Use `Sample/sample01.docx` and `Sample/sample02-complete.docx` for end-to-end te
 // lib/docx/widgets/editor_app_bar/file_menu.dart (enhanced version)
 class DocumentFileMenu extends ConsumerStatefulWidget {
   // ... existing fields ...
-  
+
   @override
   ConsumerState<DocumentFileMenu> createState() => _DocumentFileMenuState();
 }
 
 class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
   // ... existing state ...
-  
+
   Future<void> _handleNew() async {
     _removeOverlay();
-    
+
     // Check for unsaved changes
     final docState = ref.read(documentProvider);
     if (docState.hasUnsavedChanges) {
       final shouldProceed = await _showUnsavedChangesDialog(context);
       if (!shouldProceed) return;
     }
-    
+
     await ref.read(documentProvider.notifier).createNewDocument();
     widget.onNew?.call();
   }
-  
+
   Future<void> _handleOpen() async {
     _removeOverlay();
-    
+
     // Check for unsaved changes
     final docState = ref.read(documentProvider);
     if (docState.hasUnsavedChanges) {
       final shouldProceed = await _showUnsavedChangesDialog(context);
       if (!shouldProceed) return;
     }
-    
+
     // Show file picker
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['docx', 'pdf', 'txt'],
     );
-    
+
     if (result != null && result.files.single.path != null) {
       final path = result.files.single.path!;
       await ref.read(documentProvider.notifier).loadDocument(path);
       widget.onOpen?.call();
     }
   }
-  
+
   Future<void> _handleSave() async {
     _removeOverlay();
     await ref.read(documentProvider.notifier).saveDocument();
     widget.onSave?.call();
   }
-  
+
   Future<void> _handleSaveAs() async {
     _removeOverlay();
-    
+
     final docState = ref.read(documentProvider);
     final result = await SaveAsDialog.show(
       context,
       currentTitle: docState.metadata.title,
     );
-    
+
     if (result != null) {
       final success = await ref.read(documentProvider.notifier).saveDocumentAs(
         newTitle: result.nameWithoutExtension,
         format: result.format,
         location: result.location,
       );
-      
+
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -123,26 +123,26 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
         );
       }
     }
-    
+
     widget.onSaveAs?.call();
   }
-  
+
   Future<void> _handleImport(String format) async {
     _removeOverlay();
-    
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: [format],
     );
-    
+
     if (result != null && result.files.single.path != null) {
       final path = result.files.single.path!;
-      
+
       // Show preview dialog for DOCX
       if (format == 'docx') {
         // TODO: Show import preview
       }
-      
+
       switch (format) {
         case 'docx':
           await ref.read(documentProvider.notifier).importFromDocx();
@@ -154,16 +154,16 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
           // Handle TXT import
           break;
       }
-      
+
       widget.onImport?.call(format);
     }
   }
-  
+
   Future<void> _handleExport(String format) async {
     _removeOverlay();
-    
+
     String? exportedPath;
-    
+
     try {
       switch (format) {
         case 'docx':
@@ -185,7 +185,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
           // Save text to file
           break;
       }
-      
+
       if (exportedPath != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -200,7 +200,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
           ),
         );
       }
-      
+
       widget.onExport?.call(format);
     } catch (e) {
       if (mounted) {
@@ -213,7 +213,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
       }
     }
   }
-  
+
   Future<bool> _showUnsavedChangesDialog(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
@@ -237,15 +237,15 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
         ],
       ),
     );
-    
+
     if (result == true) {
       await ref.read(documentProvider.notifier).saveDocument();
       return true;
     }
-    
+
     return result ?? false;
   }
-  
+
   // ... rest of existing code ...
 }
 ```
@@ -259,16 +259,16 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
   static const Duration _autoSaveDelay = Duration(seconds: 30);
   static const Duration _debounceDelay = Duration(milliseconds: 2000);
   bool _isAutoSaveEnabled = true;
-  
+
   DocumentNotifier(...) {
     state.controller.addListener(_onDocumentChanged);
     _initializeStorage();
     _startAutoSaveTimer();
   }
-  
+
   void _startAutoSaveTimer() {
     if (!_isAutoSaveEnabled) return;
-    
+
     _autoSaveTimer?.cancel();
     _autoSaveTimer = Timer.periodic(_autoSaveDelay, (_) {
       if (state.hasUnsavedChanges) {
@@ -276,23 +276,23 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
       }
     });
   }
-  
+
   void _onDocumentChanged() {
     // Mark as changed immediately
     final change = _changeService.applyDocumentChange(
       text: state.controller.document.toPlainText(),
-      metadata: state.metadata,
+      meta state.metadata,
       pageSettings: state.pageSettings,
     );
-    
+
     _markChanged(
       (current) => current.copyWith(
-        metadata: change.metadata,
+        meta change.metadata,
         totalPages: change.totalPages,
         lastModified: DateTime.now(),
       ),
     );
-    
+
     // Debounced auto-save
     if (_isAutoSaveEnabled) {
       _autoSaveTimer?.cancel();
@@ -303,7 +303,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
       });
     }
   }
-  
+
   void enableAutoSave(bool enabled) {
     _isAutoSaveEnabled = enabled;
     if (enabled) {
@@ -312,7 +312,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
       _autoSaveTimer?.cancel();
     }
   }
-  
+
   @override
   void dispose() {
     _autoSaveTimer?.cancel();
@@ -331,7 +331,7 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
 // lib/docx/screens/document_editor_screen.dart
 class DocumentEditorScreen extends ConsumerStatefulWidget {
   const DocumentEditorScreen({super.key});
-  
+
   @override
   ConsumerState<DocumentEditorScreen> createState() =>
       _DocumentEditorScreenState();
@@ -339,7 +339,7 @@ class DocumentEditorScreen extends ConsumerStatefulWidget {
 
 class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
   // ... existing fields ...
-  
+
   @override
   Widget build(BuildContext context) {
     final focusMode = ref.watch(focusModeProvider);
@@ -347,7 +347,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     final controller = ref.watch(
       documentControllerProvider.select((s) => s.controller),
     );
-    
+
     return KeyboardListener(
       focusNode: _keyboardFocusNode,
       onKeyEvent: _handleKeyEvent,
@@ -467,53 +467,53 @@ void main() {
         collaboration: MockCollaborationService(),
         spellCheck: MockSpellCheckService(),
       );
-      
+
       // Import sample01.docx
       await tester.runAsync(() async {
         await notifier.importFromDocx(
           filePath: 'Sample/sample01.docx',
         );
-        
+
         final state = notifier.state;
         expect(state.metadata.title, isNotEmpty);
         expect(state.controller.document.length, greaterThan(0));
       });
     });
-    
+
     testWidgets('Export to DOCX', (tester) async {
       final notifier = DocumentNotifier(/* ... */);
-      
+
       await tester.runAsync(() async {
         // Create content
         notifier.state.controller.document.insert(
           0,
           BlockEmbed.text('Test document'),
         );
-        
+
         // Export
         final path = await notifier.exportToDocx();
         expect(path, isNotEmpty);
         expect(File(path).existsSync(), isTrue);
       });
     });
-    
+
     testWidgets('Round-trip: Import → Edit → Export', (tester) async {
       final notifier = DocumentNotifier(/* ... */);
-      
+
       await tester.runAsync(() async {
         // Import
         await notifier.importFromDocx(filePath: 'Sample/sample01.docx');
-        
+
         // Edit
         notifier.state.controller.document.insert(
           0,
           BlockEmbed.text('Added content'),
         );
-        
+
         // Save
         await notifier.saveDocument();
         expect(notifier.state.hasUnsavedChanges, isFalse);
-        
+
         // Export
         final path = await notifier.exportToDocx();
         expect(path, isNotEmpty);

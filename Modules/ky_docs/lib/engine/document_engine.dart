@@ -1,6 +1,6 @@
 /// FFI bindings for the Rust document engine.
 ///
-/// This library provides Dart/Flutter integration with the docx_reader Rust crate,
+/// This library provides Dart/Flutter integration with the docs_engine Rust crate,
 /// enabling high-performance document operations similar to MS Word/Google Docs.
 library;
 
@@ -14,7 +14,7 @@ import 'package:ffi/ffi.dart';
 // ============================================================================
 
 typedef DocsEngineVersion = Pointer<Utf8> Function();
-typedef DocsEngineVersionDart = Pointer<Utf8> Function();
+typedef DocsEngineVersionDart = String Function();
 
 typedef DocsEngineFreeString = Void Function(Pointer<Utf8>);
 typedef DocsEngineFreeStringDart = void Function(Pointer<Utf8>);
@@ -334,15 +334,15 @@ class DocumentEngine {
       if (libraryPath != null) {
         _lib = DynamicLibrary.open(libraryPath);
       } else if (Platform.isAndroid) {
-        _lib = DynamicLibrary.open('libdocx_reader_ffi.so');
+        _lib = DynamicLibrary.open('libdocs_engine_ffi.so');
       } else if (Platform.isIOS) {
         _lib = DynamicLibrary.process();
       } else if (Platform.isLinux) {
-        _lib = DynamicLibrary.open('libdocx_reader_ffi.so');
+        _lib = DynamicLibrary.open('libdocs_engine_ffi.so');
       } else if (Platform.isMacOS) {
-        _lib = DynamicLibrary.open('libdocx_reader_ffi.dylib');
+        _lib = DynamicLibrary.open('libdocs_engine_ffi.dylib');
       } else if (Platform.isWindows) {
-        _lib = DynamicLibrary.open('docx_reader_ffi.dll');
+        _lib = DynamicLibrary.open('docs_engine_ffi.dll');
       } else {
         throw UnsupportedError(
           'Platform not supported: ${Platform.operatingSystem}',
@@ -362,15 +362,15 @@ class DocumentEngine {
     if (_lib == null) return;
 
     _version = _lib!.lookupFunction<DocsEngineVersion, DocsEngineVersionDart>(
-      'docx_reader_version',
+      'docs_engine_version',
     );
     _freeString = _lib!
         .lookupFunction<DocsEngineFreeString, DocsEngineFreeStringDart>(
-          'docx_reader_free_string',
+          'docs_engine_free_string',
         );
     _freeDocument = _lib!
         .lookupFunction<DocsEngineFreeDocument, DocsEngineFreeDocumentDart>(
-          'docx_reader_free_document',
+          'docs_engine_free_document',
         );
     _createDocument = _lib!.lookupFunction<CreateDocument, CreateDocumentDart>(
       'create_document',
@@ -438,8 +438,7 @@ class DocumentEngine {
   /// Get engine version
   String get version {
     if (!_initialized || _lib == null) return '0.1.0 (fallback)';
-    final ptr = _version();
-    return _pointerToString(ptr);
+    return _pointerToString(_version());
   }
 
   /// Check if native engine is available
@@ -882,7 +881,7 @@ class DocumentEngine {
     String title,
   ) async {
     if (!handle.isNative || !_initialized || _lib == null) {
-      handle.document.setTitle(title);
+      handle.document.title = title;
       return;
     }
 
@@ -907,13 +906,13 @@ class DocumentEngine {
 
   /// Import from DOCX using the Parser engine
   Future<NativeDocumentHandle> importFromDocx(List<int> bytes) async {
-    // TODO: Integrate with parser-docx parser via FFI
+    // TODO: Integrate with ky-of-docx parser via FFI
     throw UnimplementedError('DOCX import not yet implemented');
   }
 
   /// Export document to DOCX
   Future<List<int>> exportToDocx(NativeDocumentHandle handle) async {
-    // TODO: Integrate with parser-docx writer via FFI
+    // TODO: Integrate with ky-of-docx writer via FFI
     throw UnimplementedError('DOCX export not yet implemented');
   }
 }
@@ -1052,9 +1051,5 @@ class Document {
       (sum, block) =>
           sum + block.spans.fold<int>(0, (s, span) => s + span.text.length),
     );
-  }
-
-  void setTitle(String newTitle) {
-    // Title is immutable in Document, use copyWith instead
   }
 }

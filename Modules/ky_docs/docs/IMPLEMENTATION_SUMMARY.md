@@ -6,7 +6,7 @@ This implementation transforms `ky_docs` from a Quill-based editor into a profes
 
 ## What Was Built
 
-### 1. Rust FFI Layer (`Plugins/Engine/docx_reader_ffi/`)
+### 1. Rust FFI Layer (`Plugins/Engine/docs_engine_ffi/`)
 
 **File:** `src/lib.rs` (599 lines)
 
@@ -33,7 +33,7 @@ Features:
 
 ### 3. DOCX Parser Service (`Plugins/ky_docs/lib/engine/docx_parser_service.dart`)
 
-Integration layer for the `parser-docx` Rust parser:
+Integration layer for the `ky-of-docx` Rust parser:
 - `DocxContent` model for parsed documents
 - `DocxMetadata` for document properties
 - Placeholder implementation ready for FFI integration
@@ -97,7 +97,7 @@ Updated barrel file to export:
 └───────────┼─────────────────────────┼─────────────────┘
             │ FFI                     │ FFI
 ┌───────────▼──────────────┐  ┌───────▼─────────────────┐
-│   Rust docx_reader       │  │   Rust parser-docx       │
+│   Rust docs_engine       │  │   Rust ky-of-docx       │
 │   - Block-based model    │  │   - DOCX parser         │
 │   - CRDT operations      │  │   - DOCX generator      │
 │   - JSON serialization   │  │   - Metadata extraction │
@@ -132,7 +132,7 @@ This enables:
 - Undo/redo stacks
 
 ### DOCX Integration
-Full-fidelity import/export via `parser-docx`:
+Full-fidelity import/export via `ky-of-docx`:
 - Preserves formatting
 - Maintains structure
 - Extracts metadata
@@ -204,8 +204,8 @@ Graceful fallback ensures app works even without native library.
 ## Files Created/Modified
 
 ### Created
-- `Plugins/Engine/docx_reader_ffi/Cargo.toml`
-- `Plugins/Engine/docx_reader_ffi/src/lib.rs` (599 lines)
+- `Plugins/Engine/docs_engine_ffi/Cargo.toml`
+- `Plugins/Engine/docs_engine_ffi/src/lib.rs` (599 lines)
 - `Plugins/ky_docs/lib/docx/widgets/native_document_canvas.dart` (794 lines)
 - `Plugins/ky_docs/lib/docx/widgets/native_engine_widgets.dart`
 - `Plugins/ky_docs/MIGRATION_GUIDE.md` (286 lines)

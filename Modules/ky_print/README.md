@@ -20,7 +20,7 @@ Add to your `pubspec.yaml`:
 ```yaml
 dependencies:
   ky_print:
-    path: ../Modules/ky_print  # or use published version
+    path: ../Plugins/ky_print  # or use published version
 ```
 
 Then run:
@@ -225,13 +225,13 @@ import 'package:ky_print/ky_print.dart';
 class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
   Future<void> _handlePrint() async {
     final pages = await _buildPrintablePages();
-    
+
     final result = await kyPrint.printDocument(
       context: context,
       documentTitle: widget.document.title,
       pages: pages,
     );
-    
+
     if (result.isSuccess) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Document printed successfully')),
@@ -242,7 +242,7 @@ class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
       );
     }
   }
-  
+
   Future<List<Widget>> _buildPrintablePages() async {
     // Convert document content to printable pages
     // This will be implemented based on document structure

@@ -1,5 +1,5 @@
 /// AI Core Tools for MCP
-/// 
+///
 /// Tools leveraging ky_ai_core for STT, TTS, and advanced AI operations.
 
 import '../models/mcp_tool.dart';
@@ -72,7 +72,10 @@ class AICoreTools {
         'type': 'object',
         'properties': {
           'documentId': {'type': 'string'},
-          'length': {'type': 'string', 'enum': ['short', 'medium', 'long']},
+          'length': {
+            'type': 'string',
+            'enum': ['short', 'medium', 'long'],
+          },
         },
         'required': ['documentId'],
       },
@@ -128,10 +131,7 @@ class AICoreTools {
       },
       handler: (arguments) async {
         // TODO: Integrate with ky_ai_core
-        return {
-          'success': true,
-          'translatedContent': 'Translated content',
-        };
+        return {'success': true, 'translatedContent': 'Translated content'};
       },
     );
   }

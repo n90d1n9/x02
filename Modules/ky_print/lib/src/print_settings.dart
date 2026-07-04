@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'models/print_job.dart';
-
 /// Print settings configuration dialog
 class PrintSettingsDialog extends StatefulWidget {
   /// Current print job configuration
@@ -15,7 +13,7 @@ class PrintSettingsDialog extends StatefulWidget {
   final bool initialDuplex;
 
   const PrintSettingsDialog({
-    super.key,
+    Key? key,
     required this.documentTitle,
     required this.totalPages,
     this.initialOrientation = PrintOrientation.portrait,
@@ -24,7 +22,7 @@ class PrintSettingsDialog extends StatefulWidget {
     this.initialScale = 1.0,
     this.initialGrayscale = false,
     this.initialDuplex = false,
-  });
+  }) : super(key: key);
 
   @override
   State<PrintSettingsDialog> createState() => _PrintSettingsDialogState();
@@ -53,7 +51,7 @@ class _PrintSettingsDialogState extends State<PrintSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Print Settings'),
+      title: Text('Print Settings'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

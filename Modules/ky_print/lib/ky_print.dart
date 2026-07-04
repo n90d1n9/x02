@@ -1,5 +1,5 @@
 /// Ky Print - Reusable Print Service for Ky Office Suite
-/// 
+///
 /// A cross-platform printing solution for ky_docs, ky_sheet, and ky_slide.
 /// Features:
 /// - Print preview with PDF generation
@@ -10,7 +10,7 @@
 
 library ky_print;
 
-export 'src/ky_print.dart';
+export 'src/print.dart';
 export 'src/print_service.dart';
 export 'src/print_preview.dart';
 export 'src/print_settings.dart';

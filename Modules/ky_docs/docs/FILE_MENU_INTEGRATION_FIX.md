@@ -37,7 +37,7 @@ Replace the `_DocumentAppBar` usage with `DocumentEditorAppBar`:
 // appBar: layoutMode != LayoutMode.focus ? const _DocumentAppBar() : null,
 
 // ADD this new implementation:
-appBar: layoutMode != LayoutMode.focus 
+appBar: layoutMode != LayoutMode.focus
     ? DocumentEditorAppBar(
         documentState: ref.watch(documentProvider),
         showStatistics: ref.watch(showStatisticsProvider),
@@ -55,31 +55,31 @@ appBar: layoutMode != LayoutMode.focus
           ref.read(documentProvider.notifier).toggleFavorite();
         },
         onToggleStatistics: () {
-          ref.read(showStatisticsProvider.notifier).state = 
+          ref.read(showStatisticsProvider.notifier).state =
             !ref.read(showStatisticsProvider);
         },
         onToggleFindReplace: () {
-          ref.read(showFindReplaceProvider.notifier).state = 
+          ref.read(showFindReplaceProvider.notifier).state =
             !ref.read(showFindReplaceProvider);
         },
         onToggleAIAssistant: () {
-          ref.read(showAIAssistantProvider.notifier).state = 
+          ref.read(showAIAssistantProvider.notifier).state =
             !ref.read(showAIAssistantProvider);
         },
         onToggleInsertMenu: () {
-          ref.read(showInsertMenuProvider.notifier).state = 
+          ref.read(showInsertMenuProvider.notifier).state =
             !ref.read(showInsertMenuProvider);
         },
         onToggleOutline: () {
-          ref.read(showOutlineProvider.notifier).state = 
+          ref.read(showOutlineProvider.notifier).state =
             !ref.read(showOutlineProvider);
         },
         onTogglePageNavigator: () {
-          ref.read(showPageNavigatorProvider.notifier).state = 
+          ref.read(showPageNavigatorProvider.notifier).state =
             !ref.read(showPageNavigatorProvider);
         },
         onToggleSidePanel: (panel) {
-          ref.read(activeSidePanelProvider.notifier).state = 
+          ref.read(activeSidePanelProvider.notifier).state =
             ref.read(activeSidePanelProvider) == panel ? null : panel;
         },
         onEditingModeChanged: (mode) {
@@ -114,7 +114,7 @@ appBar: layoutMode != LayoutMode.focus
         onMoreOptions: () {
           _showMoreOptions(context);
         },
-      ) 
+      )
     : null,
 ```
 
@@ -124,38 +124,38 @@ Add these methods to `_DocumentEditorScreenState`:
 
 ```dart
 Future<void> _handleImport(
-  BuildContext context, 
-  WidgetRef ref, 
+  BuildContext context,
+  WidgetRef ref,
   String format
 ) async {
   try {
     // Show file picker
     final result = await FilePicker.platform.pickFiles(
-      type: format == 'docx' 
-          ? FileType.custom 
-          : format == 'pdf' 
-              ? FileType.custom 
+      type: format == 'docx'
+          ? FileType.custom
+          : format == 'pdf'
+              ? FileType.custom
               : FileType.any,
-      allowedExtensions: format == 'docx' 
-          ? ['docx'] 
-          : format == 'pdf' 
-              ? ['pdf'] 
+      allowedExtensions: format == 'docx'
+          ? ['docx']
+          : format == 'pdf'
+              ? ['pdf']
               : null,
     );
-    
+
     if (result != null && result.files.single.path != null) {
       final filePath = result.files.single.path!;
-      
+
       // Show preview dialog
       final shouldImport = await showDialog<bool>(
         context: context,
         builder: (_) => DocumentImportPreviewDialog(filePath: filePath),
       );
-      
+
       if (shouldImport == true) {
         // Import the document
         await ref.read(documentProvider.notifier).importFromDocx();
-        
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Imported $filePath')),
@@ -173,8 +173,8 @@ Future<void> _handleImport(
 }
 
 Future<void> _handleExport(
-  BuildContext context, 
-  WidgetRef ref, 
+  BuildContext context,
+  WidgetRef ref,
   String format
 ) async {
   try {
@@ -182,21 +182,21 @@ Future<void> _handleExport(
     final savePath = await FilePicker.platform.saveFile(
       dialogTitle: 'Export document',
       fileName: '${ref.read(documentProvider).metadata.title}.$format',
-      type: format == 'docx' 
-          ? FileType.custom 
-          : format == 'pdf' 
-              ? FileType.custom 
+      type: format == 'docx'
+          ? FileType.custom
+          : format == 'pdf'
+              ? FileType.custom
               : FileType.any,
       allowedExtensions: ['docx', 'pdf', 'txt'],
     );
-    
+
     if (savePath != null) {
       // Export the document
       final exportedPath = await ref.read(documentProvider.notifier).exportDocument(
         format: format,
         outputPath: savePath,
       );
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Exported to $exportedPath')),
@@ -245,7 +245,7 @@ void main() {
     expect(result.isSuccess, true);
     expect(result.document, isNotNull);
   });
-  
+
   test('Import sample02-complete.docx', () async {
     final docxService = DocxService();
     final result = await docxService.importDocx('/workspace/Sample/sample02-complete.docx');
@@ -254,7 +254,7 @@ void main() {
     // Verify complex features
     expect(result.document.tables.length, greaterThan(0));
   });
-  
+
   test('Export to DOCX', () async {
     final exportService = DocumentExportService(
       docxService: DocxService(),
@@ -287,7 +287,7 @@ DocumentLifecycleOrchestrationService
     ↓
 DocumentImportService
     ↓
-DocxService (or parser-docx Rust FFI)
+DocxService (or ky-of-docx Rust FFI)
     ↓
 Update DocumentState
     ↓
@@ -378,8 +378,8 @@ After implementing the above, verify these features:
 **Solution**: Check that `DocumentPersistenceService` has write permissions to the target directory
 
 ### Issue: Rust FFI parser not working
-**Solution**: 
-1. Build the Rust library: `cd Plugins/Engine/docx_reader_ffi && cargo build --release`
+**Solution**:
+1. Build the Rust library: `cd Plugins/Engine/docs_engine_ffi && cargo build --release`
 2. Copy the `.so`/`.dylib`/`.dll` to the Flutter project
 3. Initialize FFI in app startup: `DocumentEngine.instance.initialize()`
 

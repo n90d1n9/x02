@@ -1,9 +1,10 @@
-/// DOCX Parser integration using the parser-docx Rust crate.
+/// DOCX Parser integration using the ky-of-docx Rust crate.
 ///
 /// This module provides seamless integration with the DOCX parser engine
 /// for importing and exporting Microsoft Word documents.
 library;
 
+import 'dart:convert';
 import 'dart:typed_data';
 import '../engine/document_engine.dart';
 
@@ -33,7 +34,7 @@ class DocxParserService {
 
   /// Parse a DOCX file and convert to Document model
   ///
-  /// Uses the parser-docx Rust parser to extract:
+  /// Uses the ky-of-docx Rust parser to extract:
   /// - Paragraphs and headings
   /// - Text formatting (bold, italic, underline, etc.)
   /// - Lists (numbered and bulleted)
@@ -57,16 +58,10 @@ class DocxParserService {
       blocks: [
         {
           'block_type': 'paragraph',
-          'spans': [
-            {
-              'text':
-                  'This is a placeholder. DOCX parsing requires Rust FFI integration.',
-              'style': {},
-            },
-          ],
+          'spans': [{'text': 'This is a placeholder. DOCX parsing requires Rust FFI integration.', 'style': {}}],
         },
       ],
-      metadata: DocxMetadata(
+      meta DocxMetadata(
         title: 'Imported Document',
         author: 'Unknown',
         wordCount: 0,
@@ -87,7 +82,7 @@ class DocxParserService {
     // TODO: Integrate with Rust writer via FFI
 
     throw UnimplementedError(
-      'DOCX generation requires Rust FFI integration with parser-docx',
+      'DOCX generation requires Rust FFI integration with ky-of-docx',
     );
   }
 
@@ -113,15 +108,11 @@ class DocxParserService {
 
   DocumentBlock _convertBlock(Map<String, dynamic> rustBlock) {
     return DocumentBlock(
-      id:
-          rustBlock['id'] as String? ??
-          DateTime.now().millisecondsSinceEpoch.toString(),
+      id: rustBlock['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
       type: _parseBlockType(rustBlock['block_type']),
-      spans:
-          (rustBlock['spans'] as List?)
-              ?.map((s) => TextSpan.fromJson(s as Map<String, dynamic>))
-              .toList() ??
-          [],
+      spans: (rustBlock['spans'] as List?)
+          ?.map((s) => TextSpan.fromJson(s as Map<String, dynamic>))
+          .toList() ?? [],
     );
   }
 
@@ -129,6 +120,55 @@ class DocxParserService {
     if (blockType is String) return blockType;
     final str = blockType.toString();
     return str.toLowerCase().replaceAll(RegExp(r'[()]'), '_');
+  }
+}
+
+/// Metadata extracted from a DOCX file
+class DocxMetadata {
+  final String title;
+  final String author;
+  final DateTime? created;
+  final DateTime? modified;
+  final int wordCount;
+  final int characterCount;
+  final int pageCount;
+
+  DocxMetadata({
+    required this.title,
+    required this.author,
+    this.created,
+    this.modified,
+    this.wordCount = 0,
+    this.characterCount = 0,
+    this.pageCount = 0,
+  });
+
+  factory DocxMetadata.fromJson(Map<String, dynamic> json) {
+    return DocxMetadata(
+      title: json['title'] as String? ?? 'Untitled',
+      author: json['author'] as String? ?? '',
+      created: json['created'] != null
+          ? DateTime.parse(json['created'] as String)
+          : null,
+      modified: json['modified'] != null
+          ? DateTime.parse(json['modified'] as String)
+          : null,
+      wordCount: json['word_count'] as int? ?? 0,
+      characterCount: json['character_count'] as int? ?? 0,
+      pageCount: json['page_count'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'author': author,
+      if (created != null) 'created': created!.toIso8601String(),
+      if (modified != null) 'modified': modified!.toIso8601String(),
+      'word_count': wordCount,
+      'character_count': characterCount,
+      'page_count': pageCount,
+    };
   }
 }
 

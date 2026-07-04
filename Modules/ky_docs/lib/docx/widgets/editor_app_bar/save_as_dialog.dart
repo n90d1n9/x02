@@ -69,20 +69,19 @@ class _SaveAsDialogState extends State<SaveAsDialog> {
   String get _fullFileName => '${_nameController.text.trim()}.$_selectedFormat';
 
   Future<void> _pickLocation() async {
-    // TODO: FilePicker API issue - commenting out for now
-    // final result = await FilePicker.platform.getDirectoryPath();
-    // if (result != null) {
-    //   setState(() {
-    //     _selectedLocation = result;
-    //   });
-    // }
+    final result = await FilePicker.platform.getDirectoryPath();
+    if (result != null) {
+      setState(() {
+        _selectedLocation = result;
+      });
+    }
   }
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a file name')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a file name')));
       return;
     }
 

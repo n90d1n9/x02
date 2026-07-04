@@ -13,7 +13,7 @@ dependencies:
   stream_channel: ^2.1.2
   meta: ^1.10.0
   path: ^1.8.3
-  
+
   # Ky Office internal dependencies
   ky_docs:
     path: ../ky_docs

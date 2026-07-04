@@ -21,7 +21,7 @@ In your package's `pubspec.yaml`:
 ```yaml
 dependencies:
   ky_print:
-    path: ../Modules/ky_print
+    path: ../Plugins/ky_print
 ```
 
 ### 2. Run Flutter Pub Get
@@ -41,13 +41,13 @@ The print functionality is already integrated into `DocumentEditorAppBar`. When 
 // Already implemented in document_editor_app_bar.dart
 onPrint: () async {
   final pages = await _buildPrintablePages(documentState);
-  
+
   final result = await kyPrint.printDocument(
     context: context,
     documentTitle: documentState.metadata.title,
     pages: pages,
   );
-  
+
   // Handle result
 }
 ```
@@ -59,13 +59,13 @@ To properly render document content for printing, implement the `_buildPrintable
 ```dart
 Future<List<Widget>> _buildPrintablePages(DocumentState documentState) async {
   final pages = <Widget>[];
-  
+
   // Convert document blocks to printable widgets
   final document = documentState.document;
-  
+
   for (var i = 0; i < document.pages.length; i++) {
     final page = document.pages[i];
-    
+
     pages.add(
       Container(
         width: 595,  // A4 width at 72 DPI
@@ -76,13 +76,13 @@ Future<List<Widget>> _buildPrintablePages(DocumentState documentState) async {
           children: [
             // Header
             if (page.header != null) page.header!,
-            
+
             // Content
             Expanded(child: page.content),
-            
+
             // Footer
             if (page.footer != null) page.footer!,
-            
+
             // Page number
             Align(
               alignment: Alignment.bottomCenter,
@@ -93,7 +93,7 @@ Future<List<Widget>> _buildPrintablePages(DocumentState documentState) async {
       ),
     );
   }
-  
+
   return pages;
 }
 ```
@@ -170,7 +170,7 @@ For spreadsheet printing:
 class SheetPrintService {
   Future<void> printSheet(SheetDocument sheet) async {
     final pages = await _convertSheetToPages(sheet);
-    
+
     await kyPrint.printDocument(
       context: context,
       documentTitle: sheet.name,
@@ -178,7 +178,7 @@ class SheetPrintService {
       orientation: sheet.isWide ? PrintOrientation.landscape : PrintOrientation.portrait,
     );
   }
-  
+
   Future<List<Widget>> _convertSheetToPages(SheetDocument sheet) async {
     // Convert spreadsheet cells to printable pages
     // Handle pagination, grid lines, headers, etc.
@@ -202,7 +202,7 @@ class SlidePrintService {
         height: 540,
       );
     }).toList();
-    
+
     final job = PrintJob(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       documentTitle: pres.title,
@@ -210,7 +210,7 @@ class SlidePrintService {
       orientation: PrintOrientation.landscape,
       paperSize: PaperSize.a4,
     );
-    
+
     await PrintService.instance.print(job, context: context);
   }
 }
@@ -233,7 +233,7 @@ await kyPrint.printDocument(/* ... */);
 ```dart
 try {
   final result = await kyPrint.printDocument(/* ... */);
-  
+
   if (result.isSuccess) {
     // Success
   } else if (result.isError) {
@@ -283,7 +283,7 @@ test('PrintJob calculates effective page size', () {
     paperSize: PaperSize.a4,
     orientation: PrintOrientation.landscape,
   );
-  
+
   final size = job.getEffectivePageSize();
   expect(size.width, greaterThan(size.height));
 });
@@ -301,7 +301,7 @@ testWidgets('Print preview shows pages', (tester) async {
       ),
     ),
   );
-  
+
   expect(find.text('Test'), findsOneWidget);
 });
 ```

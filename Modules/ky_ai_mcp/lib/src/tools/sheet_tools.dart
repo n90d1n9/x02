@@ -1,5 +1,5 @@
 /// Sheet Tools for MCP
-/// 
+///
 /// Tools for creating, editing, and managing spreadsheets in ky_sheet.
 
 import '../models/mcp_tool.dart';
@@ -60,7 +60,8 @@ class SheetTools {
       handler: (arguments) async {
         return {
           'success': true,
-          'cell': '${String.fromCharCode(65 + (arguments['column'] as int))}${arguments['row']}',
+          'cell':
+              '${String.fromCharCode(65 + (arguments['column'] as int))}${arguments['row']}',
         };
       },
     );
@@ -74,7 +75,10 @@ class SheetTools {
         'type': 'object',
         'properties': {
           'sheetId': {'type': 'string'},
-          'cells': {'type': 'array', 'items': {'type': 'string'}},
+          'cells': {
+            'type': 'array',
+            'items': {'type': 'string'},
+          },
           'style': {'type': 'object'},
         },
         'required': ['sheetId', 'style'],
@@ -111,7 +115,10 @@ class SheetTools {
         'type': 'object',
         'properties': {
           'sheetId': {'type': 'string'},
-          'format': {'type': 'string', 'enum': ['xlsx', 'csv', 'pdf']},
+          'format': {
+            'type': 'string',
+            'enum': ['xlsx', 'csv', 'pdf'],
+          },
         },
         'required': ['sheetId', 'format'],
       },

@@ -15,7 +15,7 @@ Successfully improved `Plugins/ky_docs` to match MS Word/Google Docs functionali
   - Export submenu (DOCX, PDF, PDF Advanced, TXT)
   - Print, Share, Close operations
   - Keyboard shortcut badges
-  
+
 - **`SaveAsDialog`** widget (252 lines) - Professional save dialog with:
   - File name input with validation
   - Format selection (DOCX, PDF, TXT, HTML)
@@ -125,30 +125,30 @@ File → Export → DOCX/PDF/TXT → Save to documents → Share option
 │  (Import, Export, Persistence, AI)      │
 ├─────────────────────────────────────────┤
 │    Optional: Rust FFI Layer             │
-│  (docx_reader, parser-docx parser)       │
+│  (docs_engine, ky-of-docx parser)       │
 └─────────────────────────────────────────┘
 ```
 
 ## Current Status
 
 ### Fully Implemented (90%)
-✅ File menu UI with all options  
-✅ Save As dialog with format selection  
-✅ DocumentNotifier with save/import/export methods  
-✅ Import/export orchestration services  
-✅ DOCX service (Dart + Rust FFI ready)  
-✅ PDF service  
-✅ State management with Riverpod  
-✅ Dirty state tracking foundation  
-✅ Comprehensive documentation  
+✅ File menu UI with all options
+✅ Save As dialog with format selection
+✅ DocumentNotifier with save/import/export methods
+✅ Import/export orchestration services
+✅ DOCX service (Dart + Rust FFI ready)
+✅ PDF service
+✅ State management with Riverpod
+✅ Dirty state tracking foundation
+✅ Comprehensive documentation
 
 ### Remaining Integration (10%)
-⚠️ Wire File menu callbacks to DocumentNotifier in UI  
-⚠️ Replace `_DocumentAppBar` with `DocumentEditorAppBar`  
-⚠️ Implement auto-save timer in DocumentNotifier  
-⚠️ Add visual auto-save indicator widget  
-⚠️ Test end-to-end with sample documents  
-⚠️ Build Rust FFI library (optional, for performance)  
+⚠️ Wire File menu callbacks to DocumentNotifier in UI
+⚠️ Replace `_DocumentAppBar` with `DocumentEditorAppBar`
+⚠️ Implement auto-save timer in DocumentNotifier
+⚠️ Add visual auto-save indicator widget
+⚠️ Test end-to-end with sample documents
+⚠️ Build Rust FFI library (optional, for performance)
 
 ## Priority Matrix
 
@@ -317,7 +317,7 @@ The foundation is solid and ready for the final integration phase. All documenta
 
 ---
 
-*Generated: $(date)*  
-*Package: Plugins/ky_docs*  
-*Version: 1.0.0 (pre-release)*  
+*Generated: $(date)*
+*Package: Plugins/ky_docs*
+*Version: 1.0.0 (pre-release)*
 *Status: 90% Complete*

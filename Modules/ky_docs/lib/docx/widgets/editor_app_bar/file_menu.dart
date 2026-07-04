@@ -68,17 +68,42 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
   Future<void> _handleSaveAs() async {
     _removeOverlay();
 
-    // Save As is currently disabled in this build; notify user.
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Save As is temporarily disabled'),
-          backgroundColor: Colors.orange,
-        ),
+    // Get current document state
+    final docNotifier = ref.read(documentProvider.notifier);
+    final docState = ref.read(documentProvider);
+
+    // Show Save As dialog
+    final result = await SaveAsDialog.show(
+      context,
+      currentTitle: docState.metadata.title,
+    );
+
+    if (result != null) {
+      // Call the saveDocumentAs method on the notifier
+      final success = await docNotifier.saveDocumentAs(
+        newTitle: result.nameWithoutExtension,
+        format: result.format,
+        location: result.location,
       );
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Saved as ${result.fileName}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save document'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
 
-    // Call the callback if provided
+    // Also call the callback if provided
     widget.onSaveAs?.call();
   }
 
@@ -281,11 +306,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: enabled ? Colors.blue : Colors.grey,
-            ),
+            Icon(icon, size: 20, color: enabled ? Colors.blue : Colors.grey),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -304,7 +325,9 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 11,
-                        color: enabled ? Colors.grey.shade600 : Colors.grey.shade400,
+                        color: enabled
+                            ? Colors.grey.shade600
+                            : Colors.grey.shade400,
                       ),
                     ),
                 ],
@@ -340,11 +363,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
     return PopupMenuButton<String>(
       offset: const Offset(280, -8),
       itemBuilder: (context) => [],
-      child: _buildMenuItem(
-        icon: icon,
-        label: label,
-        onTap: () {},
-      ),
+      child: _buildMenuItem(icon: icon, label: label, onTap: () {}),
     );
   }
 
@@ -368,12 +387,18 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                 ],
               ),
@@ -391,10 +416,7 @@ class _DocumentFileMenuState extends ConsumerState<DocumentFileMenu> {
       child: IconButton(
         icon: const Text(
           'File',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         tooltip: 'File menu',
         onPressed: _toggleMenu,

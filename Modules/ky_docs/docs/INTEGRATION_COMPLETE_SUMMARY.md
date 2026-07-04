@@ -134,7 +134,7 @@ final documentProvider = StateNotifierProvider<DocumentNotifier, DocumentState>(
 ElevatedButton(
   onPressed: () async {
     final notifier = ref.read(documentProvider.notifier);
-    
+
     // Import sample01.docx
     await notifier.importFromDocx(
       reviewImport: (preview) async {
@@ -157,7 +157,7 @@ print('Exported to: $path');
 // Export to PDF
 final pdfPath = await notifier.exportToPdf(
   options: ExportOptions(
-    includeMetadata: true,
+    includeMeta true,
     optimizeForWeb: true,
   ),
 );
@@ -338,17 +338,17 @@ All documentation is located in `/workspace/Plugins/ky_docs/`:
 
 The `ky_docs` package is now **95% complete** and ready for production use with the following capabilities:
 
-✅ **Auto-save** with smart debouncing  
-✅ **File menu** with all standard operations  
-✅ **Import/Export** for DOCX, PDF, TXT  
-✅ **Sample document** support  
-✅ **Comprehensive documentation**  
+✅ **Auto-save** with smart debouncing
+✅ **File menu** with all standard operations
+✅ **Import/Export** for DOCX, PDF, TXT
+✅ **Sample document** support
+✅ **Comprehensive documentation**
 
 Only **5% remaining** for UI wiring, indicators, and testing - estimated **1-2 days** of work.
 
 ---
 
-**Status**: Ready for Integration Testing  
-**Last Updated**: 2024  
-**Total Lines of Code Added**: 600+  
-**Documentation Pages**: 17 files, 200+ KB  
+**Status**: Ready for Integration Testing
+**Last Updated**: 2024
+**Total Lines of Code Added**: 600+
+**Documentation Pages**: 17 files, 200+ KB

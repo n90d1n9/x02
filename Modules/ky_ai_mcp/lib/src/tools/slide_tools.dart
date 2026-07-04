@@ -1,5 +1,5 @@
 /// Slide Tools for MCP
-/// 
+///
 /// Tools for creating, editing, and managing presentations in ky_slide.
 
 import '../models/mcp_tool.dart';
@@ -100,7 +100,10 @@ class SlideTools {
         'type': 'object',
         'properties': {
           'presentationId': {'type': 'string'},
-          'format': {'type': 'string', 'enum': ['pptx', 'pdf']},
+          'format': {
+            'type': 'string',
+            'enum': ['pptx', 'pdf'],
+          },
         },
         'required': ['presentationId', 'format'],
       },

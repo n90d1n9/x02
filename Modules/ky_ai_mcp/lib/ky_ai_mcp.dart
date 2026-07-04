@@ -1,5 +1,5 @@
 /// Ky AI MCP - Model Context Protocol Server for Ky Office Suite
-/// 
+///
 /// Provides AI agents with tools to create, edit, and manage documents
 /// across ky_docs, ky_sheet, and ky_slide applications.
 library ky_ai_mcp;

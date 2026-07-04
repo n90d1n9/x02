@@ -1,5 +1,5 @@
 /// MCP Tool Model
-/// 
+///
 /// Represents a tool that can be invoked by AI agents through the MCP protocol.
 class MCPTool {
   final String name;
@@ -25,7 +25,7 @@ class MCPTool {
 }
 
 /// MCP Resource Model
-/// 
+///
 /// Represents a resource that can be accessed by AI agents.
 class MCPResource {
   final String uri;
@@ -53,13 +53,14 @@ class MCPResource {
 }
 
 /// MCP Prompt Model
-/// 
+///
 /// Represents a reusable prompt template for AI agents.
 class MCPPrompt {
   final String name;
   final String description;
   final List<MCPPromptArgument> arguments;
-  final Future<List<Map<String, dynamic>>> Function(Map<String, dynamic>) handler;
+  final Future<List<Map<String, dynamic>>> Function(Map<String, dynamic>)
+  handler;
 
   MCPPrompt({
     required this.name,
@@ -89,10 +90,6 @@ class MCPPromptArgument {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'description': description,
-      'required': required,
-    };
+    return {'name': name, 'description': description, 'required': required};
   }
 }

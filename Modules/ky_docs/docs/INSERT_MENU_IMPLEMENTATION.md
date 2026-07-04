@@ -183,7 +183,7 @@ if (result != null) {
 ### 5. ImageSource Enum
 
 ```dart
-enum ImageSource { 
+enum ImageSource {
   file,   // From device storage
   url,    // From web URL
   cloud   // From cloud storage (future)
@@ -211,7 +211,7 @@ For chart insertion, the menu is designed to integrate with the `ky_charts` plug
 Future<void> _insertChart() async {
   // Future integration:
   // await ChartDialog.show(context, commands: widget.commands);
-  
+
   // Current placeholder:
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text('Opening chart editor...')),

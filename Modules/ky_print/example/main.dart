@@ -35,7 +35,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // Listen to print progress
     kyPrint.progressStream.listen((progress) {
       setState(() => _progress = progress);
@@ -69,7 +69,8 @@ class _ExampleScreenState extends State<ExampleScreen> {
                   children: [
                     const Text(
                       'Ky Print Demo',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -86,50 +87,50 @@ class _ExampleScreenState extends State<ExampleScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Print buttons
             ElevatedButton.icon(
               onPressed: _isPrinting ? null : _handleQuickPrint,
               icon: const Icon(Icons.print),
               label: const Text('Quick Print'),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             ElevatedButton.icon(
               onPressed: _isPrinting ? null : _handlePrintWithSettings,
               icon: const Icon(Icons.settings),
               label: const Text('Print with Settings'),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             ElevatedButton.icon(
               onPressed: _isPrinting ? null : _handlePreview,
               icon: const Icon(Icons.visibility),
               label: const Text('Print Preview'),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             ElevatedButton.icon(
               onPressed: _isPrinting ? null : _handleSaveAsPdf,
               icon: const Icon(Icons.save),
               label: const Text('Save as PDF'),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             OutlinedButton.icon(
               onPressed: _isPrinting ? _handleCancel : null,
               icon: const Icon(Icons.cancel),
               label: const Text('Cancel Print'),
             ),
-            
+
             const Spacer(),
-            
+
             // Status
             Center(
               child: Text(
@@ -148,13 +149,13 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
   Future<void> _handleQuickPrint() async {
     setState(() => _isPrinting = true);
-    
+
     try {
       final result = await kyPrint.quickPrint(
         documentTitle: 'Quick Print Example',
         pages: _buildSamplePages(),
       );
-      
+
       _showResult(result);
     } finally {
       setState(() => _isPrinting = false);
@@ -163,7 +164,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
   Future<void> _handlePrintWithSettings() async {
     setState(() => _isPrinting = true);
-    
+
     try {
       final result = await kyPrint.printDocument(
         context: context,
@@ -172,7 +173,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
         orientation: PrintOrientation.portrait,
         paperSize: PaperSize.a4,
       );
-      
+
       _showResult(result);
     } finally {
       setState(() => _isPrinting = false);
@@ -189,14 +190,14 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
   Future<void> _handleSaveAsPdf() async {
     setState(() => _isPrinting = true);
-    
+
     try {
       final result = await kyPrint.saveAsPdf(
         documentTitle: 'PDF Export Example',
         pages: _buildSamplePages(),
         fileName: 'example_document.pdf',
       );
-      
+
       _showResult(result);
     } finally {
       setState(() => _isPrinting = false);
@@ -206,7 +207,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
   void _handleCancel() {
     kyPrint.cancelPrint();
     setState(() => _isPrinting = false);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Print cancelled')),
     );
@@ -246,7 +247,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
           ],
         ),
       ),
-      
+
       // Page 2
       Container(
         width: 595,

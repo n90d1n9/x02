@@ -7,20 +7,16 @@
 /// - Direct rendering of blocks from DocumentEngine
 /// - Page layout with margins, headers, footers
 /// - Real-time collaboration support via CRDT operations
-/// - DOCX import/export via parser-docx parser
+/// - DOCX import/export via ky-of-docx parser
 library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
-// TODO: Engine files not yet available
-// import '../engine/document_engine.dart';
-// import '../engine/docx_parser_service.dart';
-import '../../engine/document_engine.dart';
-import '../../engine/docx_parser_service.dart';
+import '../engine/document_engine.dart';
+import '../engine/docx_parser_service.dart';
 import '../models/page_layout.dart';
 import '../models/page_settings.dart';
 import 'document_page_chrome.dart';
@@ -359,7 +355,6 @@ class _NativeDocumentCanvasState extends ConsumerState<NativeDocumentCanvas> {
           onHeadingPressed: (level) => _showHeadingPicker(level),
           onListPressed: (ordered) => _toggleList(ordered),
           onAlignPressed: (alignment) => _setAlignment(alignment),
-          controller: null,
         ),
 
         const SizedBox(height: 8),

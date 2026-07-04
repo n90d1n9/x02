@@ -7,9 +7,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 1. Document Creation & Editing
 
 #### Skill: Professional Document Authoring
-**Description**: Create well-structured documents with proper formatting  
-**Tools Used**: `create_document`, `insert_block`, `update_style`  
-** proficiency Level**: Expert  
+**Description**: Create well-structured documents with proper formatting
+**Tools Used**: `create_document`, `insert_block`, `update_style`
+** proficiency Level**: Expert
 
 **Example Workflow**:
 ```json
@@ -26,9 +26,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ```
 
 #### Skill: Document Formatting
-**Description**: Apply consistent styling and branding  
-**Tools Used**: `update_style`, `get_stats`  
-**Proficiency Level**: Expert  
+**Description**: Apply consistent styling and branding
+**Tools Used**: `update_style`, `get_stats`
+**Proficiency Level**: Expert
 
 **Capabilities**:
 - Font family and size selection
@@ -42,9 +42,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 2. Content Analysis & Enhancement
 
 #### Skill: Document Summarization
-**Description**: Generate concise summaries of long documents  
-**Tools Used**: `summarize_document`, `get_stats`  
-**Proficiency Level**: Expert  
+**Description**: Generate concise summaries of long documents
+**Tools Used**: `summarize_document`, `get_stats`
+**Proficiency Level**: Expert
 
 **Summary Types**:
 - **Short** (1-2 paragraphs): Quick overview
@@ -71,9 +71,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ```
 
 #### Skill: Content Rewriting
-**Description**: Adjust tone, style, and clarity  
-**Tools Used**: `rewrite_content`  
-**Proficiency Level**: Advanced  
+**Description**: Adjust tone, style, and clarity
+**Tools Used**: `rewrite_content`
+**Proficiency Level**: Advanced
 
 **Tone Options**:
 - Formal (business, academic)
@@ -82,9 +82,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - Friendly (customer support)
 
 #### Skill: Grammar & Proofreading
-**Description**: Detect and correct grammatical errors  
-**Tools Used**: `grammar_check`  
-**Proficiency Level**: Expert  
+**Description**: Detect and correct grammatical errors
+**Tools Used**: `grammar_check`
+**Proficiency Level**: Expert
 
 **Checks Performed**:
 - Spelling errors
@@ -98,9 +98,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 3. Multilingual Support
 
 #### Skill: Translation
-**Description**: Translate content between languages  
-**Tools Used**: `translate_content`  
-**Proficiency Level**: Expert  
+**Description**: Translate content between languages
+**Tools Used**: `translate_content`
+**Proficiency Level**: Expert
 
 **Supported Languages**: 50+ including:
 - English, Spanish, French, German, Italian
@@ -128,9 +128,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 4. Audio Processing
 
 #### Skill: Speech-to-Text Transcription
-**Description**: Convert audio recordings to text  
-**Tools Used**: `speech_to_text`  
-**Proficiency Level**: Expert  
+**Description**: Convert audio recordings to text
+**Tools Used**: `speech_to_text`
+**Proficiency Level**: Expert
 
 **Features**:
 - Multi-language support
@@ -163,9 +163,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ```
 
 #### Skill: Text-to-Speech Generation
-**Description**: Convert text to natural speech  
-**Tools Used**: `text_to_speech`  
-**Proficiency Level**: Expert  
+**Description**: Convert text to natural speech
+**Tools Used**: `text_to_speech`
+**Proficiency Level**: Expert
 
 **Voice Options**:
 - Male/Female voices
@@ -184,9 +184,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 5. Data Visualization
 
 #### Skill: Chart Creation
-**Description**: Create visual data representations  
-**Tools Used**: `ky_charts` plugin integration  
-**Proficiency Level**: Advanced  
+**Description**: Create visual data representations
+**Tools Used**: `ky_charts` plugin integration
+**Proficiency Level**: Advanced
 
 **Chart Types**:
 - Bar charts (vertical, horizontal)
@@ -216,9 +216,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 6. Spreadsheet Operations
 
 #### Skill: Data Analysis
-**Description**: Perform calculations and analysis on spreadsheet data  
-**Tools Used**: `create_sheet`, `insert_cell`, `calculate_formula`  
-**Proficiency Level**: Advanced  
+**Description**: Perform calculations and analysis on spreadsheet data
+**Tools Used**: `create_sheet`, `insert_cell`, `calculate_formula`
+**Proficiency Level**: Advanced
 
 **Capabilities**:
 - Formula evaluation (SUM, AVERAGE, VLOOKUP, etc.)
@@ -228,9 +228,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - Pivot table creation
 
 #### Skill: Financial Modeling
-**Description**: Build financial spreadsheets and models  
-**Tools Used**: `ky_sheet` tools + formula calculation  
-**Proficiency Level**: Expert  
+**Description**: Build financial spreadsheets and models
+**Tools Used**: `ky_sheet` tools + formula calculation
+**Proficiency Level**: Expert
 
 **Templates**:
 - Budget planning
@@ -244,9 +244,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 7. Presentation Design
 
 #### Skill: Slide Deck Creation
-**Description**: Design professional presentations  
-**Tools Used**: `create_presentation`, `insert_slide`, `add_content_to_slide`  
-**Proficiency Level**: Expert  
+**Description**: Design professional presentations
+**Tools Used**: `create_presentation`, `insert_slide`, `add_content_to_slide`
+**Proficiency Level**: Expert
 
 **Design Principles**:
 - Consistent theme and branding
@@ -256,9 +256,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - Engaging visuals
 
 #### Skill: Storytelling
-**Description**: Structure compelling narrative flow  
-**Tools Used**: All presentation tools  
-**Proficiency Level**: Expert  
+**Description**: Structure compelling narrative flow
+**Tools Used**: All presentation tools
+**Proficiency Level**: Expert
 
 **Structure Patterns**:
 - Problem → Solution → Benefits
@@ -271,9 +271,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 8. Document Management
 
 #### Skill: Export & Conversion
-**Description**: Convert documents between formats  
-**Tools Used**: `export_document`, `export_sheet`, `export_presentation`  
-**Proficiency Level**: Expert  
+**Description**: Convert documents between formats
+**Tools Used**: `export_document`, `export_sheet`, `export_presentation`
+**Proficiency Level**: Expert
 
 **Supported Formats**:
 - **Documents**: DOCX, PDF, TXT, HTML, Markdown
@@ -281,9 +281,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - **Presentations**: PPTX, PDF
 
 #### Skill: Metadata Management
-**Description**: Manage document properties and metadata  
-**Tools Used**: Resource access to `ky://metadata/current`  
-**Proficiency Level**: Advanced  
+**Description**: Manage document properties and metadata
+**Tools Used**: Resource access to `ky://metadata/current`
+**Proficiency Level**: Advanced
 
 **Metadata Types**:
 - Core properties (title, author, subject)
@@ -296,9 +296,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 9. Search & Discovery
 
 #### Skill: Advanced Search
-**Description**: Find and manipulate text with precision  
-**Tools Used**: `find_replace`  
-**Proficiency Level**: Expert  
+**Description**: Find and manipulate text with precision
+**Tools Used**: `find_replace`
+**Proficiency Level**: Expert
 
 **Search Options**:
 - Case-sensitive matching
@@ -308,9 +308,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - Scope limiting (section, page)
 
 #### Skill: Bulk Operations
-**Description**: Perform mass updates efficiently  
-**Tools Used**: `find_replace` (replaceAll), `update_style` (multiple blocks)  
-**Proficiency Level**: Advanced  
+**Description**: Perform mass updates efficiently
+**Tools Used**: `find_replace` (replaceAll), `update_style` (multiple blocks)
+**Proficiency Level**: Advanced
 
 **Examples**:
 - Replace all instances of a term
@@ -323,9 +323,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 ### 10. Collaboration & Review
 
 #### Skill: Document Comparison
-**Description**: Identify differences between versions  
-**Tools Used**: MCP resource access + comparison logic  
-**Proficiency Level**: Advanced  
+**Description**: Identify differences between versions
+**Tools Used**: MCP resource access + comparison logic
+**Proficiency Level**: Advanced
 
 **Comparison Types**:
 - Text differences (additions, deletions)
@@ -334,9 +334,9 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 - Metadata updates
 
 #### Skill: Comment & Annotation
-**Description**: Add contextual feedback  
-**Tools Used**: Block insertion for comments  
-**Proficiency Level**: Intermediate  
+**Description**: Add contextual feedback
+**Tools Used**: Block insertion for comments
+**Proficiency Level**: Intermediate
 
 **Annotation Types**:
 - Inline comments
@@ -408,8 +408,8 @@ Comprehensive catalog of AI capabilities available through the MCP server, mappe
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2024-01-15  
-**Total Skills**: 10 categories, 15+ specific skills  
-**Total Tools**: 22 MCP tools  
+**Version**: 1.0.0
+**Last Updated**: 2024-01-15
+**Total Skills**: 10 categories, 15+ specific skills
+**Total Tools**: 22 MCP tools
 **Integration Points**: ky_docs, ky_sheet, ky_slide, ky_ai_core, ky_charts

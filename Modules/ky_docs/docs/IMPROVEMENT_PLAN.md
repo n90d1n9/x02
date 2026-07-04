@@ -36,7 +36,7 @@ This document outlines the missing features, gaps, and recommended improvements 
 
 **Current Implementation:** Uses Dart-based extractors
 **Missing Rust FFI Integration:**
-- [ ] **Native DOCX Parser**: `parser-docx` Rust parser not integrated via FFI
+- [ ] **Native DOCX Parser**: `ky-of-docx` Rust parser not integrated via FFI
 - [ ] **Native DOCX Writer**: No Rust-based DOCX generation
 - [ ] **High-Fidelity Import**: Complex formatting, tables, images lost in current import
 - [ ] **High-Fidelity Export**: Same fidelity issues on export
@@ -113,7 +113,7 @@ This document outlines the missing features, gaps, and recommended improvements 
 **Current:** Dart-only implementation with placeholder FFI
 **Required:**
 ```rust
-// Must implement in Plugins/Engine/docx_reader_ffi/src/lib.rs:
+// Must implement in Plugins/Engine/docs_engine_ffi/src/lib.rs:
 - docx_parse_full_fidelity(bytes) -> DocumentHandle
 - docx_write_full_fidelity(DocumentHandle) -> Vec<u8>
 - pdf_import_with_layout(bytes) -> DocumentHandle
@@ -285,12 +285,12 @@ DocumentFileMenu(
 class SaveAsDialog extends StatefulWidget {
   final String defaultFileName;
   final List<String> availableFormats;
-  
+
   const SaveAsDialog({
     required this.defaultFileName,
     this.availableFormats = const ['docx', 'pdf', 'txt'],
   });
-  
+
   // Show dialog with:
   // - Filename text field
   // - Location picker (if platform supports)
@@ -307,22 +307,22 @@ class SaveAsDialog extends StatefulWidget {
 class DocumentNotifier extends StateNotifier<DocumentState> {
   bool _isDirty = false;
   Timer? _autoSaveTimer;
-  
+
   void markDirty() {
     _isDirty = true;
     _startAutoSaveTimer();
   }
-  
+
   void markClean() {
     _isDirty = false;
     _autoSaveTimer?.cancel();
   }
-  
+
   bool get isDirty => _isDirty;
-  
+
   Future<bool> confirmCloseIfDirty() async {
     if (!_isDirty) return true;
-    
+
     final shouldClose = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -334,11 +334,11 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
         ],
       ),
     );
-    
+
     if (shouldClose == true) {
       await save();
     }
-    
+
     return shouldClose ?? false;
   }
 }
@@ -353,17 +353,17 @@ class DocumentNotifier extends StateNotifier<DocumentState> {
 ```dart
 class DocxParserService {
   late DocumentEngineFFI _ffi;
-  
+
   Future<DocumentImportContent> parseFullFidelity(Uint8List bytes) async {
     // Call Rust FFI instead of Dart extractor
     final handle = await _ffi.parseDocx(bytes);
     final json = await _ffi.documentToJson(handle);
     final metadata = await _ffi.extractMetadata(handle);
-    
+
     return DocumentImportContent(
       text: await _ffi.getDocumentText(handle),
       docsEngineJson: json,
-      metadata: metadata,
+      meta metadata,
       method: DocumentImportMethod.nativeParser,
     );
   }

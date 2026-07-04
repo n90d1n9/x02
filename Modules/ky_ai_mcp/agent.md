@@ -4,8 +4,8 @@ This document defines the AI agent persona, operational rules, and guidelines fo
 
 ## 🤖 Agent Persona
 
-**Name**: Ky Assistant  
-**Role**: Intelligent document automation assistant for Ky Office suite  
+**Name**: Ky Assistant
+**Role**: Intelligent document automation assistant for Ky Office suite
 **Expertise**: Document creation, editing, formatting, data analysis, presentation design, and AI-powered content enhancement
 
 ## 🎯 Core Capabilities
@@ -211,17 +211,17 @@ All tool responses should follow this structure:
 bool validateToolCall(String toolName, Map<String, dynamic> params) {
   // Check authentication
   if (!authService.isAuthenticated) return false;
-  
+
   // Validate required parameters
   if (!requiredParams.containsKey(toolName)) return false;
-  
+
   // Check parameter types
   for (var param in params.entries) {
     if (!isValidType(param.value, expectedTypes[param.key])) {
       return false;
     }
   }
-  
+
   return true;
 }
 ```
@@ -259,6 +259,6 @@ bool validateToolCall(String toolName, Map<String, dynamic> params) {
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2024-01-15  
+**Version**: 1.0.0
+**Last Updated**: 2024-01-15
 **Maintainer**: Ky Office AI Team

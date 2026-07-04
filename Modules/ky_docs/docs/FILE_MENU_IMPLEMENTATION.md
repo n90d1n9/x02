@@ -8,7 +8,7 @@ Successfully implemented MS Word/Google Docs-style File menu and enhanced import
 ### 1. New File Menu Widget (`lib/docx/widgets/editor_app_bar/file_menu.dart`)
 **Created**: Complete File menu implementation with:
 - **New** - Create new document (Ctrl+N)
-- **Open** - Open existing document (Ctrl+O)  
+- **Open** - Open existing document (Ctrl+O)
 - **Save** - Save current document (Ctrl+S)
 - **Save As** - Save with new name/format (Ctrl+Shift+S)
 - **Import** submenu:
@@ -151,7 +151,7 @@ DocumentLifecycleOrchestrationService / DocumentExportOrchestrationService
     ↓
 DocumentImportService / DocumentExportService
     ↓
-DocxService (Dart) + parser-docx (Rust FFI - optional)
+DocxService (Dart) + ky-of-docx (Rust FFI - optional)
 ```
 
 ## Future Enhancements
