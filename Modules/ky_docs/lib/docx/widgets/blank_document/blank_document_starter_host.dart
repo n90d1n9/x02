@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:ky_docs/compat/flutter_quill_compat.dart' as quill;
 
 import 'blank_document_starter_panel.dart';
 import 'document_starter_template.dart';
 
 /// Overlays starter options while the editor document has no meaningful text.
 class BlankDocumentStarterHost extends StatefulWidget {
-  final quill.QuillController controller;
   final Widget child;
   final DocumentStarterTemplateApplier applier;
   final VoidCallback? onRequestEditorFocus;
 
   const BlankDocumentStarterHost({
     super.key,
-    required this.controller,
     required this.child,
     this.applier = const DocumentStarterTemplateApplier(),
     this.onRequestEditorFocus,

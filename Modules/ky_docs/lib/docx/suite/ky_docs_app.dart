@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ky_docs/compat/flutter_quill_compat.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ky_docs_surface.dart';
@@ -25,7 +24,6 @@ class KyDocsApp extends StatelessWidget {
         title: title,
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
-          FlutterQuillLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
