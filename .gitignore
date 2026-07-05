@@ -1,42 +1,48 @@
 ```
-# Rust/Cargo build artifacts
+# Rust-specific ignores
 target/
 Cargo.lock
 
 # Dependencies
 vendor/
 
-# IDE files
+# Build artifacts
+**/*.rs.bk
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/*.so
+**/*.dylib
+**/*.dll
+**/*.exe
+**/*.o
+**/*.obj
+**/*.a
+**/*.lib
+
+# Temporary files
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.temp
+**/*.bak
+**/*.backup
+
+# Logs
+**/*.log
+
+# IDE specific
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Logs
-*.log
+# OS specific
+.DS_Store
+Thumbs.db
 
 # Environment
 .env
 .env.local
-*.env.*
-
-**/.dart_tool/*
-
-.flutter-plugins-dependencies
-**/pubspec.lock
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Temp files
-*.tmp
-.DS_Store
-Thumbs.db
-
-# MyPy cache
-.mypy_cache/
-# PyTest cache
-.pytest_cache/
+.env.*
 ```
