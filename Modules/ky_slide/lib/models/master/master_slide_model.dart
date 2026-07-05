@@ -114,7 +114,7 @@ class MasterLayout {
             height: 120,
             text: TextContent(
               content: 'Click to add title',
-              style: TextStyleModel(fontSize: 44, isBold: true),
+              style: ComponentTextStyle(fontSize: 44, isBold: true),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.title,
@@ -128,7 +128,7 @@ class MasterLayout {
             height: 80,
             text: TextContent(
               content: 'Click to add subtitle',
-              style: TextStyleModel(fontSize: 24),
+              style: ComponentTextStyle(fontSize: 24),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.subtitle,
@@ -146,7 +146,7 @@ class MasterLayout {
             height: 80,
             text: TextContent(
               content: 'Click to add title',
-              style: TextStyleModel(fontSize: 36, isBold: true),
+              style: ComponentTextStyle(fontSize: 36, isBold: true),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.title,
@@ -160,7 +160,7 @@ class MasterLayout {
             height: 400,
             text: TextContent(
               content: 'Click to add content',
-              style: TextStyleModel(fontSize: 18),
+              style: ComponentTextStyle(fontSize: 18),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.content,
@@ -178,7 +178,7 @@ class MasterLayout {
             height: 80,
             text: TextContent(
               content: 'Click to add title',
-              style: TextStyleModel(fontSize: 36, isBold: true),
+              style: ComponentTextStyle(fontSize: 36, isBold: true),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.title,
@@ -192,7 +192,7 @@ class MasterLayout {
             height: 400,
             text: TextContent(
               content: 'Click to add content',
-              style: TextStyleModel(fontSize: 18),
+              style: ComponentTextStyle(fontSize: 18),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.content,
@@ -206,7 +206,7 @@ class MasterLayout {
             height: 400,
             text: TextContent(
               content: 'Click to add content',
-              style: TextStyleModel(fontSize: 18),
+              style: ComponentTextStyle(fontSize: 18),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.content,
@@ -227,7 +227,7 @@ class MasterLayout {
             height: 450,
             text: TextContent(
               content: 'Click to add content',
-              style: TextStyleModel(fontSize: 18),
+              style: ComponentTextStyle(fontSize: 18),
             ),
             isPlaceholder: true,
             placeholderType: PlaceholderType.content,
@@ -239,9 +239,9 @@ class MasterLayout {
 
 /// Default text styles for a master slide
 class TextStyleDefaults {
-  final TextStyleModel titleStyle;
-  final TextStyleModel bodyStyle;
-  final TextStyleModel accentStyle;
+  final ComponentTextStyle titleStyle;
+  final ComponentTextStyle bodyStyle;
+  final ComponentTextStyle accentStyle;
   final List<ColorSchemeLevel> colorLevels;
 
   TextStyleDefaults({
@@ -262,9 +262,9 @@ class TextStyleDefaults {
 
   factory TextStyleDefaults.fromJson(Map<String, dynamic> json) {
     return TextStyleDefaults(
-      titleStyle: TextStyleModel.fromJson(json['titleStyle']),
-      bodyStyle: TextStyleModel.fromJson(json['bodyStyle']),
-      accentStyle: TextStyleModel.fromJson(json['accentStyle']),
+      titleStyle: ComponentTextStyle.fromJson(json['titleStyle']),
+      bodyStyle: ComponentTextStyle.fromJson(json['bodyStyle']),
+      accentStyle: ComponentTextStyle.fromJson(json['accentStyle']),
       colorLevels: (json['colorLevels'] as List<dynamic>?)
               ?.map((c) => ColorSchemeLevel.fromJson(c))
               .toList() ??
@@ -422,18 +422,18 @@ class MasterSlide {
         'color': '#FFFFFF',
       },
       textStyles: TextStyleDefaults(
-        titleStyle: TextStyleModel(
+        titleStyle: ComponentTextStyle(
           fontFamily: 'Arial',
           fontSize: 44,
           isBold: true,
           color: '#1A1A1A',
         ),
-        bodyStyle: TextStyleModel(
+        bodyStyle: ComponentTextStyle(
           fontFamily: 'Arial',
           fontSize: 18,
           color: '#333333',
         ),
-        accentStyle: TextStyleModel(
+        accentStyle: ComponentTextStyle(
           fontFamily: 'Arial',
           fontSize: 24,
           isBold: true,

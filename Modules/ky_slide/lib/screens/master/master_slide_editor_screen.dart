@@ -95,9 +95,15 @@ class _MasterSlideEditorScreenState
           onSelectionChanged: (Set<MasterViewMode> selected) {
             ref.read(masterViewModeProvider.notifier).state = selected.first;
           },
-          style: SegmentedButtonThemeData(
-            backgroundColor: Colors.transparent,
-            selectedBackgroundColor: Colors.blue.withValues(alpha: 0.2),
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+              (Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.blue.withValues(alpha: 0.2);
+                }
+                return Colors.transparent;
+              },
+            ),
           ),
         ),
         const SizedBox(width: 16),
